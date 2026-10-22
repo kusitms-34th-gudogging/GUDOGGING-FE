@@ -1,0 +1,8 @@
+msg=$(head -n1 "$1")
+
+case "$msg" in Merge*|Revert*) exit 0 ;; esac
+
+if ! echo "$msg" | grep -qE '^(#[0-9]+ )?\[[A-Z]+\] .+'; then
+  echo "커밋 메시지 형식: #이슈번호 [타입] 작업내용  (ex. #7 [UI] 로그인 페이지 구현)"
+  exit 1
+fi
