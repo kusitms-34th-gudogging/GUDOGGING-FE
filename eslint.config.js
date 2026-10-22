@@ -15,6 +15,6 @@ module.exports = defineConfig([
     },
   },
   {
-    ignores: ['dist/*', '.expo/*', 'theme/*'],
+    ignores: ['dist/*', '.expo/*'],
   },
 ]);
