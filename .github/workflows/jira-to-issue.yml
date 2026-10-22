@@ -1,0 +1,183 @@
+name: Jira Subtask → GitHub Issue
+
+# Jira 자동화가 서브태스크 번호만 보내면, 나머지는 여기서 처리
+# (급할 때·한도 초과 시: Actions 탭에서 이 워크플로를 티켓 번호로 직접 실행 → Jira 한도 0회)
+on:
+  repository_dispatch:
+    types: [jira-subtask]
+  workflow_dispatch:
+    inputs:
+      ticket:
+        description: 'Jira 티켓 번호 (예: KAN-24)'
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+  actions: write
+
+concurrency:
+  group: jira-${{ github.event.client_payload.key || inputs.ticket }}
+  cancel-in-progress: false
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub issue from Jira subtask
+        env:
+          TICKET_RAW: ${{ github.event.client_payload.key || inputs.ticket }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          JIRA_BASE_URL: ${{ vars.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_FIELD_TYPE: ${{ vars.JIRA_FIELD_TYPE }} # 예: customfield_10050 (타입)
+          JIRA_FIELD_PREFIX: ${{ vars.JIRA_FIELD_PREFIX }} # 예: customfield_10051 (브랜치 접두사)
+          JIRA_FIELD_BRANCH: ${{ vars.JIRA_FIELD_BRANCH }} # 예: customfield_10052 (브랜치 작업명)
+          JIRA_FIELD_GITHUB: ${{ vars.JIRA_FIELD_GITHUB }} # 예: customfield_10054 (GitHub 이슈)
+        run: |
+          set -euo pipefail
+
+          trim() { sed -E 's/^[[:space:]]+|[[:space:]]+$//g'; }
+
+          TICKET=$(printf '%s' "$TICKET_RAW" | tr '[:lower:]' '[:upper:]' | trim)
+          if ! [[ "$TICKET" =~ ^[A-Z][A-Z0-9]+-[0-9]+$ ]]; then
+            echo "::error::Invalid TICKET: $TICKET"; exit 1
+          fi
+
+          for v in JIRA_BASE_URL JIRA_EMAIL JIRA_API_TOKEN JIRA_FIELD_TYPE JIRA_FIELD_PREFIX JIRA_FIELD_BRANCH JIRA_FIELD_GITHUB; do
+            if [ -z "${!v}" ]; then echo "::error::레포 설정에 $v 값이 없습니다"; exit 1; fi
+          done
+
+          API="${JIRA_BASE_URL%/}/rest/api/2/issue/${TICKET}"
+          jira() {
+            curl -fsS -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+              -H "Accept: application/json" -H "Content-Type: application/json" "$@"
+          }
+          jira_comment() {
+            jira -X POST "${API}/comment" -d "$(jq -n --arg b "$1" '{body: $b}')" > /dev/null \
+              || echo "::warning::Jira 댓글 작성 실패"
+          }
+          jira_set_github() {
+            jira -X PUT "$API" -d "$(jq -n --arg f "$JIRA_FIELD_GITHUB" --arg u "$1" '{fields: {($f): $u}}')" > /dev/null \
+              || echo "::warning::Jira 'GitHub 이슈' 칸 업데이트 실패"
+          }
+
+          # ---- Jira 서브태스크 정보 가져오기 ----
+          FIELDS="summary,description,${JIRA_FIELD_TYPE},${JIRA_FIELD_PREFIX},${JIRA_FIELD_BRANCH},${JIRA_FIELD_GITHUB}"
+          if ! RES=$(jira "${API}?fields=${FIELDS}"); then
+            echo "::error::Jira ${TICKET} 조회 실패 (티켓 번호, 이메일, 토큰 확인)"; exit 1
+          fi
+          jf() {
+            printf '%s' "$RES" | jq -r --arg f "$1" '
+              (.fields[$f]
+                | if type == "object" then .value
+                  elif type == "array" then (.[0].value // .[0])
+                  else . end) // ""'
+          }
+
+          SUMMARY=$(jf summary | trim)
+          DESC=$(jf description)
+          TYPE=$(jf "$JIRA_FIELD_TYPE" | trim)
+          PREFIX=$(jf "$JIRA_FIELD_PREFIX" | trim)
+          WORK=$(jf "$JIRA_FIELD_BRANCH" | trim)
+          LINKED=$(jf "$JIRA_FIELD_GITHUB" | trim)
+
+          echo "TICKET=${TICKET}, TYPE=${TYPE}, PREFIX=${PREFIX}, WORK=${WORK}, LINKED=${LINKED}"
+
+          # ---- 중복 방지 ----
+          if [ -n "$LINKED" ]; then
+            echo "이미 GitHub 이슈가 연결되어 있어 건너뜁니다: $LINKED"; exit 0
+          fi
+          DUP=$(gh issue list --state all --search "${TICKET} in:title" --json title,url --limit 50 \
+                | jq -r --arg p "[${TICKET}/" '[.[] | select(.title | startswith($p))][0].url // ""')
+          if [ -n "$DUP" ]; then
+            echo "같은 티켓의 이슈가 이미 있어 연결만 합니다: $DUP"
+            jira_set_github "$DUP"; exit 0
+          fi
+
+          # ---- 값 검증 (잘못되면 Jira에 알려줌) ----
+          if ! [[ "$TYPE" =~ ^[A-Z]+$ ]] || ! [[ "$PREFIX" =~ ^[a-z0-9_-]+$ ]]; then
+            jira_comment "⚠️ GitHub 이슈를 만들지 못했어요: 타입 또는 브랜치 접두사 값을 확인해주세요."
+            echo "::error::Invalid TYPE/PREFIX: $TYPE / $PREFIX"; exit 1
+          fi
+          if ! [[ "$WORK" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+            jira_comment "⚠️ GitHub 이슈를 만들지 못했어요: 브랜치 작업명은 영어, 숫자, -, _ 만 쓸 수 있어요. (현재: ${WORK})"
+            echo "::error::Invalid WORK: $WORK"; exit 1
+          fi
+
+          # ---- Jira 설명을 '상세 설명'과 '작업 체크리스트'로 나누기 ----
+          # 1) 설명에 "할 일" / "TODO" / "체크리스트" / "작업 목록" 같은 제목 줄이 있으면
+          #    → 그 위는 상세 설명, 그 아래는 전부 체크리스트
+          # 2) 제목 줄이 없으면
+          #    → 글머리 기호·번호 목록은 체크리스트, 일반 문장은 상세 설명
+          # 하위 목록은 들여쓴 체크박스로 유지
+          SPLIT=$(printf '%s\n' "$DESC" | tr -d '\r' | awk '
+            function isbullet(l) { return l ~ /^[ \t]*[*#-]+[ \t]+/ }
+            function task(l,   mk, lvl, txt, ind, k) {
+              if (l ~ /^[ \t]*$/) return
+              if (match(l, /^[ \t]*[*#-]+[ \t]+/)) {
+                mk = substr(l, 1, RLENGTH); txt = substr(l, RLENGTH + 1)
+                gsub(/[ \t]/, "", mk); lvl = length(mk) - 1
+              } else { lvl = 0; txt = l; sub(/^[ \t]+/, "", txt) }
+              sub(/^\[[ xX]?\][ \t]*/, "", txt)
+              ind = ""; for (k = 0; k < lvl; k++) ind = ind "  "
+              print "T|" ind "- [ ] " txt
+            }
+            BEGIN { HEAD = "^(h[1-6]\\.[ \t]*)?[*_]?\\[?(할 ?일|todo|to-do|to do|체크리스트|작업 ?목록|작업한 ?내용)\\]?[*_]?[ \t]*:?[ \t]*$" }
+            { lines[NR] = $0 }
+            END {
+              h = 0
+              for (i = 1; i <= NR; i++) if (tolower(lines[i]) ~ HEAD) { h = i; break }
+              for (i = 1; i <= NR; i++) {
+                if (h) { if (i < h) print "D|" lines[i]; else if (i > h) task(lines[i]) }
+                else if (isbullet(lines[i])) task(lines[i])
+                else print "D|" lines[i]
+              }
+            }')
+          DETAIL=$(printf '%s\n' "$SPLIT" | sed -n 's/^D|//p' | sed '/./,$!d')
+          TASKS=$(printf '%s\n' "$SPLIT" | sed -n 's/^T|//p')
+          if [ -z "$DETAIL" ]; then DETAIL="_No response_"; fi
+          if [ -z "$TASKS" ]; then TASKS="- [ ] ${SUMMARY}"; fi
+
+          # ---- 이슈 템플릿과 같은 형식으로 본문 작성 ----
+          TITLE="[${TICKET}/${TYPE}] ${SUMMARY}"
+          BODY=$(cat <<BODY_EOF
+          ### 🎫 Jira 티켓
+
+          ${TICKET}
+
+          ### 🏷️ 타입
+
+          ${TYPE}
+
+          ### 🔖 브랜치 접두사
+
+          ${PREFIX}
+
+          ### 🌿 브랜치에 포함될 작업 내용
+
+          ${WORK}
+
+          ### 📝 상세 설명
+
+          ${DETAIL}
+
+          ${JIRA_BASE_URL%/}/browse/${TICKET}
+
+          ### ✅ 작업한 내용
+
+          ${TASKS}
+          BODY_EOF
+          )
+
+          ISSUE_URL=$(gh issue create --title "$TITLE" --body "$BODY")
+          ISSUE_NUMBER="${ISSUE_URL##*/}"
+          echo "Created: $ISSUE_URL"
+
+          # Jira에 바로 기록 → 이후 중복 생성 방지
+          jira_set_github "$ISSUE_URL"
+
+          # 브랜치 생성 워크플로 실행 (봇이 만든 이슈는 issues 이벤트를 발생시키지 않아서 직접 호출)
+          gh workflow run create-branch.yml -f issue_number="$ISSUE_NUMBER"

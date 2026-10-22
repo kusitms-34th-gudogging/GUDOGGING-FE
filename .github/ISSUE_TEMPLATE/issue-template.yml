@@ -1,0 +1,75 @@
+name: '🚀 이슈 생성'
+description: '이슈 생성 시 브랜치가 자동으로 만들어집니다'
+title: '[KAN-00/타입] 작업 내용'
+body:
+  - type: input
+    id: ticket
+    attributes:
+      label: '🎫 Jira 티켓'
+      description: "Jira 서브태스크 번호 (제목의 '작업 내용'을 그대로 두면 지라 서브태스크 제목으로 자동 채워져요)"
+      placeholder: 'KAN-24'
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: '🏷️ 타입'
+      description: '작업 내용에 맞는 타입을 선택하세요 (이슈 제목: [티켓/타입] 작업내용)'
+      options:
+        - 'FEAT'
+        - 'MOD'
+        - 'ADD'
+        - 'CHORE'
+        - 'DEL'
+        - 'UI'
+        - 'FIX'
+        - 'MOVE'
+        - 'RENAME'
+        - 'REFACTOR'
+        - 'DOCS'
+        - 'STYLE'
+    validations:
+      required: true
+  - type: dropdown
+    id: branchPrefix
+    attributes:
+      label: '🔖 브랜치 접두사'
+      description: '브랜치명: 접두사/#이슈번호-티켓-작업명'
+      options:
+        - 'feature'
+        - 'hotfix'
+        - 'fix'
+        - 'refactor'
+        - 'chore'
+        - 'docs'
+        - 'style'
+    validations:
+      required: true
+  - type: input
+    id: branch
+    attributes:
+      label: '🌿 브랜치에 포함될 작업 내용'
+      description: '영어로만 작성 (한글 X)'
+      placeholder: 'login-ui'
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: '📝 상세 설명'
+      description: '구현할 기능이나 작업 내용을 작성하세요'
+      value: |
+        - 구현할 내용 1
+        - 구현할 내용 2
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: '✅ 작업한 내용'
+      description: '완료된 작업을 체크하며 진행하세요'
+      value: |
+        - [ ] 구현할 내용 1
+        - [ ] 구현할 내용 2
+    validations:
+      required: false

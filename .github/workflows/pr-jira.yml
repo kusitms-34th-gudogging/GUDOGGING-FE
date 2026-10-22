@@ -1,0 +1,107 @@
+name: PR ↔ Jira
+
+on:
+  pull_request:
+    types: [opened, closed]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set PR title, link issue, move Jira status
+        env:
+          EVENT_ACTION: ${{ github.event.action }}
+          MERGED: ${{ github.event.pull_request.merged }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          JIRA_BASE_URL: ${{ vars.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_STATUS_REVIEW: ${{ vars.JIRA_STATUS_REVIEW || '리뷰' }} # PR 열릴 때 (none = 안 옮김)
+          JIRA_STATUS_DONE: ${{ vars.JIRA_STATUS_DONE || '완료' }} # PR 머지될 때 (none = 안 옮김)
+        run: |
+          set -euo pipefail
+
+          # 브랜치명 예: feature/#3-KAN-24-login-ui → 이슈 #3, 티켓 KAN-24
+          ISSUE_NUM=""
+          TICKET=""
+          re_issue='^[^/]+/#?([0-9]+)-'
+          re_ticket='([A-Z][A-Z0-9]+-[0-9]+)'
+          if [[ "$HEAD_REF" =~ $re_issue ]]; then ISSUE_NUM="${BASH_REMATCH[1]}"; fi
+          if [[ "$HEAD_REF" =~ $re_ticket ]]; then TICKET="${BASH_REMATCH[1]}"; fi
+          echo "HEAD_REF=${HEAD_REF}, ISSUE=${ISSUE_NUM}, TICKET=${TICKET}"
+
+          JIRA_OK=""
+          if [ -n "$TICKET" ] && [ -n "$JIRA_BASE_URL" ] && [ -n "$JIRA_EMAIL" ] && [ -n "$JIRA_API_TOKEN" ]; then
+            JIRA_OK="1"
+            API="${JIRA_BASE_URL%/}/rest/api/2/issue/${TICKET}"
+          fi
+
+          jira() {
+            curl -fsS -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+              -H "Accept: application/json" -H "Content-Type: application/json" "$@"
+          }
+          jira_comment() {
+            jira -X POST "${API}/comment" -d "$(jq -n --arg b "$1" '{body: $b}')" > /dev/null \
+              || echo "::warning::Jira 댓글 작성 실패"
+          }
+          transition() {  # $1: 옮길 상태 이름(일부만 써도 됨)
+            local want="$1" list tid
+            if [ -z "$want" ] || [ "$want" = "none" ]; then return 0; fi
+            if ! list=$(jira "${API}/transitions"); then
+              echo "::warning::Jira 상태 목록 조회 실패"; return 0
+            fi
+            tid=$(printf '%s' "$list" | jq -r --arg s "$want" \
+              '[.transitions[] | select((.to.name // .name) | contains($s))][0].id // empty')
+            if [ -z "$tid" ]; then
+              echo "::warning::'${want}' 상태로 옮길 수 없습니다 (상태 이름 확인)"; return 0
+            fi
+            if jira -X POST "${API}/transitions" -d "$(jq -n --arg id "$tid" '{transition: {id: $id}}')" > /dev/null; then
+              echo "Jira ${TICKET} → '${want}' 상태로 이동"
+            else
+              echo "::warning::Jira 상태 변경 실패"
+            fi
+          }
+
+          if [ "$EVENT_ACTION" = "opened" ]; then
+            # ---- PR 제목을 이슈 제목으로, 본문에 Closes #이슈 추가 ----
+            if [ -n "$ISSUE_NUM" ]; then
+              ISSUE_TITLE=$(gh issue view "$ISSUE_NUM" --json title --jq '.title' 2>/dev/null || true)
+              NEW_TITLE="$PR_TITLE"
+              if [ -n "$ISSUE_TITLE" ] && [[ "$PR_TITLE" != \[* ]]; then
+                NEW_TITLE="$ISSUE_TITLE"
+              fi
+              NEW_BODY="$PR_BODY"
+              re_close="(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]+#${ISSUE_NUM}([^0-9]|$)"
+              shopt -s nocasematch
+              if ! [[ "$PR_BODY" =~ $re_close ]]; then
+                NEW_BODY="${PR_BODY}"$'\n\n'"Closes #${ISSUE_NUM}"
+              fi
+              shopt -u nocasematch
+              gh pr edit "$PR_NUMBER" --title "$NEW_TITLE" --body "$NEW_BODY"
+              echo "PR updated: $NEW_TITLE"
+            fi
+
+            if [ -n "$JIRA_OK" ]; then
+              jira_comment "$(printf '🔀 PR 생성: [#%s|%s]' "$PR_NUMBER" "$PR_URL")"
+              transition "$JIRA_STATUS_REVIEW"
+            fi
+
+          elif [ "$EVENT_ACTION" = "closed" ] && [ "$MERGED" = "true" ]; then
+            if [ -n "$JIRA_OK" ]; then
+              jira_comment "$(printf '✅ PR 머지 완료: [#%s|%s]' "$PR_NUMBER" "$PR_URL")"
+              transition "$JIRA_STATUS_DONE"
+            fi
+          else
+            echo "머지되지 않고 닫힌 PR이라 아무것도 하지 않습니다."
+          fi
