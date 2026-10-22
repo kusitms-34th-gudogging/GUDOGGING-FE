@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       issue_number:
-        description: '브랜치를 만들 GitHub 이슈 번호'
+        description: "브랜치를 만들 GitHub 이슈 번호"
         required: true
 
 permissions:
@@ -35,7 +35,7 @@ jobs:
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
           JIRA_FIELD_GITHUB: ${{ vars.JIRA_FIELD_GITHUB }}
-          JIRA_STATUS_PROGRESS: ${{ vars.JIRA_STATUS_PROGRESS || '진행' }} # 브랜치 생성 시 옮길 상태 (none = 안 옮김)
+          JIRA_STATUS_PROGRESS: ${{ vars.JIRA_STATUS_PROGRESS || '진행' }}   # 브랜치 생성 시 옮길 상태 (none = 안 옮김)
         run: |
           set -euo pipefail
 
@@ -161,7 +161,8 @@ jobs:
           if [ -n "$TICKET" ] && [ -n "$JIRA_BASE_URL" ]; then
             MSG+=$'\n'"🎫 Jira: ${JIRA_BASE_URL%/}/browse/${TICKET}"
           fi
-          MSG+=$'\n\n''```bash'$'\n'"git fetch origin && git switch ${BRANCH_NAME}"$'\n''```'
+          FENCE=$(printf '\140\140\140')   # 코드블록 기호(백틱 3개) - 파일에 직접 안 쓰려고 이렇게 만듦
+          MSG+=$'\n\n'"${FENCE}bash"$'\n'"git fetch origin && git switch ${BRANCH_NAME}"$'\n'"${FENCE}"
           gh issue comment "$ISSUE_NUMBER" --body "$MSG"
 
           # ---- Jira: 링크 댓글, GitHub 이슈 칸 채우기, 상태 이동 ----
