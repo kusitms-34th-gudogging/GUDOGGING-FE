@@ -1,0 +1,9 @@
+{
+  "source": ["tokens/**/*.json"],
+  "platforms": {
+    "tailwind": {
+      "buildPath": "theme/",
+      "files": [{ "destination": "tokens.json", "format": "json/nested" }]
+    }
+  }
+}
