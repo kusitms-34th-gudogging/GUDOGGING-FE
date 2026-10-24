@@ -49,7 +49,8 @@
     "lint": "expo lint",
     "prepare": "husky",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "tokens:build": "style-dictionary build --config tokens/sd-tokens-config.mjs"
   },
   "private": true,
   "packageManager": "pnpm@10.10.0",

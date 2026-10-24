@@ -1,1 +1,4 @@
 pnpm-lock.yaml
+
+# design tokens (Tokens Studio 원본 / Style Dictionary 생성물)
+tokens/*.json
