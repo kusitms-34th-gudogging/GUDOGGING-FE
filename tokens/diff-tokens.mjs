@@ -1,10 +1,11 @@
 // 두 tailwind-token.json 을 비교해 PR 본문용 마크다운 요약을 출력한다.
-// 사용: node tokens/diff-tokens.mjs <base.json> <head.json>
+// 사용: node tokens/diff-tokens.mjs <base.json> <head.json> [commits.txt]
+// commits.txt: 디자이너 커밋 메시지 (한 줄에 하나)
 import { existsSync, readFileSync } from 'node:fs';
 
 const MAX_ROWS = 50;
 
-const [basePath, headPath] = process.argv.slice(2);
+const [basePath, headPath, commitsPath] = process.argv.slice(2);
 
 const read = (path) => (path && existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {});
 
@@ -31,10 +32,24 @@ for (const key of new Set([...Object.keys(base), ...Object.keys(head)])) {
 const count = (label) => rows.filter(([type]) => type === label).length;
 const cell = (value) => (value ? `\`${value.replace(/\|/g, '\\|')}\`` : '');
 
+const commits =
+  commitsPath && existsSync(commitsPath)
+    ? readFileSync(commitsPath, 'utf8')
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+    : [];
+
 const lines = [
   '## 🎨 디자인 토큰 업데이트',
   '',
   'Figma(Tokens Studio)에서 `design-token` 브랜치로 푸시된 토큰을 Style Dictionary로 빌드한 결과입니다.',
+  '',
+  '### 📝 디자이너 작업 내역',
+  '',
+  ...(commits.length ? commits.map((message) => `- ${message}`) : ['- (커밋 없음)']),
+  '',
+  '### 🔍 토큰 변경',
   '',
 ];
 

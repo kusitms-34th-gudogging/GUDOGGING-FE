@@ -77,7 +77,10 @@ jobs:
           GH_TOKEN: ${{ secrets.DESIGN_TOKEN_PAT || github.token }}
         run: |
           git show "origin/${BASE_BRANCH}:tokens/tailwind-token.json" > "$RUNNER_TEMP/base-token.json" 2>/dev/null || true
-          node tokens/diff-tokens.mjs "$RUNNER_TEMP/base-token.json" tokens/tailwind-token.json > "$RUNNER_TEMP/pr-body.md"
+          # dev 에 아직 없는 커밋 중 디자이너 커밋만 (머지 커밋·봇 커밋 제외, 오래된 순)
+          git log --no-merges --reverse --format='%an%x09%s' "origin/${BASE_BRANCH}..HEAD" \
+            | awk -F'\t' '$1 != "github-actions[bot]" { sub(/^[^\t]*\t/, ""); print }' > "$RUNNER_TEMP/commits.txt"
+          node tokens/diff-tokens.mjs "$RUNNER_TEMP/base-token.json" tokens/tailwind-token.json "$RUNNER_TEMP/commits.txt" > "$RUNNER_TEMP/pr-body.md"
           cat "$RUNNER_TEMP/pr-body.md" >> "$GITHUB_STEP_SUMMARY"
 
           if git diff --quiet "origin/${BASE_BRANCH}" HEAD; then
