@@ -1,0 +1,95 @@
+name: Design Token → PR
+
+# 디자이너가 Tokens Studio GitHub Sync 로 design-token 브랜치에 tokens/default-token.json 을 푸시하면
+# 1) dev 최신 내용을 design-token 에 합치고
+# 2) Style Dictionary 로 tokens/tailwind-token.json 을 생성해 커밋한 뒤
+# 3) design-token → dev PR 을 생성(이미 열려 있으면 본문 갱신)한다.
+#
+# 필요한 설정
+# - Settings → Actions → General → Workflow permissions: Read and write permissions
+#   + Allow GitHub Actions to create and approve pull requests 체크
+# - (선택) Secrets DESIGN_TOKEN_PAT: 이 토큰으로 푸시·PR 생성 시 CI·PR↔Jira 워크플로가 PR 에서도 실행됨
+#   (기본 GITHUB_TOKEN 으로 만든 커밋·PR 은 GitHub 정책상 다른 워크플로를 트리거하지 않음)
+on:
+  push:
+    branches: [design-token]
+    paths: [tokens/default-token.json]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: design-token
+  cancel-in-progress: false
+
+env:
+  BASE_BRANCH: dev
+  HEAD_BRANCH: design-token
+  PR_TITLE: '[CHORE] 디자인 토큰 업데이트'
+
+jobs:
+  build-and-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.HEAD_BRANCH }}
+          fetch-depth: 0
+          token: ${{ secrets.DESIGN_TOKEN_PAT || github.token }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # design-token 브랜치가 dev 보다 뒤처져 빌드 설정이 오래되거나 PR 충돌이 나지 않도록 dev 를 먼저 합침
+      - name: Merge latest dev
+        run: |
+          if ! git merge --no-edit "origin/${BASE_BRANCH}"; then
+            echo "::error::${BASE_BRANCH} → ${HEAD_BRANCH} 머지 충돌. 로컬에서 충돌을 해결해 주세요."
+            exit 1
+          fi
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build tokens
+        run: pnpm tokens:build
+
+      - name: Commit generated tokens
+        run: |
+          git add tokens/tailwind-token.json
+          if git diff --cached --quiet; then
+            echo "tailwind-token.json 변경 없음"
+          else
+            git commit -m "${PR_TITLE}"
+          fi
+          git push origin "HEAD:${HEAD_BRANCH}"
+
+      - name: Create or update PR
+        env:
+          GH_TOKEN: ${{ secrets.DESIGN_TOKEN_PAT || github.token }}
+        run: |
+          git show "origin/${BASE_BRANCH}:tokens/tailwind-token.json" > "$RUNNER_TEMP/base-token.json" 2>/dev/null || true
+          node tokens/diff-tokens.mjs "$RUNNER_TEMP/base-token.json" tokens/tailwind-token.json > "$RUNNER_TEMP/pr-body.md"
+          cat "$RUNNER_TEMP/pr-body.md" >> "$GITHUB_STEP_SUMMARY"
+
+          if git diff --quiet "origin/${BASE_BRANCH}" HEAD; then
+            echo "${BASE_BRANCH} 와 차이가 없어 PR 을 만들지 않습니다."
+            exit 0
+          fi
+
+          PR_NUMBER=$(gh pr list --base "$BASE_BRANCH" --head "$HEAD_BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$PR_NUMBER" ]; then
+            gh pr edit "$PR_NUMBER" --body-file "$RUNNER_TEMP/pr-body.md"
+            echo "PR #${PR_NUMBER} 본문 갱신"
+          else
+            gh pr create --base "$BASE_BRANCH" --head "$HEAD_BRANCH" \
+              --title "$PR_TITLE" --body-file "$RUNNER_TEMP/pr-body.md"
+          fi
