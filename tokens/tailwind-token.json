@@ -27,7 +27,17 @@
     "stack-md": "12px",
     "stack-lg": "16px",
     "section": "32px",
-    "section-lg": "40px"
+    "section-lg": "40px",
+    "screen-width": "375px",
+    "screen-height": "812px",
+    "status-bar": "44px",
+    "nav-bar": "44px",
+    "nav-bar-large": "96px",
+    "tab-bar": "49px",
+    "home-indicator": "34px",
+    "bottom-cta": "56px",
+    "margin": "20px",
+    "gutter": "12px"
   },
   "borderRadius": {
     "none": "0px",
@@ -349,6 +359,16 @@
     }
   },
   "size": {
+    "icon-xs": "16px",
+    "icon-sm": "20px",
+    "icon-md": "24px",
+    "icon-lg": "32px",
+    "control-sm": "36px",
+    "control-md": "44px",
+    "control-lg": "52px",
+    "touch-min": "44px",
+    "thumb-md": "40px",
+    "thumb-lg": "48px",
     "button-sm": "36px",
     "button-md": "44px",
     "button-lg": "52px",
@@ -362,6 +382,8 @@
     "touch-target": "44px"
   },
   "borderWidth": {
+    "thin": "1px",
+    "thick": "2px",
     "default": "1px",
     "focus": "2px"
   },
@@ -373,5 +395,74 @@
     "elevation-1": "0px 1px 4px 0px #0000000F",
     "elevation-2": "0px 4px 16px 0px #00000014",
     "elevation-3": "0px -4px 24px 0px #0000001F"
+  },
+  "motion": {
+    "duration": {
+      "fast": 150,
+      "base": 250,
+      "slow": 400
+    },
+    "easing": {
+      "standard": [
+        0.2,
+        0,
+        0,
+        1
+      ],
+      "decelerate": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "accelerate": [
+        0.3,
+        0,
+        1,
+        1
+      ]
+    },
+    "press": 150,
+    "transition": 250,
+    "sheet": 400,
+    "ease-move": [
+      0.2,
+      0,
+      0,
+      1
+    ],
+    "ease-enter": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "ease-exit": [
+      0.3,
+      0,
+      1,
+      1
+    ]
+  },
+  "gradient": {
+    "100": {
+      "colors": [
+        "#FFF2F1",
+        "#FA2D48",
+        "#D50333"
+      ],
+      "locations": [
+        0,
+        0.5,
+        1
+      ]
+    }
+  },
+  "grid": {
+    "ios-375-4col": {
+      "columns": 4,
+      "margin": 20,
+      "gutter": 12
+    }
   }
 }

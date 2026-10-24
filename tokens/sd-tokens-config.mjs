@@ -25,6 +25,7 @@ const RADIUS_RESERVED = [
 const MAPPINGS = [
   ['primary.spacing', 'spacing', { prefix: 's' }],
   ['semantic.spacing', 'spacing'],
+  ['primary.layout', 'spacing'],
   ['primary.radius', 'borderRadius', { rename: RADIUS_RENAME }],
   ['semantic.radius', 'borderRadius'],
   ['primary.font.size', 'fontSize'],
@@ -33,10 +34,17 @@ const MAPPINGS = [
   ['primary.font.weight', 'fontWeight'],
   ['primary.color', 'colors'],
   ['semantic.color', 'colors'],
+  ['primary.size', 'size', { flatten: true }],
   ['semantic.size', 'size', { flatten: true }],
+  ['primary.border', 'borderWidth'],
   ['semantic.border', 'borderWidth'],
   ['semantic.opacity', 'opacity'],
   ['styles.shadow', 'boxShadow', { flatten: true }],
+  // className 으로 표현할 수 없어 tokens/index.ts 로 노출
+  ['primary.motion', 'motion'],
+  ['semantic.motion', 'motion'],
+  ['styles.gradient', 'gradient'],
+  ['styles.grid', 'grid'],
 ];
 
 const OUTPUT_KEYS = [...new Set(MAPPINGS.map(([, to]) => to.split('.')[0]))];
@@ -176,13 +184,49 @@ StyleDictionary.registerTransform({
   transform: (token) => String(token.$value),
 });
 
+// '150ms' → 150 (Reanimated duration)
+StyleDictionary.registerTransform({
+  name: 'js/duration',
+  type: 'value',
+  transitive: true,
+  filter: (token) => token.$type === 'duration',
+  transform: (token) => parseFloat(token.$value),
+});
+
+// expo-linear-gradient 의 colors·locations props 형태
+StyleDictionary.registerTransform({
+  name: 'js/gradient',
+  type: 'value',
+  transitive: true,
+  filter: (token) => token.$type === 'gradient',
+  transform: ({ $value }) => ({
+    colors: $value.map(({ color }) => color),
+    locations: $value.map(({ position }) => position),
+  }),
+});
+
+StyleDictionary.registerTransform({
+  name: 'js/grid',
+  type: 'value',
+  transitive: true,
+  filter: (token) => token.path[0] === 'grid' && token.$type === 'dimension',
+  transform: (token) => parseFloat(token.$value),
+});
+
 export default {
   source: ['tokens/default-token.json'],
   preprocessors: ['tokens-studio/tailwind-theme'],
   log: { verbosity: 'verbose' },
   platforms: {
     tailwind: {
-      transforms: ['tailwind/typography', 'tailwind/shadow', 'tailwind/font-weight'],
+      transforms: [
+        'tailwind/typography',
+        'tailwind/shadow',
+        'tailwind/font-weight',
+        'js/duration',
+        'js/gradient',
+        'js/grid',
+      ],
       buildPath: 'tokens/',
       files: [
         {
