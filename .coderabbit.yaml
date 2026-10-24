@@ -1,0 +1,62 @@
+language: 'ko-KR'
+reviews:
+  profile: 'chill'
+  request_changes_workflow: false
+  high_level_summary: false
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  sequence_diagrams: false
+  changed_files_summary: true
+
+  # 리뷰 제외 파일
+  path_filters:
+    # lock 파일
+    - '!**/pnpm-lock.yaml'
+    - '!**/package-lock.json'
+    - '!**/yarn.lock'
+    - '!**/bun.lock'
+    - '!**/bun.lockb'
+    # 빌드 결과물
+    - '!**/dist/**'
+    - '!**/build/**'
+    - '!**/.next/**'
+    - '!**/web-build/**'
+    - '!**/.expo/**'
+    - '!ios/**'
+    - '!android/**'
+    # 자동 생성 파일
+    - '!**/expo-env.d.ts'
+    - '!**/nativewind-env.d.ts'
+    - '!**/*.tsbuildinfo'
+    - '!**/*.generated.*'
+    - '!**/*.min.js'
+    - '!**/*.map'
+    # 정적 에셋 (이미지·폰트·미디어)
+    - '!**/*.{png,jpg,jpeg,gif,webp,avif,bmp,ico,svg}'
+    - '!**/*.{ttf,otf,woff,woff2,eot}'
+    - '!**/*.{mp3,mp4,wav,mov,lottie}'
+    - '!src/assets/**'
+
+  # 리뷰 지침
+  path_instructions:
+    - path: '**/*'
+      instructions: |
+        컨벤션·스타일 검사는 별도 하네스(lint/format/커밋 hook)에서 처리하므로, 아래 항목은 지적하지 마세요.
+        - 코드 스타일, 포맷팅, 들여쓰기, 따옴표, 세미콜론
+        - 변수·함수·파일 네이밍
+        - import 순서, 주석 유무·문구, 타입 표기 방식 등 취향에 가까운 사항
+
+        다음 코드 리뷰 관점에 집중해 실제 문제가 있을 때만 코멘트하세요.
+        - 버그: null/undefined 처리 누락, 잘못된 조건·분기, 경계값, 예외 처리 누락
+        - 로직 오류: 요구사항과 다른 동작, 상태 관리·비동기 처리(race condition, await 누락, cleanup 누락) 오류
+        - 성능: 불필요한 리렌더링, 무거운 연산의 반복 실행, 메모리 누수, 비효율적인 리스트 렌더링
+        - 보안: 민감 정보(토큰·키) 노출, 안전하지 않은 저장소 사용, 입력값 검증 누락
+        - React Native/Expo 환경에서의 플랫폼(iOS/Android) 호환성 문제
+
+  auto_review:
+    enabled: true
+    drafts: false
+    auto_incremental_review: true
+    base_branches:
+      - 'dev'
