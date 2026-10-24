@@ -1,0 +1,54 @@
+name: Design Token Branch Sync
+
+# design-token 브랜치를 항상 dev 최신 상태로 유지한다.
+# - 디자이너가 언제든 푸시할 수 있도록 design-token 이 원격에 항상 있어야 함
+#   → PR 머지 후 자동 삭제되면(delete 이벤트) 또는 없으면 dev 에서 새로 만든다
+# - 있으면 dev 를 merge (미반영 커밋이 없으면 fast-forward 로 dev 와 동일해짐)
+#   reset 이 아니라 merge 라서 아직 PR 에 안 올라간 design-token 커밋도 보존된다
+on:
+  push:
+    branches: [dev]
+  delete:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# design-token.yml 과 같은 그룹 → design-token 브랜치에 동시에 푸시하지 않음
+concurrency:
+  group: design-token
+  cancel-in-progress: false
+
+env:
+  BASE_BRANCH: dev
+  HEAD_BRANCH: design-token
+
+jobs:
+  sync:
+    # delete 이벤트는 design-token 브랜치가 삭제된 경우에만 처리
+    if: github.event_name != 'delete' || (github.event.ref_type == 'branch' && github.event.ref == 'design-token')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DESIGN_TOKEN_PAT || github.token }}
+
+      - name: Merge dev into design-token
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git ls-remote --exit-code --heads origin "$HEAD_BRANCH" > /dev/null; then
+            git fetch origin "$HEAD_BRANCH"
+            git checkout -B "$HEAD_BRANCH" "origin/${HEAD_BRANCH}"
+            if ! git merge --no-edit "origin/${BASE_BRANCH}" -m "[CHORE] design-token 브랜치 dev 동기화"; then
+              echo "::error::${BASE_BRANCH} → ${HEAD_BRANCH} 머지 충돌. 로컬에서 충돌을 해결해 주세요."
+              exit 1
+            fi
+          else
+            echo "${HEAD_BRANCH} 브랜치가 없어 ${BASE_BRANCH} 에서 새로 만듭니다."
+            git checkout -B "$HEAD_BRANCH" "origin/${BASE_BRANCH}"
+          fi
+
+          git push origin "HEAD:${HEAD_BRANCH}"
