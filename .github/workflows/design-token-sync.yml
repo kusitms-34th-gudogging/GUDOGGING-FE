@@ -1,10 +1,7 @@
 name: Design Token Branch Sync
 
-# design-token 브랜치를 항상 dev 최신 상태로 유지한다.
-# - 디자이너가 언제든 푸시할 수 있도록 design-token 이 원격에 항상 있어야 함
-#   → PR 머지 후 자동 삭제되면(delete 이벤트) 또는 없으면 dev 에서 새로 만든다
-# - 있으면 dev 를 merge (미반영 커밋이 없으면 fast-forward 로 dev 와 동일해짐)
-#   reset 이 아니라 merge 라서 아직 PR 에 안 올라간 design-token 커밋도 보존된다
+# 디자이너가 언제든 푸시할 수 있도록 design-token 브랜치를 유지 (삭제되면 dev 에서 재생성)
+# reset 대신 merge 해서 아직 PR 에 안 올라간 커밋을 보존
 on:
   push:
     branches: [dev]
@@ -14,7 +11,7 @@ on:
 permissions:
   contents: write
 
-# design-token.yml 과 같은 그룹 → design-token 브랜치에 동시에 푸시하지 않음
+# design-token.yml 과 동시 푸시 방지
 concurrency:
   group: design-token
   cancel-in-progress: false
@@ -25,7 +22,6 @@ env:
 
 jobs:
   sync:
-    # delete 이벤트는 design-token 브랜치가 삭제된 경우에만 처리
     if: github.event_name != 'delete' || (github.event.ref_type == 'branch' && github.event.ref == 'design-token')
     runs-on: ubuntu-latest
     steps:

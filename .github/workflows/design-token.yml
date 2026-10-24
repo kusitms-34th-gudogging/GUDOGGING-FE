@@ -1,15 +1,5 @@
 name: Design Token → PR
 
-# 디자이너가 Tokens Studio GitHub Sync 로 design-token 브랜치에 tokens/default-token.json 을 푸시하면
-# 1) dev 최신 내용을 design-token 에 합치고
-# 2) Style Dictionary 로 tokens/tailwind-token.json 을 생성해 커밋한 뒤
-# 3) design-token → dev PR 을 생성(이미 열려 있으면 본문 갱신)한다.
-#
-# 필요한 설정
-# - Settings → Actions → General → Workflow permissions: Read and write permissions
-#   + Allow GitHub Actions to create and approve pull requests 체크
-# - (선택) Secrets DESIGN_TOKEN_PAT: 이 토큰으로 푸시·PR 생성 시 CI·PR↔Jira 워크플로가 PR 에서도 실행됨
-#   (기본 GITHUB_TOKEN 으로 만든 커밋·PR 은 GitHub 정책상 다른 워크플로를 트리거하지 않음)
 on:
   push:
     branches: [design-token]
@@ -44,7 +34,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # design-token 브랜치가 dev 보다 뒤처져 빌드 설정이 오래되거나 PR 충돌이 나지 않도록 dev 를 먼저 합침
       - name: Merge latest dev
         run: |
           if ! git merge --no-edit "origin/${BASE_BRANCH}"; then
@@ -77,7 +66,7 @@ jobs:
           GH_TOKEN: ${{ secrets.DESIGN_TOKEN_PAT || github.token }}
         run: |
           git show "origin/${BASE_BRANCH}:tokens/tailwind-token.json" > "$RUNNER_TEMP/base-token.json" 2>/dev/null || true
-          # dev 에 아직 없는 커밋 중 디자이너 커밋만 (머지 커밋·봇 커밋 제외, 오래된 순)
+          # 디자이너 커밋만 (머지·봇 커밋 제외)
           git log --no-merges --reverse --format='%an%x09%s' "origin/${BASE_BRANCH}..HEAD" \
             | awk -F'\t' '$1 != "github-actions[bot]" { sub(/^[^\t]*\t/, ""); print }' > "$RUNNER_TEMP/commits.txt"
           node tokens/diff-tokens.mjs "$RUNNER_TEMP/base-token.json" tokens/tailwind-token.json "$RUNNER_TEMP/commits.txt" > "$RUNNER_TEMP/pr-body.md"

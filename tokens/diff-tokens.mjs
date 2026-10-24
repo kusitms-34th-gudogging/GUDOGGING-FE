@@ -1,6 +1,4 @@
-// 두 tailwind-token.json 을 비교해 PR 본문용 마크다운 요약을 출력한다.
-// 사용: node tokens/diff-tokens.mjs <base.json> <head.json> [commits.txt]
-// commits.txt: 디자이너 커밋 메시지 (한 줄에 하나)
+// 사용: node tokens/diff-tokens.mjs <base.json> <head.json> [commits.txt] > pr-body.md
 import { existsSync, readFileSync } from 'node:fs';
 
 const MAX_ROWS = 50;
@@ -9,7 +7,6 @@ const [basePath, headPath, commitsPath] = process.argv.slice(2);
 
 const read = (path) => (path && existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {});
 
-// { colors: { red: { 200: '#FECCC9' } } } → { 'colors.red.200': '#FECCC9' }
 const flatten = (node, keys = [], out = {}) => {
   if (node && typeof node === 'object' && !Array.isArray(node)) {
     for (const [k, v] of Object.entries(node)) flatten(v, [...keys, k], out);

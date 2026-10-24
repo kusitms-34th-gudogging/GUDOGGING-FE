@@ -1,10 +1,8 @@
-// Figma(Tokens Studio) → tokens/default-token.json → (Style Dictionary) → tokens/tailwind-token.json
-// default-token.json 은 Tokens Studio GitHub Sync 가 관리하는 원본이므로 읽기만 한다.
+// default-token.json 은 Tokens Studio GitHub Sync 원본이므로 수정하지 않는다.
 import StyleDictionary from 'style-dictionary';
 
-// radius 라벨 S/L 은 sm/lg 로 등록
 const RADIUS_RENAME = { S: 'sm', L: 'lg', s: 'sm', l: 'lg' };
-// rounded-l 처럼 Tailwind 방향 유틸과 겹치는 키 금지
+// rounded-l 처럼 Tailwind 방향 유틸과 겹치는 키
 const RADIUS_RESERVED = [
   't',
   'r',
@@ -22,12 +20,8 @@ const RADIUS_RESERVED = [
   'ee',
 ];
 
-// Tokens Studio 토큰 경로 → tailwind-token.json 경로 (= tailwind.config.js theme.extend 키)
-// - prefix: 하위 키 앞에 붙임 (primary spacing 은 Tailwind 기본 4px 단위 스케일과 겹치지 않도록 s 접두사 → gap-s64)
-// - rename: 하위 키 이름 변경
-// - flatten: 하위 경로를 '-' 로 이어 소문자 한 단계 키로 (Display.Bold → display-bold)
-//   Tailwind 는 colors 외 테마 키의 중첩 객체를 펼치지 않으므로 중첩 토큰은 flatten 필요
-// 새 카테고리를 노출하려면 여기에 추가 (tailwind-merge 도입 시 extendTailwindMerge 도 함께 갱신)
+// prefix 's': Tailwind 기본 spacing 스케일과 겹치지 않도록 (gap-s64)
+// flatten: Tailwind 는 colors 외 중첩 키를 펼치지 않음 (Display.Bold → display-bold)
 const MAPPINGS = [
   ['primary.spacing', 'spacing', { prefix: 's' }],
   ['semantic.spacing', 'spacing'],
@@ -68,7 +62,6 @@ const leaves = (node, keys = []) =>
     ? [[keys, node]]
     : Object.entries(node).flatMap(([k, v]) => leaves(v, [...keys, k]));
 
-// [기존 경로, 새 경로, 노드] 목록
 const relocations = (subtree, from, to, { prefix = '', rename = {}, flatten = false } = {}) => {
   if (isToken(subtree)) return [[from, to, subtree]];
   if (flatten) {
@@ -103,7 +96,7 @@ const rewriteRefs = (value, refMap) => {
 StyleDictionary.registerPreprocessor({
   name: 'tokens-studio/tailwind-theme',
   preprocessor: (dictionary) => {
-    // 1) Tokens Studio 세트 unwrap: { primary: { primary: {...} } } → { primary: {...} }
+    // { primary: { primary: {...} } } → { primary: {...} }
     const order = dictionary.$metadata?.tokenSetOrder ?? Object.keys(dictionary);
     const tree = {};
     for (const set of order) {
@@ -111,7 +104,6 @@ StyleDictionary.registerPreprocessor({
       for (const [key, node] of Object.entries(dictionary[set])) setAt(tree, [key], node);
     }
 
-    // 2) Tailwind 키로 이동
     const refMap = [];
     for (const [from, to, options] of MAPPINGS) {
       const fromPath = from.split('.');
@@ -132,13 +124,13 @@ StyleDictionary.registerPreprocessor({
       }
     }
 
-    // 3) 이동한 경로를 가리키는 참조 갱신 (긴 경로 우선)
+    // 긴 경로부터 매칭
     refMap.sort(([a], [b]) => b.length - a.length);
     return rewriteRefs(tree, refMap);
   },
 });
 
-// Figma 자간(%)은 font-size 기준 → RN 은 % 를 지원하지 않으므로 px 로 변환
+// RN 은 % 자간을 지원하지 않으므로 font-size 기준 px 로 변환
 const toLetterSpacing = (letterSpacing, fontSize) => {
   const value = String(letterSpacing);
   if (!value.endsWith('%')) return value;
@@ -146,8 +138,7 @@ const toLetterSpacing = (letterSpacing, fontSize) => {
   return `${Math.round(px * 100) / 100}px`;
 };
 
-// typography → CSS 스타일 객체: tailwind.config.js 플러그인이 text-display-bold 유틸로 등록해 폰트·크기·행간·자간·굵기 적용
-// (Tailwind fontSize 튜플은 fontFamily 를 받지 않으므로 별도 키로 출력)
+// Tailwind fontSize 튜플은 fontFamily 를 받지 않으므로 스타일 객체로 출력해 플러그인에서 유틸로 등록
 StyleDictionary.registerTransform({
   name: 'tailwind/typography',
   type: 'value',
@@ -162,7 +153,6 @@ StyleDictionary.registerTransform({
   }),
 });
 
-// boxShadow → CSS box-shadow 문자열 (NativeWind 가 iOS shadow* / Android elevation 으로 변환)
 StyleDictionary.registerTransform({
   name: 'tailwind/shadow',
   type: 'value',

@@ -26,7 +26,7 @@ module.exports = {
     },
   },
   plugins: [
-    // typography 토큰 → text-display-bold 등 (fontFamily 까지 포함해 Pretendard 자동 적용)
+    // text-display-bold 등 typography 유틸
     plugin(({ addUtilities }) =>
       addUtilities(
         Object.fromEntries(
