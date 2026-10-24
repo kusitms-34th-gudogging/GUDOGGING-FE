@@ -14,5 +14,9 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Check design tokens are up to date
+        run: |
+          pnpm tokens:build
+          git diff --exit-code -- tokens/tailwind-token.json || (echo "::error::tokens/tailwind-token.json 이 default-token.json 과 다릅니다. 'pnpm tokens:build' 후 커밋하세요." && exit 1)
       - run: pnpm lint
       - run: pnpm typecheck
