@@ -34,7 +34,7 @@ const MAPPINGS = [
   ['primary.radius', 'borderRadius', { rename: RADIUS_RENAME }],
   ['semantic.radius', 'borderRadius'],
   ['primary.font.size', 'fontSize'],
-  ['styles.typography', 'fontSize', { flatten: true }],
+  ['styles.typography', 'typography', { flatten: true }],
   ['primary.font.family', 'fontFamily.sans'],
   ['primary.font.weight', 'fontWeight'],
   ['primary.color', 'colors'],
@@ -146,20 +146,20 @@ const toLetterSpacing = (letterSpacing, fontSize) => {
   return `${Math.round(px * 100) / 100}px`;
 };
 
-// typography → Tailwind fontSize 튜플: text-display-bold 로 크기·행간·자간·굵기 적용
+// typography → CSS 스타일 객체: tailwind.config.js 플러그인이 text-display-bold 유틸로 등록해 폰트·크기·행간·자간·굵기 적용
+// (Tailwind fontSize 튜플은 fontFamily 를 받지 않으므로 별도 키로 출력)
 StyleDictionary.registerTransform({
   name: 'tailwind/typography',
   type: 'value',
   transitive: true,
   filter: (token) => token.$type === 'typography',
-  transform: ({ $value: { fontSize, lineHeight, letterSpacing, fontWeight } }) => [
+  transform: ({ $value: { fontFamily, fontSize, lineHeight, letterSpacing, fontWeight } }) => ({
+    fontFamily,
     fontSize,
-    {
-      lineHeight,
-      letterSpacing: toLetterSpacing(letterSpacing, fontSize),
-      fontWeight: String(fontWeight),
-    },
-  ],
+    lineHeight,
+    letterSpacing: toLetterSpacing(letterSpacing, fontSize),
+    fontWeight: String(fontWeight),
+  }),
 });
 
 // boxShadow → CSS box-shadow 문자열 (NativeWind 가 iOS shadow* / Android elevation 으로 변환)
