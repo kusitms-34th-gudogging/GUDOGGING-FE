@@ -32,6 +32,39 @@
           "image": "./src/assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-font",
+        {
+          "android": {
+            "fonts": [
+              {
+                "fontFamily": "Pretendard",
+                "fontDefinitions": [
+                  {
+                    "path": "./src/assets/fonts/Pretendard-Regular.otf",
+                    "weight": 400
+                  },
+                  {
+                    "path": "./src/assets/fonts/Pretendard-SemiBold.otf",
+                    "weight": 600
+                  },
+                  {
+                    "path": "./src/assets/fonts/Pretendard-Bold.otf",
+                    "weight": 700
+                  }
+                ]
+              }
+            ]
+          },
+          "ios": {
+            "fonts": [
+              "./src/assets/fonts/Pretendard-Regular.otf",
+              "./src/assets/fonts/Pretendard-SemiBold.otf",
+              "./src/assets/fonts/Pretendard-Bold.otf"
+            ]
+          }
+        }
       ]
     ],
     "experiments": {
