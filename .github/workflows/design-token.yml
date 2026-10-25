@@ -1,0 +1,87 @@
+name: Design Token → PR
+
+on:
+  push:
+    branches: [design-token]
+    paths: [tokens/default-token.json]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: design-token
+  cancel-in-progress: false
+
+env:
+  BASE_BRANCH: dev
+  HEAD_BRANCH: design-token
+  PR_TITLE: '[CHORE] 디자인 토큰 업데이트'
+
+jobs:
+  build-and-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.HEAD_BRANCH }}
+          fetch-depth: 0
+          token: ${{ secrets.DESIGN_TOKEN_PAT || github.token }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge latest dev
+        run: |
+          if ! git merge --no-edit "origin/${BASE_BRANCH}"; then
+            echo "::error::${BASE_BRANCH} → ${HEAD_BRANCH} 머지 충돌. 로컬에서 충돌을 해결해 주세요."
+            exit 1
+          fi
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build tokens
+        run: pnpm tokens:build
+
+      - name: Commit generated tokens
+        run: |
+          git add tokens/tailwind-token.json
+          if git diff --cached --quiet; then
+            echo "tailwind-token.json 변경 없음"
+          else
+            git commit -m "${PR_TITLE}"
+          fi
+          git push origin "HEAD:${HEAD_BRANCH}"
+
+      - name: Create or update PR
+        env:
+          GH_TOKEN: ${{ secrets.DESIGN_TOKEN_PAT || github.token }}
+        run: |
+          git show "origin/${BASE_BRANCH}:tokens/tailwind-token.json" > "$RUNNER_TEMP/base-token.json" 2>/dev/null || true
+          # 디자이너 커밋만 (머지·봇 커밋 제외)
+          git log --no-merges --reverse --format='%an%x09%s' "origin/${BASE_BRANCH}..HEAD" \
+            | awk -F'\t' '$1 != "github-actions[bot]" { sub(/^[^\t]*\t/, ""); print }' > "$RUNNER_TEMP/commits.txt"
+          node tokens/diff-tokens.mjs "$RUNNER_TEMP/base-token.json" tokens/tailwind-token.json "$RUNNER_TEMP/commits.txt" > "$RUNNER_TEMP/pr-body.md"
+          cat "$RUNNER_TEMP/pr-body.md" >> "$GITHUB_STEP_SUMMARY"
+
+          if git diff --quiet "origin/${BASE_BRANCH}" HEAD; then
+            echo "${BASE_BRANCH} 와 차이가 없어 PR 을 만들지 않습니다."
+            exit 0
+          fi
+
+          PR_NUMBER=$(gh pr list --base "$BASE_BRANCH" --head "$HEAD_BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$PR_NUMBER" ]; then
+            gh pr edit "$PR_NUMBER" --body-file "$RUNNER_TEMP/pr-body.md"
+            echo "PR #${PR_NUMBER} 본문 갱신"
+          else
+            gh pr create --base "$BASE_BRANCH" --head "$HEAD_BRANCH" \
+              --title "$PR_TITLE" --body-file "$RUNNER_TEMP/pr-body.md"
+          fi
