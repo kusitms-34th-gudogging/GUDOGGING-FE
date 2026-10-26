@@ -11,8 +11,8 @@ description: 새 화면(페이지)을 만들 때 사용. "화면 만들어줘", 
    import { Text, View } from 'react-native';
 
    export const ProfileScreen = () => (
-     <View className="flex-1">
-       <Text>Profile</Text>
+     <View className="flex-1 bg-bg-default">
+       <Text className="text-text-primary text-body1-regular">Profile</Text>
      </View>
    );
    ```
