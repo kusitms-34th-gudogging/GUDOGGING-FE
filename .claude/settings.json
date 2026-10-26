@@ -1,5 +1,30 @@
 {
   "enabledPlugins": {
     "expo@claude-plugins-official": true
+  },
+  "permissions": {
+    "deny": [
+      "Edit(./ios/**)",
+      "Edit(./android/**)",
+      "Edit(./tokens/default-token.json)",
+      "Edit(./tokens/tailwind-tokens.json)",
+      "Read(./.env)",
+      "Read(./.env*.local)",
+      "Bash(git commit --no-verify:*)",
+      "Bash(git push --force:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && node -e \"let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const f=JSON.parse(d).tool_input?.file_path;if(f)require('child_process').spawnSync('pnpm',['exec','prettier','--write','--ignore-unknown',f],{stdio:'ignore'})})\""
+          }
+        ]
+      }
+    ]
   }
 }
