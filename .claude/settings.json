@@ -7,7 +7,7 @@
       "Edit(./ios/**)",
       "Edit(./android/**)",
       "Edit(./tokens/default-token.json)",
-      "Edit(./tokens/tailwind-tokens.json)",
+      "Edit(./tokens/tailwind-token.json)",
       "Read(./.env)",
       "Read(./.env*.local)",
       "Bash(git commit --no-verify:*)",

@@ -14,5 +14,5 @@ description: SVG 아이콘을 추가할 때 사용. "아이콘 추가해줘" 요
    export { default as ArrowLeftIcon } from './icon_arrow_left_fill.svg';
    ```
 
-5. 사용: `import { ArrowLeftIcon } from '@/assets/icons';` → `<ArrowLeftIcon className="size-6 text-black" />`
+5. 사용: `import { ArrowLeftIcon } from '@/assets/icons';` → `<ArrowLeftIcon className="size-icon-md text-icon-primary" />`
 6. 사용자에게 `pnpm start -c`로 캐시 초기화 필요하다고 안내

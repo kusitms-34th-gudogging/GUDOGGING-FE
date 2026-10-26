@@ -17,9 +17,16 @@ Figma MCP 출력(React + Tailwind 웹 코드)은 **참고 자료**지 정답이 
 
 ## 2. 디자인 시스템 매핑 (핵심)
 
-**토큰** — 기준은 `tailwind.config.js`의 `theme.extend` (원본: `tokens/tailwind-tokens.json`, 흐름은 `.claude/docs/design-tokens.md`)
+**토큰** — 기준은 `tokens/tailwind-token.json`, Figma 경로 → 클래스 매핑표는 `.claude/docs/design-tokens.md`
 
-- Figma 변수명 → 같은 이름의 토큰 클래스로 (`bg-primary`, `p-p4`, `rounded-m` 등). hex·px 값으로 직접 옮기지 않음
+- Figma 변수 → 매핑표대로 토큰 클래스로. hex·px 값으로 직접 옮기지 않음
+  - `primary/spacing/16` → `p-s16` (`s` 접두사), `semantic/spacing/stack-md` → `gap-stack-md`
+  - `semantic/color/text/primary` → `text-text-primary`, `semantic/color/bg/default` → `bg-bg-default`
+  - `primary/radius/md` → `rounded-md`, `semantic/radius/card` → `rounded-card`
+  - 텍스트 스타일 `Body1/Regular` → `text-body1-regular` (폰트·크기·행간 개별 클래스로 쪼개지 않음)
+  - size → `size-icon-md`, `h-button-lg` / shadow → `shadow-elevation-1`
+  - motion·gradient → `@tokens` import (`gradient[100]`, `motion.press`)
+- `asset`·`category`와 violet·fuchsia·orange·green·blue·yellow는 의도적으로 토큰에서 제외한 그래픽 전용 색. 쓰려면 Figma hex로 arbitrary value(`text-[#3F7FEF]`)를 넣고 보고
 - 맞는 토큰이 없을 때만 arbitrary value(`w-[123px]`). 쓴 곳을 모아 **"토큰 누락 목록"**으로 사용자에게 보고
 - 토큰 파일(`tokens/*.json`)·생성 파일은 절대 수정하지 않음. 필요하면 Figma 쪽 토큰 추가를 요청
 - 값이 토큰과 1~2px 다르면 토큰으로 맞추고 보고 (디자이너 실수 가능성)
@@ -35,7 +42,7 @@ Figma MCP 출력(React + Tailwind 웹 코드)은 **참고 자료**지 정답이 
 
 **에셋**
 
-- 단색 아이콘 → `/add-icon` 스킬 절차대로 `src/assets/icons/`에 추가 후 `<XxxIcon className="size-6 text-..." />`
+- 단색 아이콘 → `/add-icon` 스킬 절차대로 `src/assets/icons/`에 추가 후 `<XxxIcon className="size-icon-md text-icon-primary" />`
 - 같은 아이콘이 이미 `src/assets/icons/index.ts`에 있으면 재사용
 - 여러 색 SVG·이미지 → `src/assets/images/` (`download_assets`로 받기). localhost 에셋 URL을 코드에 남기지 않음
 

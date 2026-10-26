@@ -6,6 +6,8 @@ Expo SDK 57 · Expo Router · NativeWind v4(Tailwind v3) · pnpm. Expo API는 �
 
 - `pnpm start` (캐시 초기화: `pnpm start -c`) · `pnpm lint` · `pnpm typecheck` · `pnpm format`
 - 패키지 추가는 `pnpm expo install <pkg>` (SDK 호환 버전)
+- `pnpm tokens:build`: 디자인 토큰 재생성 (빌드 설정 바꿨으면 결과도 커밋, 안 하면 CI 실패)
+- Pretendard는 네이티브 임베드라 Expo Go에선 안 보임 → 개발 빌드(`npx expo run:ios`)로 확인
 - 작업 끝내기 전 `pnpm lint && pnpm typecheck` 통과 필수 (CI와 동일)
 
 ## 절대 규칙
@@ -15,7 +17,7 @@ Expo SDK 57 · Expo Router · NativeWind v4(Tailwind v3) · pnpm. Expo API는 �
 - 스타일은 `className`만. 인라인 `style={{}}`·`StyleSheet.create` 금지 (Reanimated 예외), 조건부 클래스는 `cn`
 - `any` 금지 → `unknown` + 타입 가드. props는 `interface {Name}Props`
 - 비밀 키를 `EXPO_PUBLIC_*`에 넣지 않음. 서버 전용 코드는 `src/server/`
-- `ios/`, `android/` 직접 수정 금지 (CNG). 토큰 생성 파일 직접 수정 금지
+- `ios/`, `android/` 직접 수정 금지 (CNG). 토큰 JSON(`tokens/*.json`) 직접 수정 금지, `design-token` 브랜치에서 작업 금지 (토큰 업데이트 전용)
 - 커밋: `#이슈번호 [타입] 작업내용` (husky가 검사)
 
 ## 언제 뭘 읽을지

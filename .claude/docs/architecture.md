@@ -4,6 +4,7 @@ SDK 55+ 기본 템플릿(`app` · `components` · `constants` · `hooks`) + Expo
 앱 코드는 전부 `src/`, 설정 파일(`app.json`, `eas.json` 등)은 루트.
 
 ```txt
+tokens/            # 디자인 토큰 (루트). default-token.json 원본, tailwind-token.json 생성물, index.ts → @tokens
 src/
 ├─ app/            # 라우트 전용. screens 컴포넌트를 반환하는 얇은 껍데기
 │  ├─ api/         # +api 파일(서버 API 라우트)
@@ -15,6 +16,7 @@ src/
 ├─ utils/          # 순수 유틸 함수 (cn, nativewindInterop), 테스트는 옆에
 ├─ server/         # API 라우트에서만 쓰는 코드 (auth, db)
 └─ assets/
+   ├─ fonts/       # Pretendard (app.json expo-font 플러그인으로 임베드)
    ├─ icons/       # 단색 SVG 아이콘 → index.ts에서 컴포넌트로 export
    └─ images/      # 앱 아이콘·스플래시 등
 ```
@@ -43,5 +45,5 @@ components/profileCard/Avatar.tsx   #          내부 조각
 
 ## import 경로
 
-`tsconfig.json`의 `paths`로 `@/*` → `src/*`. Expo CLI가 바로 지원하므로 `babel-plugin-module-resolver` 불필요.
+`tsconfig.json`의 `paths`로 `@/*` → `src/*`, `@tokens` → `tokens/` (JS 토큰). Expo CLI가 바로 지원하므로 `babel-plugin-module-resolver` 불필요.
 `tsconfig.json` 변경 후엔 개발 서버 재시작.
