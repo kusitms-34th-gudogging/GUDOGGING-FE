@@ -29,3 +29,4 @@ Expo SDK 57 · Expo Router · NativeWind v4(Tailwind v3) · pnpm. Expo API는 �
 | 화면 추가 / 아이콘 추가   | `/new-screen` / `/add-icon` 스킬                   |
 | Figma 디자인 구현         | `/figma-publish` 스킬 (`figma-publisher` 에이전트) |
 | 커밋 / PR                 | `/commit` / `/pr` 스킬                             |
+| CodeRabbit 리뷰 대응      | `/coderabbit-review` 스킬                          |
