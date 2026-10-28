@@ -15,4 +15,5 @@ disable-model-invocation: true
    - PR 유형 체크박스 해당 항목 `[x]`
    - `resolves #{이슈번호}`
    - 작업 사항: 변경을 bullet로 요약
+   - `🤖 Generated with Claude Code` 등 AI 작성 표시를 넣지 않음
 6. push 후 `gh pr create --base dev --title ... --body ...`
