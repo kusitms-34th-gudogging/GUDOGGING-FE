@@ -1,6 +1,6 @@
 # GUDOGGING-FE
 
-Expo SDK 57 · Expo Router · NativeWind v4(Tailwind v3) · pnpm. Expo API는 기억 말고 `AGENTS.md`의 버전별 문서 확인.
+Expo SDK 58 · Expo Router · NativeWind v4(Tailwind v3) · pnpm. Expo API는 기억 말고 `AGENTS.md`의 버전별 문서 확인.
 
 ## 명령어
 
