@@ -517,720 +517,90 @@
             "$type": "color",
             "$value": "#003523"
           }
-        }
-      }
-    }
-  },
-  "primary/Default": {
-    "color": {
-      "white": {
-        "$type": "color",
-        "$value": "#ffffff"
-      },
-      "black": {
-        "$type": "color",
-        "$value": "#000000"
-      },
-      "red": {
-        "100": {
-          "$type": "color",
-          "$value": "#fff2f1"
         },
-        "200": {
-          "$type": "color",
-          "$value": "#feccc9"
-        },
-        "300": {
-          "$type": "color",
-          "$value": "#ffa2a0"
-        },
-        "400": {
-          "$type": "color",
-          "$value": "#fe7275"
-        },
-        "500": {
-          "$type": "color",
-          "$value": "#fa2d48"
-        },
-        "600": {
-          "$type": "color",
-          "$value": "#d50333"
-        },
-        "700": {
-          "$type": "color",
-          "$value": "#a80327"
-        },
-        "800": {
-          "$type": "color",
-          "$value": "#7f011b"
-        },
-        "900": {
-          "$type": "color",
-          "$value": "#57010f"
-        }
-      },
-      "gray": {
-        "100": {
-          "$type": "color",
-          "$value": "#f5f5f5"
-        },
-        "200": {
-          "$type": "color",
-          "$value": "#e8e8e8"
-        },
-        "300": {
-          "$type": "color",
-          "$value": "#d4d4d4"
-        },
-        "400": {
-          "$type": "color",
-          "$value": "#aeaeae"
-        },
-        "500": {
-          "$type": "color",
-          "$value": "#767676"
-        },
-        "600": {
-          "$type": "color",
-          "$value": "#5a5a5a"
-        },
-        "700": {
-          "$type": "color",
-          "$value": "#404040"
-        },
-        "800": {
-          "$type": "color",
-          "$value": "#272727"
-        },
-        "900": {
-          "$type": "color",
-          "$value": "#111111"
-        }
-      },
-      "error": {
-        "100": {
-          "$type": "color",
-          "$value": "#fef2f1"
-        },
-        "200": {
-          "$type": "color",
-          "$value": "#f0c2be"
-        },
-        "300": {
-          "$type": "color",
-          "$value": "#e48f89"
-        },
-        "400": {
-          "$type": "color",
-          "$value": "#d55654"
-        },
-        "500": {
-          "$type": "color",
-          "$value": "#b71727"
-        },
-        "600": {
-          "$type": "color",
-          "$value": "#a1001b"
-        },
-        "700": {
-          "$type": "color",
-          "$value": "#880015"
-        },
-        "800": {
-          "$type": "color",
-          "$value": "#6f0210"
-        },
-        "900": {
-          "$type": "color",
-          "$value": "#56060d"
-        }
-      },
-      "warning": {
-        "100": {
-          "$type": "color",
-          "$value": "#fef3e7"
-        },
-        "200": {
-          "$type": "color",
-          "$value": "#f9e0c4"
-        },
-        "300": {
-          "$type": "color",
-          "$value": "#fbcb93"
-        },
-        "400": {
-          "$type": "color",
-          "$value": "#fdb454"
-        },
-        "500": {
-          "$type": "color",
-          "$value": "#f5a00f"
-        },
-        "600": {
-          "$type": "color",
-          "$value": "#a56a07"
-        },
-        "700": {
-          "$type": "color",
-          "$value": "#815200"
-        },
-        "800": {
-          "$type": "color",
-          "$value": "#5e3b01"
-        },
-        "900": {
-          "$type": "color",
-          "$value": "#3e2501"
-        }
-      },
-      "success": {
-        "100": {
-          "$type": "color",
-          "$value": "#ebf9f2"
-        },
-        "200": {
-          "$type": "color",
-          "$value": "#c7e7d8"
-        },
-        "300": {
-          "$type": "color",
-          "$value": "#97d9bb"
-        },
-        "400": {
-          "$type": "color",
-          "$value": "#5acb9f"
-        },
-        "500": {
-          "$type": "color",
-          "$value": "#12b886"
-        },
-        "600": {
-          "$type": "color",
-          "$value": "#018761"
-        },
-        "700": {
-          "$type": "color",
-          "$value": "#006a4b"
-        },
-        "800": {
-          "$type": "color",
-          "$value": "#014f37"
-        },
-        "900": {
-          "$type": "color",
-          "$value": "#003523"
-        }
-      },
-      "black-alpha": {
-        "40": {
-          "$type": "color",
-          "$value": "#00000066"
-        }
-      },
-      "violet": {
-        "100": {
-          "$type": "color",
-          "$value": "#f4f0ff"
-        },
-        "200": {
-          "$type": "color",
-          "$value": "#dcd0fe"
-        },
-        "400": {
-          "$type": "color",
-          "$value": "#9d7bf5"
-        }
-      },
-      "fuchsia": {
-        "100": {
-          "$type": "color",
-          "$value": "#fcf0fa"
-        },
-        "200": {
-          "$type": "color",
-          "$value": "#f6cdeb"
-        },
-        "400": {
-          "$type": "color",
-          "$value": "#de6bc1"
-        }
-      },
-      "orange": {
-        "100": {
-          "$type": "color",
-          "$value": "#fff3eb"
-        },
-        "200": {
-          "$type": "color",
-          "$value": "#ffd6bc"
-        },
-        "400": {
-          "$type": "color",
-          "$value": "#ff9550"
-        }
-      },
-      "green": {
-        "100": {
-          "$type": "color",
-          "$value": "#eef9f0"
-        },
-        "200": {
-          "$type": "color",
-          "$value": "#c9ebd0"
-        },
-        "400": {
-          "$type": "color",
-          "$value": "#4fb86a"
-        }
-      },
-      "blue": {
-        "100": {
-          "$type": "color",
-          "$value": "#eef4ff"
-        },
-        "200": {
-          "$type": "color",
-          "$value": "#cadcfe"
-        },
-        "400": {
-          "$type": "color",
-          "$value": "#3f7fef"
-        }
-      },
-      "yellow": {
-        "100": {
-          "$type": "color",
-          "$value": "#fff9e5"
-        },
-        "200": {
-          "$type": "color",
-          "$value": "#feedb8"
-        },
-        "400": {
-          "$type": "color",
-          "$value": "#dda200"
-        }
-      }
-    },
-    "font": {
-      "family": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "FONT_FAMILY"
-          ]
-        },
-        "$type": "text",
-        "$value": "Pretendard"
-      },
-      "weight": {
-        "regular": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_WEIGHT"
-            ]
+        "violet": {
+          "100": {
+            "$type": "color",
+            "$value": "#F4F0FF"
           },
-          "$type": "fontWeights",
-          "$value": "400"
-        },
-        "bold": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_WEIGHT"
-            ]
+          "200": {
+            "$type": "color",
+            "$value": "#DCD0FE"
           },
-          "$type": "fontWeights",
-          "$value": "700"
+          "400": {
+            "$type": "color",
+            "$value": "#9D7BF5"
+          }
         },
-        "semibold": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_WEIGHT"
-            ]
+        "fuchsia": {
+          "100": {
+            "$type": "color",
+            "$value": "#FCF0FA"
           },
-          "$type": "fontWeights",
-          "$value": "600",
-          "$description": "SemiBold 600 — 버튼·선택 상태 라벨"
-        }
-      },
-      "size": {
-        "11": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_SIZE"
-            ]
+          "200": {
+            "$type": "color",
+            "$value": "#F6CDEB"
           },
-          "$type": "number",
-          "$value": 11
+          "400": {
+            "$type": "color",
+            "$value": "#DE6BC1"
+          }
         },
-        "12": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_SIZE"
-            ]
+        "orange": {
+          "100": {
+            "$type": "color",
+            "$value": "#FFF3EB"
           },
-          "$type": "number",
-          "$value": 12
-        },
-        "13": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_SIZE"
-            ]
+          "200": {
+            "$type": "color",
+            "$value": "#FFD6BC"
           },
-          "$type": "number",
-          "$value": 13
+          "400": {
+            "$type": "color",
+            "$value": "#FF9550"
+          }
         },
-        "14": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_SIZE"
-            ]
+        "green": {
+          "100": {
+            "$type": "color",
+            "$value": "#EEF9F0"
           },
-          "$type": "number",
-          "$value": 14
-        },
-        "15": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_SIZE"
-            ]
+          "200": {
+            "$type": "color",
+            "$value": "#C9EBD0"
           },
-          "$type": "number",
-          "$value": 15
+          "400": {
+            "$type": "color",
+            "$value": "#4FB86A"
+          }
         },
-        "16": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_SIZE"
-            ]
+        "blue": {
+          "100": {
+            "$type": "color",
+            "$value": "#EEF4FF"
           },
-          "$type": "number",
-          "$value": 16
-        },
-        "18": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_SIZE"
-            ]
+          "200": {
+            "$type": "color",
+            "$value": "#CADCFE"
           },
-          "$type": "number",
-          "$value": 18
+          "400": {
+            "$type": "color",
+            "$value": "#3F7FEF"
+          }
         },
-        "20": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_SIZE"
-            ]
+        "yellow": {
+          "100": {
+            "$type": "color",
+            "$value": "#FFF9E5"
           },
-          "$type": "number",
-          "$value": 20
-        },
-        "24": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_SIZE"
-            ]
+          "200": {
+            "$type": "color",
+            "$value": "#FEEDB8"
           },
-          "$type": "number",
-          "$value": 24
-        },
-        "28": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_SIZE"
-            ]
-          },
-          "$type": "number",
-          "$value": 28
-        },
-        "32": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FONT_SIZE"
-            ]
-          },
-          "$type": "number",
-          "$value": 32
-        }
-      }
-    },
-    "spacing": {
-      "0": {
-        "$type": "number",
-        "$value": 0
-      },
-      "2": {
-        "$type": "number",
-        "$value": 2
-      },
-      "4": {
-        "$type": "number",
-        "$value": 4
-      },
-      "8": {
-        "$type": "number",
-        "$value": 8
-      },
-      "12": {
-        "$type": "number",
-        "$value": 12
-      },
-      "16": {
-        "$type": "number",
-        "$value": 16
-      },
-      "20": {
-        "$type": "number",
-        "$value": 20
-      },
-      "24": {
-        "$type": "number",
-        "$value": 24
-      },
-      "32": {
-        "$type": "number",
-        "$value": 32
-      },
-      "40": {
-        "$type": "number",
-        "$value": 40
-      },
-      "48": {
-        "$type": "number",
-        "$value": 48
-      },
-      "64": {
-        "$type": "number",
-        "$value": 64
-      }
-    },
-    "radius": {
-      "none": {
-        "$type": "number",
-        "$value": 0
-      },
-      "xs": {
-        "$type": "number",
-        "$value": 4
-      },
-      "sm": {
-        "$type": "number",
-        "$value": 8
-      },
-      "md": {
-        "$type": "number",
-        "$value": 12
-      },
-      "lg": {
-        "$type": "number",
-        "$value": 16
-      },
-      "xl": {
-        "$type": "number",
-        "$value": 20
-      },
-      "2xl": {
-        "$type": "number",
-        "$value": 24
-      },
-      "full": {
-        "$type": "number",
-        "$value": 9999
-      }
-    },
-    "size": {
-      "icon": {
-        "xs": {
-          "$type": "number",
-          "$value": 16
-        },
-        "sm": {
-          "$type": "number",
-          "$value": 20
-        },
-        "md": {
-          "$type": "number",
-          "$value": 24
-        },
-        "lg": {
-          "$type": "number",
-          "$value": 32
-        }
-      },
-      "control": {
-        "sm": {
-          "$type": "number",
-          "$value": 36
-        },
-        "md": {
-          "$type": "number",
-          "$value": 44
-        },
-        "lg": {
-          "$type": "number",
-          "$value": 52
-        }
-      },
-      "touch-min": {
-        "$type": "number",
-        "$value": 44
-      },
-      "thumb": {
-        "md": {
-          "$type": "number",
-          "$value": 40
-        },
-        "lg": {
-          "$type": "number",
-          "$value": 48
-        }
-      }
-    },
-    "layout": {
-      "screen-width": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "WIDTH_HEIGHT"
-          ]
-        },
-        "$type": "number",
-        "$value": 375,
-        "$description": "디자인 기준 폭(최소 폭). 코드에서 고정하지 않음"
-      },
-      "screen-height": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "WIDTH_HEIGHT"
-          ]
-        },
-        "$type": "number",
-        "$value": 812
-      },
-      "status-bar": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "WIDTH_HEIGHT"
-          ]
-        },
-        "$type": "number",
-        "$value": 44,
-        "$description": "디자인 확인용. 개발은 Safe Area 사용 (기기별 44/54)"
-      },
-      "nav-bar": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "WIDTH_HEIGHT"
-          ]
-        },
-        "$type": "number",
-        "$value": 44
-      },
-      "nav-bar-large": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "WIDTH_HEIGHT"
-          ]
-        },
-        "$type": "number",
-        "$value": 96
-      },
-      "tab-bar": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "WIDTH_HEIGHT"
-          ]
-        },
-        "$type": "number",
-        "$value": 49,
-        "$description": "시스템 탭 바 사용. iOS 26부터 떠 있는 형태"
-      },
-      "home-indicator": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "WIDTH_HEIGHT"
-          ]
-        },
-        "$type": "number",
-        "$value": 34,
-        "$description": "디자인 확인용. 개발은 Safe Area 사용"
-      },
-      "bottom-cta": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "WIDTH_HEIGHT"
-          ]
-        },
-        "$type": "number",
-        "$value": 56
-      },
-      "margin": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ]
-        },
-        "$type": "number",
-        "$value": 20
-      },
-      "gutter": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ]
-        },
-        "$type": "number",
-        "$value": 12
-      }
-    },
-    "border": {
-      "thin": {
-        "$type": "number",
-        "$value": 1
-      },
-      "thick": {
-        "$type": "number",
-        "$value": 2
-      }
-    },
-    "opacity": {
-      "disabled": {
-        "$type": "number",
-        "$value": 40,
-        "$description": "% 단위 (Figma 레이어 투명도는 0~100). iOS 코드: .opacity(0.4)"
-      },
-      "pressed": {
-        "$type": "number",
-        "$value": 80,
-        "$description": "% 단위 (Figma 레이어 투명도는 0~100). iOS 코드: .opacity(0.8)"
-      }
-    },
-    "motion": {
-      "duration": {
-        "fast": {
-          "$type": "duration",
-          "$value": "150ms"
-        },
-        "base": {
-          "$type": "duration",
-          "$value": "250ms"
-        },
-        "slow": {
-          "$type": "duration",
-          "$value": "400ms"
-        }
-      },
-      "easing": {
-        "standard": {
-          "$type": "cubicBezier",
-          "$value": "0.2, 0, 0, 1"
-        },
-        "decelerate": {
-          "$type": "cubicBezier",
-          "$value": "0, 0, 0, 1"
-        },
-        "accelerate": {
-          "$type": "cubicBezier",
-          "$value": "0.3, 0, 1, 1"
+          "400": {
+            "$type": "color",
+            "$value": "#DDA200"
+          }
         }
       }
     }
@@ -1494,6 +864,161 @@
             "$value": "{primary.color.gray.700}",
             "$description": "action/inverse 눌림"
           }
+        },
+        "asset": {
+          "icon": {
+            "$type": "color",
+            "$value": "{primary.color.red.400}",
+            "$description": "그래픽 에셋 진한 톤(앞 요소). 원색 red/500은 CTA 등 행동 요소 전용이라 에셋은 한 단계 낮춤"
+          },
+          "surface": {
+            "$type": "color",
+            "$value": "{primary.color.red.200}",
+            "$description": "그래픽 에셋 연한 톤(뒤 면)"
+          },
+          "tile": {
+            "$type": "color",
+            "$value": "{primary.color.red.100}",
+            "$description": "그래픽 에셋을 얹는 타일 배경"
+          },
+          "mono": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.gray.600}",
+              "$description": "그래픽 에셋 모노 진한 톤 — 비활성·해지된 구독 등 중립 상태"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.gray.300}",
+              "$description": "그래픽 에셋 모노 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.gray.100}",
+              "$description": "그래픽 에셋 모노 타일 배경"
+            }
+          }
+        },
+        "category": {
+          "ott": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.violet.400}",
+              "$description": "영상·OTT 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.violet.200}",
+              "$description": "영상·OTT 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.violet.100}",
+              "$description": "영상·OTT 카테고리 타일·칩 배경"
+            }
+          },
+          "music": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.fuchsia.400}",
+              "$description": "음악 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.fuchsia.200}",
+              "$description": "음악 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.fuchsia.100}",
+              "$description": "음악 카테고리 타일·칩 배경"
+            }
+          },
+          "shopping": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.orange.400}",
+              "$description": "쇼핑·배달 멤버십 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.orange.200}",
+              "$description": "쇼핑·배달 멤버십 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.orange.100}",
+              "$description": "쇼핑·배달 멤버십 카테고리 타일·칩 배경"
+            }
+          },
+          "education": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.green.400}",
+              "$description": "교육·학습 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.green.200}",
+              "$description": "교육·학습 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.green.100}",
+              "$description": "교육·학습 카테고리 타일·칩 배경"
+            }
+          },
+          "productivity": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.blue.400}",
+              "$description": "생산성·AI 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.blue.200}",
+              "$description": "생산성·AI 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.blue.100}",
+              "$description": "생산성·AI 카테고리 타일·칩 배경"
+            }
+          },
+          "entertainment": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.yellow.400}",
+              "$description": "엔터테인먼트 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.yellow.200}",
+              "$description": "엔터테인먼트 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.yellow.100}",
+              "$description": "엔터테인먼트 카테고리 타일·칩 배경"
+            }
+          },
+          "etc": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.gray.500}",
+              "$description": "기타 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.gray.300}",
+              "$description": "기타 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.gray.100}",
+              "$description": "기타 카테고리 타일·칩 배경"
+            }
+          }
         }
       },
       "spacing": {
@@ -1743,1439 +1268,6 @@
           "$value": "{primary.motion.easing.accelerate}",
           "$description": "화면에서 나가는 요소 (시트 닫힘)"
         }
-      }
-    }
-  },
-  "semantic/Default": {
-    "color": {
-      "text": {
-        "primary": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "TEXT_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.900}",
-          "$description": "제목, 본문 등 기본 텍스트"
-        },
-        "secondary": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "TEXT_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.600}",
-          "$description": "보조 설명, 서브 타이틀"
-        },
-        "tertiary": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "TEXT_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.500}",
-          "$description": "캡션, 메타 정보, 플레이스홀더 (4.5:1 하한)"
-        },
-        "disabled": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "TEXT_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.400}",
-          "$description": "비활성 텍스트 (대비 기준 예외)"
-        },
-        "inverse": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "TEXT_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.white}",
-          "$description": "진한 배경 위 텍스트"
-        },
-        "on-brand": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "TEXT_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.white}",
-          "$description": "브랜드 컬러 버튼·배지 위 텍스트"
-        },
-        "brand": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "TEXT_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.red.500}",
-          "$description": "링크, 강조 텍스트 (흰 배경 3.8:1 → 큰 글씨·굵은 글씨 권장)"
-        },
-        "error": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "TEXT_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.error.500}",
-          "$description": "에러 메시지, 유효성 오류"
-        },
-        "warning": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "TEXT_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.warning.600}",
-          "$description": "주의 문구"
-        },
-        "success": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "TEXT_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.success.600}",
-          "$description": "완료·성공 문구"
-        },
-        "on-disabled": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "TEXT_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.500}",
-          "$description": "비활성 버튼 위 텍스트 (action/disabled 대비 3.1:1)"
-        }
-      },
-      "icon": {
-        "primary": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "SHAPE_FILL",
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.900}",
-          "$description": "기본 아이콘, 내비게이션"
-        },
-        "secondary": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "SHAPE_FILL",
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.500}",
-          "$description": "보조 아이콘, 리스트 chevron"
-        },
-        "disabled": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "SHAPE_FILL",
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.300}",
-          "$description": "비활성 아이콘"
-        },
-        "inverse": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "SHAPE_FILL",
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.white}",
-          "$description": "진한 배경 위 아이콘"
-        },
-        "brand": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "SHAPE_FILL",
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.red.500}",
-          "$description": "활성 탭, 선택 표시, 브랜드 포인트"
-        },
-        "error": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "SHAPE_FILL",
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.error.500}",
-          "$description": "에러 아이콘"
-        },
-        "warning": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "SHAPE_FILL",
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.warning.600}",
-          "$description": "주의 아이콘 (500은 3:1 미달)"
-        },
-        "success": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "SHAPE_FILL",
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.success.600}",
-          "$description": "완료 체크 아이콘"
-        },
-        "inverse-secondary": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL",
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.400}",
-          "$description": "다크 면 위 비선택 아이콘 (gray/900 위 8.3:1)"
-        }
-      },
-      "bg": {
-        "default": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.white}",
-          "$description": "화면 기본 배경"
-        },
-        "subtle": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.100}",
-          "$description": "그룹 리스트·섹션 배경, 입력창 채움"
-        },
-        "muted": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.200}",
-          "$description": "스켈레톤, 비활성 영역"
-        },
-        "inverse": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.900}",
-          "$description": "토스트, 진한 배너"
-        },
-        "dim": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.black-alpha.40}",
-          "$description": "모달·바텀시트 뒤 딤"
-        },
-        "brand": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.red.500}",
-          "$description": "브랜드 강조 배경, 배지"
-        },
-        "brand-subtle": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.red.100}",
-          "$description": "선택된 항목, 브랜드 안내 박스"
-        },
-        "error-subtle": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.error.100}",
-          "$description": "에러 안내 박스"
-        },
-        "warning-subtle": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.warning.100}",
-          "$description": "주의 안내 박스"
-        },
-        "success-subtle": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.success.100}",
-          "$description": "완료 안내 박스"
-        }
-      },
-      "surface": {
-        "default": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.white}",
-          "$description": "카드, 리스트 셀"
-        },
-        "raised": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.white}",
-          "$description": "시트, 모달, 팝오버 (Elevation과 함께)"
-        },
-        "sunken": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.100}",
-          "$description": "카드 안 들어간 영역, 인풋 내부"
-        }
-      },
-      "border": {
-        "subtle": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.200}",
-          "$description": "리스트 구분선"
-        },
-        "default": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.300}",
-          "$description": "카드 외곽선, 기본 구분선"
-        },
-        "strong": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.400}",
-          "$description": "인풋·선택지 기본 테두리"
-        },
-        "focus": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.900}",
-          "$description": "포커스된 인풋 테두리"
-        },
-        "brand": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.red.500}",
-          "$description": "선택된 선택지·카드 테두리"
-        },
-        "error": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "STROKE_COLOR"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.error.500}",
-          "$description": "오류 상태 인풋 테두리"
-        }
-      },
-      "action": {
-        "primary": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.red.500}",
-          "$description": "주요 버튼 (CTA)"
-        },
-        "primary-pressed": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.red.600}",
-          "$description": "주요 버튼 눌림 (투명도 대신 한 단계 진하게)"
-        },
-        "secondary": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.100}",
-          "$description": "보조 버튼"
-        },
-        "secondary-pressed": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.200}",
-          "$description": "보조 버튼 눌림"
-        },
-        "ghost-pressed": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.100}",
-          "$description": "텍스트 버튼·리스트 셀 눌림 배경"
-        },
-        "destructive": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.error.500}",
-          "$description": "삭제·탈퇴 등 파괴적 버튼"
-        },
-        "destructive-pressed": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.error.600}",
-          "$description": "파괴적 버튼 눌림"
-        },
-        "disabled": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.300}",
-          "$description": "비활성 버튼 배경 (텍스트는 text/on-disabled)"
-        },
-        "inverse": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.900}",
-          "$description": "진한 버튼·탭바 면. 그라데이션/사진 위에서도 분리되는 불투명 다크."
-        },
-        "inverse-pressed": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.gray.700}",
-          "$description": "action/inverse 눌림"
-        }
-      },
-      "asset": {
-        "icon": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.red.400}",
-          "$description": "그래픽 에셋 진한 톤(앞 요소). 원색 red/500은 CTA 등 행동 요소 전용이라 에셋은 한 단계 낮춤"
-        },
-        "surface": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.red.200}",
-          "$description": "그래픽 에셋 연한 톤(뒤 면)"
-        },
-        "tile": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL"
-            ]
-          },
-          "$type": "color",
-          "$value": "{color.red.100}",
-          "$description": "그래픽 에셋을 얹는 타일 배경"
-        },
-        "mono": {
-          "icon": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.gray.600}",
-            "$description": "그래픽 에셋 모노 진한 톤 — 비활성·해지된 구독 등 중립 상태"
-          },
-          "surface": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.gray.300}",
-            "$description": "그래픽 에셋 모노 연한 톤"
-          },
-          "tile": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.gray.100}",
-            "$description": "그래픽 에셋 모노 타일 배경"
-          }
-        }
-      },
-      "category": {
-        "ott": {
-          "icon": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.violet.400}",
-            "$description": "영상·OTT 카테고리 에셋 진한 톤"
-          },
-          "surface": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.violet.200}",
-            "$description": "영상·OTT 카테고리 에셋 연한 톤"
-          },
-          "tile": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.violet.100}",
-            "$description": "영상·OTT 카테고리 타일·칩 배경"
-          }
-        },
-        "music": {
-          "icon": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.fuchsia.400}",
-            "$description": "음악 카테고리 에셋 진한 톤"
-          },
-          "surface": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.fuchsia.200}",
-            "$description": "음악 카테고리 에셋 연한 톤"
-          },
-          "tile": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.fuchsia.100}",
-            "$description": "음악 카테고리 타일·칩 배경"
-          }
-        },
-        "shopping": {
-          "icon": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.orange.400}",
-            "$description": "쇼핑·배달 멤버십 카테고리 에셋 진한 톤"
-          },
-          "surface": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.orange.200}",
-            "$description": "쇼핑·배달 멤버십 카테고리 에셋 연한 톤"
-          },
-          "tile": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.orange.100}",
-            "$description": "쇼핑·배달 멤버십 카테고리 타일·칩 배경"
-          }
-        },
-        "education": {
-          "icon": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.green.400}",
-            "$description": "교육·학습 카테고리 에셋 진한 톤"
-          },
-          "surface": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.green.200}",
-            "$description": "교육·학습 카테고리 에셋 연한 톤"
-          },
-          "tile": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.green.100}",
-            "$description": "교육·학습 카테고리 타일·칩 배경"
-          }
-        },
-        "productivity": {
-          "icon": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.blue.400}",
-            "$description": "생산성·AI 카테고리 에셋 진한 톤"
-          },
-          "surface": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.blue.200}",
-            "$description": "생산성·AI 카테고리 에셋 연한 톤"
-          },
-          "tile": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.blue.100}",
-            "$description": "생산성·AI 카테고리 타일·칩 배경"
-          }
-        },
-        "entertainment": {
-          "icon": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.yellow.400}",
-            "$description": "엔터테인먼트 카테고리 에셋 진한 톤"
-          },
-          "surface": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.yellow.200}",
-            "$description": "엔터테인먼트 카테고리 에셋 연한 톤"
-          },
-          "tile": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.yellow.100}",
-            "$description": "엔터테인먼트 카테고리 타일·칩 배경"
-          }
-        },
-        "etc": {
-          "icon": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.gray.500}",
-            "$description": "기타 카테고리 에셋 진한 톤"
-          },
-          "surface": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.gray.300}",
-            "$description": "기타 카테고리 에셋 연한 톤"
-          },
-          "tile": {
-            "$extensions": {
-              "com.figma.scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ]
-            },
-            "$type": "color",
-            "$value": "{color.gray.100}",
-            "$description": "기타 카테고리 타일·칩 배경"
-          }
-        }
-      }
-    },
-    "radius": {
-      "button": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "CORNER_RADIUS"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Radius.button"
-          }
-        },
-        "$type": "number",
-        "$value": "{radius.md}",
-        "$description": "버튼 (Primary/Secondary/Text 공통)"
-      },
-      "input": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "CORNER_RADIUS"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Radius.input"
-          }
-        },
-        "$type": "number",
-        "$value": "{radius.md}",
-        "$description": "텍스트 필드, 검색창, 셀렉트"
-      },
-      "card": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "CORNER_RADIUS"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Radius.card"
-          }
-        },
-        "$type": "number",
-        "$value": "{radius.lg}",
-        "$description": "구독 카드, 지표 카드, 체크인 결과 카드"
-      },
-      "thumbnail": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "CORNER_RADIUS"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Radius.thumbnail"
-          }
-        },
-        "$type": "number",
-        "$value": "{radius.sm}",
-        "$description": "서비스 로고 썸네일"
-      },
-      "toast": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "CORNER_RADIUS"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Radius.toast"
-          }
-        },
-        "$type": "number",
-        "$value": "{radius.md}",
-        "$description": "토스트, 스낵바"
-      },
-      "modal": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "CORNER_RADIUS"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Radius.modal"
-          }
-        },
-        "$type": "number",
-        "$value": "{radius.xl}",
-        "$description": "센터 모달(얼럿)"
-      },
-      "sheet": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "CORNER_RADIUS"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Radius.sheet"
-          }
-        },
-        "$type": "number",
-        "$value": "{radius.2xl}",
-        "$description": "바텀시트 상단 좌우 모서리"
-      },
-      "pill": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "CORNER_RADIUS"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Radius.pill"
-          }
-        },
-        "$type": "number",
-        "$value": "{radius.full}",
-        "$description": "칩, 상태 뱃지(유지/해지 검토/점검 필요), D-day 뱃지, 토글"
-      },
-      "cta": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "CORNER_RADIUS"
-          ]
-        },
-        "$type": "number",
-        "$value": "{radius.lg}",
-        "$description": "하단 고정 CTA (56h) — Apple 큰 버튼 비율"
-      }
-    },
-    "size": {
-      "button": {
-        "sm": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "WIDTH_HEIGHT"
-            ],
-            "com.figma.codeSyntax": {
-              "iOS": "Size.buttonSm"
-            }
-          },
-          "$type": "number",
-          "$value": "{size.control.sm}",
-          "$description": "인라인·카드 안 보조 버튼"
-        },
-        "md": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "WIDTH_HEIGHT"
-            ],
-            "com.figma.codeSyntax": {
-              "iOS": "Size.buttonMd"
-            }
-          },
-          "$type": "number",
-          "$value": "{size.control.md}",
-          "$description": "일반 버튼, 다이얼로그 버튼"
-        },
-        "lg": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "WIDTH_HEIGHT"
-            ],
-            "com.figma.codeSyntax": {
-              "iOS": "Size.buttonLg"
-            }
-          },
-          "$type": "number",
-          "$value": "{size.control.lg}",
-          "$description": "하단 고정 CTA, 체크인 제출"
-        }
-      },
-      "input": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "WIDTH_HEIGHT"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Size.input"
-          }
-        },
-        "$type": "number",
-        "$value": "{size.control.lg}",
-        "$description": "텍스트 필드·셀렉트 높이"
-      },
-      "chip": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "WIDTH_HEIGHT"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Size.chip"
-          }
-        },
-        "$type": "number",
-        "$value": "{size.control.sm}",
-        "$description": "필터 칩, 체크인 선택지 칩 높이"
-      },
-      "icon": {
-        "inline": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "WIDTH_HEIGHT"
-            ],
-            "com.figma.codeSyntax": {
-              "iOS": "Size.iconInline"
-            }
-          },
-          "$type": "number",
-          "$value": "{size.icon.xs}",
-          "$description": "텍스트 옆 아이콘 (캡션·뱃지 안)"
-        },
-        "list": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "WIDTH_HEIGHT"
-            ],
-            "com.figma.codeSyntax": {
-              "iOS": "Size.iconList"
-            }
-          },
-          "$type": "number",
-          "$value": "{size.icon.sm}",
-          "$description": "리스트·카드 안 보조 아이콘"
-        },
-        "nav": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "WIDTH_HEIGHT"
-            ],
-            "com.figma.codeSyntax": {
-              "iOS": "Size.iconNav"
-            }
-          },
-          "$type": "number",
-          "$value": "{size.icon.md}",
-          "$description": "내비 바·탭 바 아이콘, 단독 아이콘 버튼"
-        }
-      },
-      "logo": {
-        "card": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "WIDTH_HEIGHT"
-            ],
-            "com.figma.codeSyntax": {
-              "iOS": "Size.logoCard"
-            }
-          },
-          "$type": "number",
-          "$value": "{size.thumb.md}",
-          "$description": "구독 카드의 서비스 로고"
-        },
-        "detail": {
-          "$extensions": {
-            "com.figma.scopes": [
-              "WIDTH_HEIGHT"
-            ],
-            "com.figma.codeSyntax": {
-              "iOS": "Size.logoDetail"
-            }
-          },
-          "$type": "number",
-          "$value": "{size.thumb.lg}",
-          "$description": "구독 상세·체크인 헤더의 서비스 로고"
-        }
-      },
-      "touch-target": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "WIDTH_HEIGHT"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Size.touchTarget"
-          }
-        },
-        "$type": "number",
-        "$value": "{size.touch-min}",
-        "$description": "모든 탭 가능 요소의 최소 히트 영역 (HIG 44pt)"
-      }
-    },
-    "border": {
-      "default": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "STROKE_FLOAT"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Border.default"
-          }
-        },
-        "$type": "number",
-        "$value": "{border.thin}",
-        "$description": "카드 외곽선, 구분선, 기본 인풋 테두리"
-      },
-      "focus": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "STROKE_FLOAT"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Border.focus"
-          }
-        },
-        "$type": "number",
-        "$value": "{border.thick}",
-        "$description": "포커스·선택된 인풋/선택지 테두리"
-      }
-    },
-    "opacity": {
-      "disabled": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "OPACITY"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Opacity.disabled"
-          }
-        },
-        "$type": "number",
-        "$value": "{opacity.disabled}",
-        "$description": "비활성 버튼·선택지. 40%"
-      },
-      "pressed": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "OPACITY"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Opacity.pressed"
-          }
-        },
-        "$type": "number",
-        "$value": "{opacity.pressed}",
-        "$description": "눌림 상태 피드백. 80%"
-      }
-    },
-    "spacing": {
-      "screen-x": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.screenX"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.20}",
-        "$description": "화면 좌우 여백. 앱 전체 하나의 규칙"
-      },
-      "inset-sm": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.insetSm"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.12}",
-        "$description": "안쪽 여백 작게: 칩, 작은 박스, 툴팁"
-      },
-      "inset-md": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.insetMd"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.16}",
-        "$description": "안쪽 여백 기본: 카드, 리스트 아이템, 인풋"
-      },
-      "inset-lg": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.insetLg"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.24}",
-        "$description": "안쪽 여백 크게: 바텀시트, 모달"
-      },
-      "inline-xs": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.inlineXs"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.4}",
-        "$description": "가로 간격 좁게: 아이콘↔텍스트, 금액↔단위"
-      },
-      "inline-sm": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.inlineSm"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.8}",
-        "$description": "가로 간격 기본: 칩↔칩, 버튼↔버튼, 라벨↔값"
-      },
-      "stack-xs": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.stackXs"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.4}",
-        "$description": "세로 간격 밀착: 타이틀↔캡션"
-      },
-      "stack-sm": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.stackSm"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.8}",
-        "$description": "세로 간격 좁게: 타이틀↔본문, 정보 줄 사이, CTA↔home indicator"
-      },
-      "stack-md": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.stackMd"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.12}",
-        "$description": "세로 간격 기본: 카드↔카드, 선택지↔선택지"
-      },
-      "stack-lg": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.stackLg"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.16}",
-        "$description": "세로 간격 넓게: 폼 필드 사이, 섹션 헤더↔콘텐츠"
-      },
-      "section": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.section"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.32}",
-        "$description": "묶음 간 간격: 대시보드 섹션 사이"
-      },
-      "section-lg": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.sectionLg"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.40}",
-        "$description": "묶음 간 간격 크게: 상단 타이틀 블록↔첫 섹션"
-      },
-      "none": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.none"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.0}",
-        "$description": "간격 없음: 붙여야 하는 요소(세그먼트 아이템 사이, 리스트 행 내부 밀착)"
-      },
-      "inset-2xs": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.inset2xs"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.4}",
-        "$description": "안쪽 여백 최소: 세그먼트 컨테이너처럼 내부 요소를 감싸는 얇은 테두리"
-      },
-      "inset-xs": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.insetXs"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.8}",
-        "$description": "안쪽 여백 아주 작게: 탭바 컨테이너, 텍스트 버튼"
-      },
-      "inline-md": {
-        "$extensions": {
-          "com.figma.scopes": [
-            "GAP"
-          ],
-          "com.figma.codeSyntax": {
-            "iOS": "Spacing.inlineMd"
-          }
-        },
-        "$type": "number",
-        "$value": "{spacing.12}",
-        "$description": "가로 간격 넓게: 아이콘↔텍스트 블록, 탭바↔액션 버튼"
-      }
-    },
-    "motion": {
-      "press": {
-        "$extensions": {
-          "com.figma.codeSyntax": {
-            "iOS": "Motion.press"
-          }
-        },
-        "$type": "duration",
-        "$value": "{motion.duration.fast}",
-        "$description": "버튼 눌림, 토글, 칩 선택"
-      },
-      "transition": {
-        "$extensions": {
-          "com.figma.codeSyntax": {
-            "iOS": "Motion.transition"
-          }
-        },
-        "$type": "duration",
-        "$value": "{motion.duration.base}",
-        "$description": "카드 확장, 탭 전환, 토스트 등장"
-      },
-      "sheet": {
-        "$extensions": {
-          "com.figma.codeSyntax": {
-            "iOS": "Motion.sheet"
-          }
-        },
-        "$type": "duration",
-        "$value": "{motion.duration.slow}",
-        "$description": "바텀시트·모달 열기, 체크인 결과 등장"
-      },
-      "ease-move": {
-        "$extensions": {
-          "com.figma.codeSyntax": {
-            "iOS": "Motion.easeMove"
-          }
-        },
-        "$type": "cubicBezier",
-        "$value": "{motion.easing.standard}",
-        "$description": "화면 안에서 위치·크기 변화"
-      },
-      "ease-enter": {
-        "$extensions": {
-          "com.figma.codeSyntax": {
-            "iOS": "Motion.easeEnter"
-          }
-        },
-        "$type": "cubicBezier",
-        "$value": "{motion.easing.decelerate}",
-        "$description": "화면에 들어오는 요소 (시트 열림)"
-      },
-      "ease-exit": {
-        "$extensions": {
-          "com.figma.codeSyntax": {
-            "iOS": "Motion.easeExit"
-          }
-        },
-        "$type": "cubicBezier",
-        "$value": "{motion.easing.accelerate}",
-        "$description": "화면에서 나가는 요소 (시트 닫힘)"
       }
     }
   },
@@ -3501,9 +1593,7 @@
   "$metadata": {
     "tokenSetOrder": [
       "primary",
-      "primary/Default",
       "semantic",
-      "semantic/Default",
       "styles"
     ]
   }
