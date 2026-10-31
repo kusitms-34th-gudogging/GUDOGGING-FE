@@ -517,6 +517,90 @@
             "$type": "color",
             "$value": "#003523"
           }
+        },
+        "violet": {
+          "100": {
+            "$type": "color",
+            "$value": "#F4F0FF"
+          },
+          "200": {
+            "$type": "color",
+            "$value": "#DCD0FE"
+          },
+          "400": {
+            "$type": "color",
+            "$value": "#9D7BF5"
+          }
+        },
+        "fuchsia": {
+          "100": {
+            "$type": "color",
+            "$value": "#FCF0FA"
+          },
+          "200": {
+            "$type": "color",
+            "$value": "#F6CDEB"
+          },
+          "400": {
+            "$type": "color",
+            "$value": "#DE6BC1"
+          }
+        },
+        "orange": {
+          "100": {
+            "$type": "color",
+            "$value": "#FFF3EB"
+          },
+          "200": {
+            "$type": "color",
+            "$value": "#FFD6BC"
+          },
+          "400": {
+            "$type": "color",
+            "$value": "#FF9550"
+          }
+        },
+        "green": {
+          "100": {
+            "$type": "color",
+            "$value": "#EEF9F0"
+          },
+          "200": {
+            "$type": "color",
+            "$value": "#C9EBD0"
+          },
+          "400": {
+            "$type": "color",
+            "$value": "#4FB86A"
+          }
+        },
+        "blue": {
+          "100": {
+            "$type": "color",
+            "$value": "#EEF4FF"
+          },
+          "200": {
+            "$type": "color",
+            "$value": "#CADCFE"
+          },
+          "400": {
+            "$type": "color",
+            "$value": "#3F7FEF"
+          }
+        },
+        "yellow": {
+          "100": {
+            "$type": "color",
+            "$value": "#FFF9E5"
+          },
+          "200": {
+            "$type": "color",
+            "$value": "#FEEDB8"
+          },
+          "400": {
+            "$type": "color",
+            "$value": "#DDA200"
+          }
         }
       }
     }
@@ -779,6 +863,161 @@
             "$type": "color",
             "$value": "{primary.color.gray.700}",
             "$description": "action/inverse 눌림"
+          }
+        },
+        "asset": {
+          "icon": {
+            "$type": "color",
+            "$value": "{primary.color.red.400}",
+            "$description": "그래픽 에셋 진한 톤(앞 요소). 원색 red/500은 CTA 등 행동 요소 전용이라 에셋은 한 단계 낮춤"
+          },
+          "surface": {
+            "$type": "color",
+            "$value": "{primary.color.red.200}",
+            "$description": "그래픽 에셋 연한 톤(뒤 면)"
+          },
+          "tile": {
+            "$type": "color",
+            "$value": "{primary.color.red.100}",
+            "$description": "그래픽 에셋을 얹는 타일 배경"
+          },
+          "mono": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.gray.600}",
+              "$description": "그래픽 에셋 모노 진한 톤 — 비활성·해지된 구독 등 중립 상태"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.gray.300}",
+              "$description": "그래픽 에셋 모노 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.gray.100}",
+              "$description": "그래픽 에셋 모노 타일 배경"
+            }
+          }
+        },
+        "category": {
+          "ott": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.violet.400}",
+              "$description": "영상·OTT 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.violet.200}",
+              "$description": "영상·OTT 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.violet.100}",
+              "$description": "영상·OTT 카테고리 타일·칩 배경"
+            }
+          },
+          "music": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.fuchsia.400}",
+              "$description": "음악 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.fuchsia.200}",
+              "$description": "음악 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.fuchsia.100}",
+              "$description": "음악 카테고리 타일·칩 배경"
+            }
+          },
+          "shopping": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.orange.400}",
+              "$description": "쇼핑·배달 멤버십 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.orange.200}",
+              "$description": "쇼핑·배달 멤버십 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.orange.100}",
+              "$description": "쇼핑·배달 멤버십 카테고리 타일·칩 배경"
+            }
+          },
+          "education": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.green.400}",
+              "$description": "교육·학습 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.green.200}",
+              "$description": "교육·학습 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.green.100}",
+              "$description": "교육·학습 카테고리 타일·칩 배경"
+            }
+          },
+          "productivity": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.blue.400}",
+              "$description": "생산성·AI 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.blue.200}",
+              "$description": "생산성·AI 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.blue.100}",
+              "$description": "생산성·AI 카테고리 타일·칩 배경"
+            }
+          },
+          "entertainment": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.yellow.400}",
+              "$description": "엔터테인먼트 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.yellow.200}",
+              "$description": "엔터테인먼트 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.yellow.100}",
+              "$description": "엔터테인먼트 카테고리 타일·칩 배경"
+            }
+          },
+          "etc": {
+            "icon": {
+              "$type": "color",
+              "$value": "{primary.color.gray.500}",
+              "$description": "기타 카테고리 에셋 진한 톤"
+            },
+            "surface": {
+              "$type": "color",
+              "$value": "{primary.color.gray.300}",
+              "$description": "기타 카테고리 에셋 연한 톤"
+            },
+            "tile": {
+              "$type": "color",
+              "$value": "{primary.color.gray.100}",
+              "$description": "기타 카테고리 타일·칩 배경"
+            }
           }
         }
       },
