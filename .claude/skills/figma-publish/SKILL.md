@@ -48,11 +48,21 @@ Figma MCP 출력(React + Tailwind 웹 코드)은 **참고 자료**지 정답이 
 
 **컴포넌트 · 위치** — `.claude/docs/architecture.md`, `.claude/rules/components.md`
 
-- 먼저 `src/components/`에 같은 역할 컴포넌트가 있는지 확인 → 있으면 재사용/확장
-- Figma에서 컴포넌트 인스턴스이고 2곳 이상 쓰이면 `src/components/`, 한 화면 전용이면 `src/screens/`
+- 먼저 `src/components/common/`·해당 도메인 폴더에 같은 역할 컴포넌트가 있는지 확인 → 있으면 재사용/확장
+- Figma 공통 컴포넌트이거나 2개 이상 도메인에서 쓰이면 `src/components/common/`, 한 도메인 전용이면 `src/components/{도메인}/`
 - 화면이면 `/new-screen` 스킬로 screen 본체 + 라우트 껍데기 생성
 - props는 `interface {Name}Props`, named export, `any` 금지
 - 텍스트·리스트 데이터는 하드코딩 상수로 두되 props로 받을 수 있게 (API 연동은 이번 범위 아님)
+
+## 공통 컴포넌트 모드
+
+Figma "공통 컴포넌트" 섹션(component set)을 `src/components/common/`에 만들 때. props·cva 규칙은 `.claude/rules/components.md`, `.claude/rules/styling.md`
+
+1. `get_metadata`로 component set의 variant 목록 전체 확인
+2. `get_design_context`로 property 정의 확인. boolean·instance swap 빠뜨리지 않음
+3. 구현 전에 **Figma property ↔ props 대응표** 작성
+4. variant 조합 전부 구현 후 `get_screenshot`과 비교
+5. 최종 보고에 대응표 포함
 
 ## 3. 검증
 

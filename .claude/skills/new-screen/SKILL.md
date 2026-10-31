@@ -28,6 +28,6 @@ description: 새 화면(페이지)을 만들 때 사용. "화면 만들어줘", 
    ```
 
 3. 라우트 파라미터는 라우트에서 `useLocalSearchParams`(expo-router)로 읽어 screen에 props로 넘김
-4. 그 화면에서만 쓰는 조각은 `src/screens/`에. 화면이 커지면 `src/screens/{name}Screen/index.tsx` 폴더로 전환
+4. 화면을 구성하는 컴포넌트는 `src/components/{도메인}/`에 (도메인 폴더가 없으면 새로 만듦). 여러 도메인에서 쓰면 `src/components/common/`
 5. 스타일은 `className` + `cn`만, props는 `interface {Name}ScreenProps`
 6. `pnpm lint && pnpm typecheck`
