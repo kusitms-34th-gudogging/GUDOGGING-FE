@@ -296,6 +296,36 @@
       "800": "#014F37",
       "900": "#003523"
     },
+    "violet": {
+      "100": "#F4F0FF",
+      "200": "#DCD0FE",
+      "400": "#9D7BF5"
+    },
+    "fuchsia": {
+      "100": "#FCF0FA",
+      "200": "#F6CDEB",
+      "400": "#DE6BC1"
+    },
+    "orange": {
+      "100": "#FFF3EB",
+      "200": "#FFD6BC",
+      "400": "#FF9550"
+    },
+    "green": {
+      "100": "#EEF9F0",
+      "200": "#C9EBD0",
+      "400": "#4FB86A"
+    },
+    "blue": {
+      "100": "#EEF4FF",
+      "200": "#CADCFE",
+      "400": "#3F7FEF"
+    },
+    "yellow": {
+      "100": "#FFF9E5",
+      "200": "#FEEDB8",
+      "400": "#DDA200"
+    },
     "text": {
       "primary": "#111111",
       "secondary": "#5A5A5A",
@@ -356,6 +386,53 @@
       "disabled": "#D4D4D4",
       "inverse": "#111111",
       "inverse-pressed": "#404040"
+    },
+    "asset": {
+      "icon": "#FE7275",
+      "surface": "#FECCC9",
+      "tile": "#FFF2F1",
+      "mono": {
+        "icon": "#5A5A5A",
+        "surface": "#D4D4D4",
+        "tile": "#F5F5F5"
+      }
+    },
+    "category": {
+      "ott": {
+        "icon": "#9D7BF5",
+        "surface": "#DCD0FE",
+        "tile": "#F4F0FF"
+      },
+      "music": {
+        "icon": "#DE6BC1",
+        "surface": "#F6CDEB",
+        "tile": "#FCF0FA"
+      },
+      "shopping": {
+        "icon": "#FF9550",
+        "surface": "#FFD6BC",
+        "tile": "#FFF3EB"
+      },
+      "education": {
+        "icon": "#4FB86A",
+        "surface": "#C9EBD0",
+        "tile": "#EEF9F0"
+      },
+      "productivity": {
+        "icon": "#3F7FEF",
+        "surface": "#CADCFE",
+        "tile": "#EEF4FF"
+      },
+      "entertainment": {
+        "icon": "#DDA200",
+        "surface": "#FEEDB8",
+        "tile": "#FFF9E5"
+      },
+      "etc": {
+        "icon": "#767676",
+        "surface": "#D4D4D4",
+        "tile": "#F5F5F5"
+      }
     }
   },
   "size": {
