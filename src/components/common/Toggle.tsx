@@ -1,16 +1,6 @@
-import { motion } from '@tokens';
-import { useEffect } from 'react';
-import { Pressable } from 'react-native';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import { Pressable, View } from 'react-native';
 
 import { cn } from '@/utils/cn';
-
-const KNOB_TRAVEL = 20;
 
 interface ToggleProps {
   value: boolean;
@@ -19,38 +9,23 @@ interface ToggleProps {
   className?: string;
 }
 
-export const Toggle = ({ value, onValueChange, accessibilityLabel, className }: ToggleProps) => {
-  const progress = useSharedValue(value ? 1 : 0);
-
-  useEffect(() => {
-    progress.value = withTiming(value ? 1 : 0, {
-      duration: motion.transition,
-      easing: Easing.bezier(...motion['ease-move']),
-    });
-  }, [value, progress]);
-
-  const activeTrackStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
-  const knobStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: progress.value * KNOB_TRAVEL }],
-  }));
-
-  return (
-    <Pressable
-      accessibilityRole="switch"
-      accessibilityState={{ checked: value }}
-      accessibilityLabel={accessibilityLabel}
-      hitSlop={8}
-      onPress={() => onValueChange(!value)}
-      className={cn('h-[31px] w-[51px] rounded-full bg-border-default p-s2', className)}
-    >
-      <Animated.View
-        style={activeTrackStyle}
-        className="absolute inset-0 rounded-full bg-action-primary"
-      />
-      <Animated.View
-        style={knobStyle}
-        className="size-[27px] rounded-full bg-surface-default shadow-[0_2px_6px_0_rgba(0,0,0,0.15)]"
-      />
-    </Pressable>
-  );
-};
+export const Toggle = ({ value, onValueChange, accessibilityLabel, className }: ToggleProps) => (
+  <Pressable
+    accessibilityRole="switch"
+    accessibilityState={{ checked: value }}
+    accessibilityLabel={accessibilityLabel}
+    onPress={() => onValueChange(!value)}
+    className={cn(
+      'h-[31px] w-[51px] rounded-full p-s2',
+      value ? 'bg-action-primary' : 'bg-border-default',
+      className,
+    )}
+  >
+    <View
+      className={cn(
+        'size-[27px] rounded-full bg-surface-default shadow-[0_2px_6px_0_rgba(0,0,0,0.15)]',
+        value && 'translate-x-[20px]',
+      )}
+    />
+  </Pressable>
+);
