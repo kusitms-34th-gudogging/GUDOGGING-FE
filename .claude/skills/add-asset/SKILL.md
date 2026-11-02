@@ -18,5 +18,6 @@ description: 색이 고정된 그래픽 SVG(컬러·모노)를 추가할 때 사
    export { default as WalletMonoAsset } from './shared/asset_wallet_mono.svg';
    ```
 
-6. 사용: `import { WalletColorAsset } from '@/assets/graphics';` → `<WalletColorAsset className="size-s48" />` (className엔 크기만)
-7. 사용자에게 `pnpm start -c`로 캐시 초기화가 필요하다고 안내
+6. 카테고리 에셋이면 `src/components/common/AssetTile.tsx`의 `assetTileVariants` tone(`{카테고리}`·`{카테고리}-bgx`)과 `categoryAssets`에 추가. 타일 배경 토큰 `bg-category-{카테고리}-tile`이 없으면 사용자에게 알림
+7. 사용: 타일이면 `<AssetTile tone="brand" asset={WalletColorAsset} />`, 에셋만이면 `<WalletColorAsset className="size-s48" />` (className엔 크기만)
+8. 사용자에게 `pnpm start -c`로 캐시 초기화가 필요하다고 안내

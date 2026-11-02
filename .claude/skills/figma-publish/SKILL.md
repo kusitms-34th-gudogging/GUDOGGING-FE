@@ -43,7 +43,9 @@ Figma MCP 출력(React + Tailwind 웹 코드)은 **참고 자료**지 정답이 
 
 - 단색 아이콘 → `/add-icon` 스킬 절차대로 `src/assets/icons/`에 추가 후 `<XxxIcon className="size-icon-md text-icon-primary" />`
 - 같은 아이콘이 이미 `src/assets/icons/index.ts`에 있으면 재사용
-- 여러 색 SVG·이미지 → `src/assets/images/` (`download_assets`로 받기). localhost 에셋 URL을 코드에 남기지 않음
+- Figma `asset/*`·`asset-44/*` 그래픽(색 고정 SVG) → `src/assets/graphics/index.ts`에 있으면 재사용, 없으면 `/add-asset` 스킬 절차대로 추가
+- Figma `Asset tile` 인스턴스 → `AssetTile` 컴포넌트 (`asset-44/*`는 `tone="brand-bgx"`·`"mono-bgx"`)
+- 그 외 여러 색 이미지 → `src/assets/images/` (`download_assets`로 받기). localhost 에셋 URL을 코드에 남기지 않음
 
 **컴포넌트 · 위치** — `.claude/docs/architecture.md`, `.claude/rules/components.md`
 

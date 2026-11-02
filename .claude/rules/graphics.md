@@ -40,6 +40,16 @@ paths:
 
 ## 사용
 
+Figma의 Asset tile(44·96 타일, 배경 없는 44 영역 포함)은 `AssetTile` 컴포넌트로:
+
+```tsx
+<AssetTile tone="ott" />                             // 카테고리 톤: 에셋 자동
+<AssetTile tone="brand" asset={WalletColorAsset} />  // brand·mono: 에셋을 넘김
+<AssetTile tone="mono-bgx" size="lg" asset={OttMonoAsset} />
+```
+
+타일 없이 에셋만 쓸 때:
+
 ```tsx
 import { WalletColorAsset } from '@/assets/graphics';
 
@@ -48,4 +58,5 @@ import { WalletColorAsset } from '@/assets/graphics';
 
 - `className`엔 크기만 (`size-*`, `w-*`/`h-*`). `text-*` 색 클래스는 효과 없음
 - 크기는 size·spacing 토큰 우선, 없으면 arbitrary(`size-[80px]`). 반복되면 토큰 등록 요청
+- 카테고리를 새로 추가하면 `AssetTile.tsx`의 `tone`(cva, `-bgx` 포함)과 `categoryAssets`에도 추가 (tone만 넣고 `categoryAssets`를 빠뜨리면 타입 에러로 잡힘)
 - SVG 추가·이동 후 `pnpm start -c`로 캐시 초기화
