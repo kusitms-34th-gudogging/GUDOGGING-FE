@@ -52,7 +52,7 @@ export const TextField = ({
         <TextInput
           {...inputProps}
           accessibilityLabel={label}
-          accessibilityHint={showHelper ? helper : undefined}
+          accessibilityHint={showHelper || showError ? helper : undefined}
           editable={!disabled}
           onFocus={(e) => {
             setFocused(true);
