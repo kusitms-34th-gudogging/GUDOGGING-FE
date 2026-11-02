@@ -5,7 +5,7 @@ import { cn } from '@/utils/cn';
 interface ToggleProps {
   value: boolean;
   onValueChange: (value: boolean) => void;
-  accessibilityLabel?: string;
+  accessibilityLabel: string;
   className?: string;
 }
 

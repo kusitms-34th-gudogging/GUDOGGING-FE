@@ -7,7 +7,7 @@ interface CheckboxProps {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   disabled?: boolean;
-  accessibilityLabel?: string;
+  accessibilityLabel: string;
   className?: string;
 }
 
