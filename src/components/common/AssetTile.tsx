@@ -52,7 +52,7 @@ const assetVariants = cva('', {
 });
 
 type Tone = NonNullable<VariantProps<typeof assetTileVariants>['tone']>;
-type FreeTone = 'brand' | 'brand-bgx' | 'mono' | 'mono-bgx';
+type FreeTone = Extract<Tone, 'brand' | 'brand-bgx' | 'mono' | 'mono-bgx'>;
 type CategoryTone = Exclude<Tone, FreeTone>;
 
 // Figma: 카테고리 톤에는 같은 카테고리 에셋만 → 톤에서 에셋이 정해짐
@@ -73,13 +73,21 @@ const categoryAssets: Record<CategoryTone, ComponentType<SvgProps>> = {
   'etc-bgx': EtcColorAsset,
 };
 
-type AssetTileProps = Pick<VariantProps<typeof assetTileVariants>, 'size'> & {
+interface AssetTileBaseProps extends Pick<VariantProps<typeof assetTileVariants>, 'size'> {
   className?: string;
-} & (
-    | { tone: CategoryTone; asset?: never }
-    /** brand = 컬러 에셋, mono = 모노 에셋(비활성·선택 전·해지)을 `@/assets/graphics`에서 그대로 넘김 */
-    | { tone: FreeTone; asset: ComponentType<SvgProps> }
-  );
+}
+
+interface CategoryAssetTileProps extends AssetTileBaseProps {
+  tone: CategoryTone;
+  asset?: never;
+}
+
+interface FreeAssetTileProps extends AssetTileBaseProps {
+  tone: FreeTone;
+  asset: ComponentType<SvgProps>;
+}
+
+type AssetTileProps = CategoryAssetTileProps | FreeAssetTileProps;
 
 export const AssetTile = (props: AssetTileProps) => {
   const { tone, size, className } = props;
