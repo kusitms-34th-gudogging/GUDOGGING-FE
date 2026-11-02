@@ -143,7 +143,7 @@ const toLetterSpacing = (letterSpacing, fontSize) => {
   const value = String(letterSpacing);
   if (!value.endsWith('%')) return value;
   const px = (parseFloat(fontSize) * parseFloat(value)) / 100;
-  return `${Math.round(px * 100) / 100}px`;
+  return `${Math.round(px * 1000) / 1000}px`; // 3자리: 13px × -0.5% = -0.065
 };
 
 // Tailwind fontSize 튜플은 fontFamily 를 받지 않으므로 스타일 객체로 출력해 플러그인에서 유틸로 등록
