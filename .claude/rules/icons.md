@@ -10,5 +10,6 @@ paths:
   - 예: `icon_home_regular.svg`, `icon_arrow_left_fill.svg`
 - `index.ts`에서 컴포넌트 이름으로 export: `export { default as HomeIcon } from './icon_home_regular.svg';`
 - SVG 안 색이 `#000`/`#000000`과 정확히 일치해야 currentColor로 변환됨 (`svgr.config.js`)
+- 선(stroke) 아이콘은 `<path>`에 `vector-effect="non-scaling-stroke"`. 없으면 24px 기준 선 굵기가 크기 따라 같이 줄어듦 (16px에서 1.75 → 약 1.17)
 - 사용: `<HomeIcon className="size-icon-md text-icon-primary" />` (크기·색 모두 className)
 - SVG 추가·이동·설정 변경 후 `pnpm start -c`로 캐시 초기화
