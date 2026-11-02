@@ -96,7 +96,6 @@ export const Button = ({ variant, size, label, disabled, onPress, className }: B
 - 색·간격·radius·크기는 토큰 클래스 우선. 토큰 → Tailwind 기본 스케일 → arbitrary value(`w-[123px]`) 순. arbitrary가 반복되면 토큰 등록 요청
 - primary spacing은 `s` 접두사: `p-s16`, `gap-s8` (`p-4` 같은 기본 스케일과 구분)
 - 색은 semantic 우선: `text-text-primary`, `bg-bg-default`, `bg-action-primary`, `border-border-default`, `text-icon-secondary`
-- `asset`·`category`와 violet·fuchsia·orange·green·blue·yellow는 의도적으로 토큰에서 제외한 그래픽 전용 색. 쓰려면 Figma hex로 arbitrary value(`text-[#3F7FEF]`)
 - 텍스트는 `text-{typography}` 필수 (`text-body1-regular`). 클래스 없는 `<Text>`는 Pretendard가 아닌 시스템 폰트
 - 아이콘·버튼 크기는 size 토큰: `size-icon-md`, `h-button-lg`
 - motion·gradient·grid는 className 불가 → `import { motion, gradient, grid } from '@tokens'`. gradient `start`/`end`는 직접 지정

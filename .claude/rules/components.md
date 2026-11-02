@@ -15,14 +15,14 @@ paths:
 - `components/{도메인}/`: 한 도메인 안에서만 쓰는 컴포넌트 (화면이 하나든 여러 개든). 도메인 폴더는 화면 만들 때 추가
 - `hooks/`: `useXxx.ts` · `utils/`: 순수 함수 (테스트 파일은 옆에) · `constants/`: 상수
 - 도메인끼리 import 금지. 다른 도메인에서도 쓰게 되면 그때 `common/`으로 옮김
-- barrel `index.ts` 만들지 않음 → `@/components/common/Button`처럼 파일 경로로 직접 import
+- barrel `index.ts` 만들지 않음 → `@/components/common/Button`처럼 파일 경로로 직접 import (예외: `assets/icons`·`assets/graphics`)
 
 ## 파일명
 
 - 컴포넌트·화면 파일은 PascalCase: `ProfileCard.tsx`, `HomeScreen.tsx`
 - 훅·유틸 파일은 export 이름 그대로 camelCase: `useProfile.ts`, `cn.ts`
 - 도메인 폴더는 camelCase: `components/subscription/`
-- 예외: 라우트 파일(`src/app/`), 아이콘 SVG(`icons.md`의 snake_case)
+- 예외: 라우트 파일(`src/app/`), 아이콘·그래픽 SVG(`icons.md`·`graphics.md`의 snake_case)
 
 ## 컴포넌트가 커지면 폴더로
 
@@ -32,18 +32,19 @@ paths:
 
 ## Figma property → props
 
-| Figma                                  | props                                          | 비고                                    |
-| -------------------------------------- | ---------------------------------------------- | --------------------------------------- |
-| `Type=Primary/Dark/Tonal`              | `variant` (cva)                                | 값은 소문자 유니온                      |
-| `Size=L/M/S`                           | `size` (cva)                                   | `'lg' \| 'md' \| 'sm'`                  |
-| `State=Pressed`                        | props 없음                                     | `Pressable` + `active:` 클래스          |
-| `State=Focused`                        | props 없음                                     | 내부 상태 (`onFocus`/`onBlur`)          |
-| `State=Disabled`                       | `disabled?: boolean`                           |                                         |
-| `State=Error`                          | `error?: boolean` 또는 `errorMessage?: string` |                                         |
-| `On/Off`·`Checked`·`Selected`·`Active` | 제어 컴포넌트                                  | 아래 이름 통일                          |
-| boolean property                       | **전부 boolean prop으로**                      | 하나도 빠뜨리지 않음                    |
-| instance swap (아이콘)                 | `icon?: ComponentType<SvgProps>`               | `@/assets/icons` 컴포넌트를 그대로 받음 |
-| 그 외 (`Provider`, `Menu`, `Buttons`)  | 의미에 맞는 이름의 유니온                      | 예: `provider: 'apple' \| 'google'`     |
+| Figma                                  | props                                          | 비고                                       |
+| -------------------------------------- | ---------------------------------------------- | ------------------------------------------ |
+| `Type=Primary/Dark/Tonal`              | `variant` (cva)                                | 값은 소문자 유니온                         |
+| `Size=L/M/S`                           | `size` (cva)                                   | `'lg' \| 'md' \| 'sm'`                     |
+| `State=Pressed`                        | props 없음                                     | `Pressable` + `active:` 클래스             |
+| `State=Focused`                        | props 없음                                     | 내부 상태 (`onFocus`/`onBlur`)             |
+| `State=Disabled`                       | `disabled?: boolean`                           |                                            |
+| `State=Error`                          | `error?: boolean` 또는 `errorMessage?: string` |                                            |
+| `On/Off`·`Checked`·`Selected`·`Active` | 제어 컴포넌트                                  | 아래 이름 통일                             |
+| boolean property                       | **전부 boolean prop으로**                      | 하나도 빠뜨리지 않음                       |
+| instance swap (아이콘)                 | `icon?: ComponentType<SvgProps>`               | `@/assets/icons` 컴포넌트를 그대로 받음    |
+| instance swap (그래픽 에셋)            | `asset: ComponentType<SvgProps>`               | `@/assets/graphics` 컴포넌트를 그대로 받음 |
+| 그 외 (`Provider`, `Menu`, `Buttons`)  | 의미에 맞는 이름의 유니온                      | 예: `provider: 'apple' \| 'google'`        |
 
 - 상태 props 이름: 켜짐 `value`/`onValueChange`, 체크 `checked`/`onCheckedChange`, 선택 `selected`/`onSelect`
 - 라벨·문구는 하드코딩하지 않고 props로
