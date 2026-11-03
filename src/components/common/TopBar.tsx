@@ -93,7 +93,7 @@ export const TopBar = ({
         {title}
       </Text>
       <View className={cn('flex-row justify-end', isDetail && 'w-[88px]')}>
-        {isDetail && showTextAction ? (
+        {isDetail && showTextAction && textAction && onTextActionPress ? (
           <Pressable
             accessibilityRole="button"
             onPress={onTextActionPress}
