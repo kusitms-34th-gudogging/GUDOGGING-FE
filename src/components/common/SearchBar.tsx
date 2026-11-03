@@ -21,8 +21,10 @@ const searchBarVariants = cva(
 
 interface SearchBarProps
   extends
-    Omit<TextInputProps, 'className' | 'placeholderTextColor'>,
+    Omit<TextInputProps, 'className' | 'placeholderTextColor' | 'value' | 'onChangeText'>,
     VariantProps<typeof searchBarVariants> {
+  value: string;
+  onChangeText: (text: string) => void;
   icon?: ComponentType<SvgProps>;
   className?: string;
 }
@@ -51,7 +53,7 @@ export const SearchBar = ({
         accessibilityRole="button"
         accessibilityLabel="검색어 지우기"
         hitSlop={12}
-        onPress={() => onChangeText?.('')}
+        onPress={() => onChangeText('')}
         className="size-icon-sm items-center justify-center rounded-full bg-icon-disabled"
       >
         <CloseIcon className="size-[12px] text-icon-inverse" />
