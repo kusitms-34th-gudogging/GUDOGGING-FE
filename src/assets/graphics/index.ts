@@ -34,6 +34,8 @@ export { default as EmptyColorAsset } from './shared/asset_empty_color.svg';
 export { default as EmptyMonoAsset } from './shared/asset_empty_mono.svg';
 export { default as ImageColorAsset } from './shared/asset_image_color.svg';
 export { default as ImageMonoAsset } from './shared/asset_image_mono.svg';
+export { default as LogoAppleColorAsset } from './shared/asset_logo_apple_color.svg';
+export { default as LogoGoogleColorAsset } from './shared/asset_logo_google_color.svg';
 export { default as MailColorAsset } from './shared/asset_mail_color.svg';
 export { default as MailMonoAsset } from './shared/asset_mail_mono.svg';
 export { default as SaveColorAsset } from './shared/asset_save_color.svg';
