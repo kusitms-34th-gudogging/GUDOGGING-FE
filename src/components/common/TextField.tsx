@@ -31,19 +31,13 @@ export const TextField = ({
 
   return (
     <View className={cn('min-w-[200px] gap-stack-sm', className)}>
-      <Text
-        numberOfLines={1}
-        className={cn(
-          'text-body3-regular',
-          disabled ? 'text-text-disabled' : 'text-text-secondary',
-        )}
-      >
+      <Text numberOfLines={1} className="text-text-primary text-body3-regular">
         {label}
       </Text>
       <View
         className={cn(
-          // 테두리를 항상 2px로 두고(기본은 투명) 패딩에서 빼서, 포커스 시 글자가 밀리지 않게 함 (Figma 안쪽 stroke와 동일)
-          'h-input flex-row items-center gap-inline-sm rounded-input border-focus px-[14px]',
+          // 테두리를 항상 1px로 두고(기본은 투명) 패딩(16)에서 빼서, 포커스 시 글자가 밀리지 않게 함 (Figma 안쪽 stroke와 동일)
+          'h-input flex-row items-center gap-inline-sm rounded-input border px-[15px]',
           showError && 'border-border-error bg-surface-default',
           !showError && focused && 'border-border-focus bg-surface-default',
           !showError && !focused && 'border-transparent bg-bg-subtle',
@@ -65,7 +59,7 @@ export const TextField = ({
           placeholderClassName={disabled ? 'text-text-disabled' : 'text-text-tertiary'}
           // iOS TextInput은 lineHeight 주면 글자가 아래로 쏠림 (Text와 달리 baseline 보정 없음) → iOS만 0(=미지정)으로 덮어씀
           className={cn(
-            'ios:!leading-[0px] flex-1 text-body1-regular',
+            'ios:!leading-[0px] flex-1 text-body2-regular',
             disabled ? 'text-text-disabled' : 'text-text-primary',
           )}
         />
