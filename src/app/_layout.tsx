@@ -1,5 +1,5 @@
 import '@/global.css';
-import '@/utils/nativewindInterop';
+import '@/lib/nativewindInterop';
 
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
