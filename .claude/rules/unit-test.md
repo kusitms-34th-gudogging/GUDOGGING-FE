@@ -65,7 +65,7 @@ src/
 ├─ components/common/__tests__/
 │  └─ Button.test.tsx           # 컴포넌트 상호작용
 ├─ hooks/__tests__/
-│  └─ useDogs.test.tsx          # 훅 (QueryClient 감싸서)
+│  └─ useSubscriptions.test.tsx # 훅 (QueryClient 감싸서)
 ├─ lib/__tests__/
 │  └─ request.test.ts           # fetch 래퍼
 └─ utils/__tests__/
@@ -104,9 +104,9 @@ pnpm expo install jest-expo jest @types/jest @testing-library/react-native test-
 
 ```ts
 // ❌ 구현을 그대로 다시 씀 → 구현이 틀려도 통과
-expect(formatAge(birth)).toBe(`${today.getFullYear() - birth.getFullYear()}살`);
+expect(formatPrice(price)).toBe(`${price.toLocaleString()}원`);
 // ✅ 손으로 계산한 값
-expect(formatAge(new Date('2020-03-01'), new Date('2026-11-04'))).toBe('6살');
+expect(formatPrice(12900)).toBe('12,900원');
 ```
 
 - 테스트 대상 자체를 mock하지 않음. mock은 경계에서만: `fetch`, 네이티브 모듈, 시간(`jest.useFakeTimers`)

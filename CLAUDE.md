@@ -27,6 +27,9 @@ Expo SDK 58 · Expo Router · NativeWind v4(Tailwind v3) · pnpm. Expo API는 �
 | 새 파일 위치 판단         | `.claude/docs/architecture.md`                     |
 | 토큰·tailwind.config 작업 | `.claude/docs/design-tokens.md`                    |
 | 화면 / 아이콘 / 에셋 추가 | `/new-screen` / `/add-icon` / `/add-asset` 스킬    |
+| 단위·컴포넌트 테스트 작성 | `.claude/rules/unit-test.md`                       |
+| E2E(Maestro) 작성         | `.claude/rules/e2e-test.md`                        |
+| API 연동 (TanStack Query) | `.claude/rules/data-fetching.md`                   |
 | Figma 디자인 구현         | `/figma-publish` 스킬 (`figma-publisher` 에이전트) |
 | 커밋 / PR                 | `/commit` / `/pr` 스킬                             |
 | CodeRabbit 리뷰 대응      | `/coderabbit-review` 스킬                          |

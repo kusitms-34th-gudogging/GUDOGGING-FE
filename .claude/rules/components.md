@@ -13,7 +13,7 @@ paths:
 - `screens/`: 화면 본체(`XxxScreen.tsx`)만
 - `components/common/`: 디자인 시스템 컴포넌트(Figma "공통 컴포넌트" 섹션) + 2개 이상 도메인에서 쓰는 컴포넌트
 - `components/{도메인}/`: 한 도메인 안에서만 쓰는 컴포넌트 (화면이 하나든 여러 개든). 도메인 폴더는 화면 만들 때 추가
-- `hooks/`: `useXxx.ts` · `utils/`: 순수 함수 (테스트 파일은 옆에) · `constants/`: 상수
+- `hooks/`: `useXxx.ts` · `utils/`: 순수 함수 · `constants/`: 상수
 - 도메인끼리 import 금지. 다른 도메인에서도 쓰게 되면 그때 `common/`으로 옮김
 - barrel `index.ts` 만들지 않음 → `@/components/common/Button`처럼 파일 경로로 직접 import (예외: `assets/icons`·`assets/graphics`)
 
