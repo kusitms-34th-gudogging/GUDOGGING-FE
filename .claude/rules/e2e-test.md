@@ -20,7 +20,7 @@ paths:
 - 핵심 사용자 여정 (로그인 → 온보딩 → 홈)
 - 실기기에서만 확인되는 것 (네이티브 모듈·권한 팝업·키보드·폰트)
 
-**단위 테스트로 넘길 것** (Jest로 확인 가능하면 E2E에서 하지 않음, `unit-test.md`)
+**단위 테스트로 넘길 것** (Jest로 확인 가능하면 E2E에서 하지 않음, `.claude/rules/unit-test.md`)
 
 - 컴포넌트 상태 (disabled, 에러 문구)
 - 화면 전환 하나 (`renderRouter`)
@@ -97,3 +97,9 @@ appId: com.example.app # app.json의 ios.bundleIdentifier로 교체
 - 로컬: Maestro CLI 설치 → 시뮬레이터에 앱 설치 → `maestro test .maestro/{플로우}.yml` (Expo Go 불가)
 - CI: `eas.json`에 `e2e-test` 프로필 (`withoutCredentials`, iOS `simulator: true`, Android `buildType: "apk"`) + `.eas/workflows/e2e-tests.yml`의 `type: build` → `type: maestro` job (alpha)
 - 트리거는 `pull_request` 또는 라벨 붙은 PR만(`pull_request_labeled`) 중 선택
+
+## 이럴 때 더 읽기
+
+- 플로우를 새로 작성할 때 → `.claude/skills/add-test/SKILL.md`
+- Jest로 넘길지 판단할 때 → `.claude/rules/unit-test.md` "범위"
+- 요소에 `testID`를 붙일 때 → `.claude/rules/components.md`

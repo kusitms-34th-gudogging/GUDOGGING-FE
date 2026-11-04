@@ -42,8 +42,6 @@ src/
 | 서버 API                             | `src/app/api/xxx+api.ts` + 로직은 `src/server/`                                          |
 | 여러 곳에서 공유하는 타입            | `src/types/` (그 전까진 쓰는 곳 옆)                                                      |
 
-- 도메인끼리 import 금지. 다른 도메인에서도 쓰게 되면 `common/`으로 옮김
-
 ## 컴포넌트 파일 → 폴더 전환
 
 ```txt
@@ -58,3 +56,8 @@ components/home/profileCard/Avatar.tsx  #          내부 조각
 
 `tsconfig.json`의 `paths`로 `@/*` → `src/*`, `@tokens` → `tokens/` (JS 토큰). Expo CLI가 바로 지원하므로 `babel-plugin-module-resolver` 불필요.
 `tsconfig.json` 변경 후엔 개발 서버 재시작.
+
+## 이럴 때 더 읽기
+
+- 파일 이름을 정할 때 → `.claude/rules/components.md` "파일명"
+- 만들 파일 종류의 규칙 → `AGENTS.md` "작업별 시작 문서"

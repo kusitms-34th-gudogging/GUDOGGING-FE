@@ -13,3 +13,8 @@ paths:
 - 선(stroke) 아이콘은 `<path>`에 `vector-effect="non-scaling-stroke"`. 없으면 24px 기준 선 굵기가 크기 따라 같이 줄어듦 (16px에서 1.75 → 약 1.17)
 - 사용: `<HomeIcon className="size-icon-md text-icon-primary" />` (크기·색 모두 className)
 - SVG 추가·이동·설정 변경 후 `pnpm start -c`로 캐시 초기화
+
+## 이럴 때 더 읽기
+
+- 아이콘을 새로 추가할 때 → `.claude/skills/add-icon/SKILL.md`
+- 여러 색이거나 색이 고정된 SVG면 → `.claude/rules/graphics.md`

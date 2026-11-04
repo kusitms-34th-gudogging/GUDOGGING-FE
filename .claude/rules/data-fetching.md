@@ -1,9 +1,6 @@
 ---
 paths:
   - 'src/hooks/**'
-  - 'src/screens/**'
-  - 'src/lib/**'
-  - 'src/app/_layout.tsx'
 ---
 
 # API 호출 규칙 (TanStack Query · fetch)
@@ -39,18 +36,8 @@ lib/request.ts  →  hooks/useXxx.ts (useQuery/useMutation)  →  screens/  → 
 ```
 
 - 서버 데이터는 **전부 TanStack Query로**. `useEffect` + `fetch` + `useState` 조합 금지
-- 컴포넌트에서 API 호출 금지 (`components.md`). 화면이 훅을 쓰고 props로 넘김
 - 서버 데이터를 `useState`·전역 상태에 복사하지 않음. 캐시가 원본
 - HTTP는 RN 기본 **`fetch`**(RN 공식 권장)만. axios 추가하지 않음 (업로드 진행률 등 필요해지면 그때 논의)
-
-## request (`src/lib/request.ts`)
-
-- baseURL(`EXPO_PUBLIC_API_URL`), 공통 헤더, JSON 변환, 에러 변환을 한 곳에서
-- `!res.ok`면 `ApiError(status, body)` throw. `fetch` 에러는 catch 안 하면 조용히 사라짐(RN 문서) → 훅·화면에서 `fetch` 직접 호출 금지
-- 인증은 **헤더 토큰**. RN fetch의 쿠키 인증은 불안정(RN 문서) → 쿠키 세션 쓰지 않음
-- 토큰은 `expo-secure-store`에 저장. AsyncStorage·`EXPO_PUBLIC_*`에 두지 않음
-- 401 → 토큰 갱신 후 1회 재요청도 `request()` 안에서만
-- API 주소는 **HTTPS**. iOS ATS·Android(API 28+)가 http를 막음. 예외가 필요하면 `ios/`·`android/` 말고 `app.json`·config plugin으로
 
 ## 훅
 
@@ -92,11 +79,9 @@ export const useSubscriptions = (page: number) =>
 - 낙관적 업데이트는 디자인상 즉시 반영이 필요할 때만
 - 성공·실패 피드백은 화면에서 `useToast().show(...)`. 훅 안에서 UI 호출하지 않음
 
-## QueryClient 설정
+## 이럴 때 더 읽기
 
-- `src/lib/queryClient.ts`에서 생성, `_layout.tsx`에서 `QueryClientProvider`로 한 번만 감쌈
-- 4xx(`ApiError` status < 500)는 재시도 안 함, 그 외 최대 2회
-- 앱 복귀 시 refetch: `useAppStateFocus`에서 `AppState` 변경 → `focusManager.setFocused(status === 'active')` (`Platform.OS !== 'web'`일 때만)
-- 화면 복귀 시 refetch가 필요하면 그 화면에서 `useFocusEffect`(`expo-router`에서 export됨, 확인함)로 `refetch`. 마운트 때도 호출되므로 첫 호출은 건너뜀
-- 오프라인 감지(`onlineManager`)는 오프라인 UX가 기획에 생기면 추가. 그때 Expo 모듈 `expo-network` 사용
-- 테스트에서는 이 인스턴스 말고 테스트용 `QueryClient` 새로 만듦 (`unit-test.md`)
+- `request`·QueryClient·`_layout.tsx` Provider를 만들거나 고칠 때 → `.claude/rules/api-client.md`
+- API 훅·화면 테스트를 짤 때 → `.claude/docs/testing/api-hooks.md`
+- `src/app/api`·`src/server`(BFF)를 쓸지 → `.claude/rules/server-env.md`
+- 새 파일 위치가 애매할 때 → `.claude/docs/architecture.md`

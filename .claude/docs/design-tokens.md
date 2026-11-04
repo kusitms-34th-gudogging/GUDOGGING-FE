@@ -34,8 +34,7 @@ tokens/tailwind-token.json                       ← 생성 파일, 손으로 �
 | `primary/semantic.motion`, `styles.gradient`, `styles.grid` | `@tokens`                                      | `motion.press`, `gradient[100]`, `grid['ios-375-4col']`                                                              |
 
 - 실제 키 목록은 `tokens/tailwind-token.json`에서 확인
-- typography는 폰트·크기·행간·자간·굵기를 한 클래스로 지정 (`text-{name}`). 클래스 없는 `<Text>`는 시스템 폰트로 나옴
-- `fontSize`(`text-16` 등)·`fontWeight`(`font-bold` 등)도 있지만 텍스트는 typography 클래스 우선
+- typography는 폰트·크기·행간·자간·굵기를 한 클래스로 지정 (`text-{name}`). `fontSize`(`text-16`)·`fontWeight`(`font-bold`) 키도 있음
 
 ## JS 토큰 (`@tokens`)
 
@@ -56,9 +55,13 @@ withTiming(1, { duration: motion.press, easing: Easing.bezier(...motion['ease-mo
 - radius 키가 Tailwind 방향 유틸(`rounded-t`, `rounded-l`, `rounded-ee` 등)과 겹치면 빌드 실패
 - 서로 다른 Figma 경로가 같은 theme 키로 가면 빌드 실패 (키 중복)
 - RN 대응 변환: 자간 `%` → px, 그림자 → `box-shadow` 문자열, duration `'150ms'` → `150`
-- tailwind-merge 도입 시 토큰 카테고리 추가마다 `extendTailwindMerge` 갱신
+- 지금은 tailwind-merge를 쓰지 않음 (`.claude/rules/styling.md`). 도입하면 토큰 카테고리 추가마다 `extendTailwindMerge` 갱신
 
 ## 폰트
 
 - Pretendard Regular/SemiBold/Bold를 `app.json`의 `expo-font` config plugin으로 임베드 (`useFonts` 불필요)
 - 네이티브 임베드라 **Expo Go에서는 적용 안 됨** → 개발 빌드(`npx expo run:ios|android`)로 확인
+
+## 이럴 때 더 읽기
+
+- 어떤 토큰을 고를지(우선순위) 정할 때 → `.claude/rules/styling.md` "디자인 토큰 고르기"
