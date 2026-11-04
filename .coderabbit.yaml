@@ -54,9 +54,21 @@ reviews:
         - 보안: 민감 정보(토큰·키) 노출, 안전하지 않은 저장소 사용, 입력값 검증 누락
         - React Native/Expo 환경에서의 플랫폼(iOS/Android) 호환성 문제
 
+        프로젝트 지침(AGENTS.md, .claude/rules, .claude/docs)은 code guidelines로 함께 읽힙니다.
+        위 제외 항목은 그대로 두되, 지침 중 lint가 잡지 못하는 규칙(파일 위치, 데이터 흐름, 테스트 대상·가짜 테스트, 접근성)을 어기면 지적하세요.
+
   auto_review:
     enabled: true
     drafts: false
     auto_incremental_review: true
     base_branches:
       - 'dev'
+
+# 리뷰 기준을 AI 지침 문서와 맞춤
+# 기본으로 AGENTS.md·CLAUDE.md·.claude/rules/**(paths 범위 그대로)를 읽음. 기본 대상이 아닌 문서만 추가
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - '.claude/docs/**/*.md'
+      - '.claude/skills/commit/convention.md'
