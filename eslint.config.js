@@ -3,6 +3,7 @@ const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended');
 const simpleImportSort = require('eslint-plugin-simple-import-sort');
+const jest = require('eslint-plugin-jest');
 
 module.exports = defineConfig([
   expoConfig,
@@ -61,6 +62,23 @@ module.exports = defineConfig([
   {
     files: ['src/app/**'],
     rules: { 'import/no-default-export': 'off' },
+  },
+  // 가짜 테스트 금지 (unit-test.md 팀 규칙 중 기계로 잡히는 것)
+  {
+    files: ['**/__tests__/**'],
+    plugins: { jest },
+    rules: {
+      'jest/no-focused-tests': 'error',
+      'jest/no-disabled-tests': 'error',
+      'jest/expect-expect': 'error',
+      'jest/no-restricted-matchers': [
+        'error',
+        {
+          toMatchSnapshot: '스냅샷 금지 → 사용자가 보는 결과(문구·이동·호출)를 검증',
+          toMatchInlineSnapshot: '스냅샷 금지 → 사용자가 보는 결과(문구·이동·호출)를 검증',
+        },
+      ],
+    },
   },
   {
     ignores: ['dist/*', '.expo/*'],
