@@ -1,41 +1,44 @@
-This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+# GUDOGGING-FE
 
-## Expo has changed — do not trust your training data
+구독 관리 앱. Expo SDK 58 · Expo Router · NativeWind v4 · pnpm · iOS 우선
 
-Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+모든 AI 도구 공통 지침의 진입점. 규칙 본문은 아래 문서에 한 번씩만 있음
 
-1. Read the major version of the `expo` package in `package.json`.
-2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
-3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+## 작업 순서
 
-## Commands
+1. 경로별 규칙(`.claude/rules/*.md`)은 frontmatter `paths`에 맞는 파일을 다룰 때 읽음 (Claude Code·CodeRabbit은 자동)
+2. 아래 "작업별 시작 문서"를 읽고, 각 문서 맨 아래 `이럴 때 더 읽기`에서 **조건에 맞는 것만** 따라 읽음
+3. 끝내기 전 `pnpm check` (lint·typecheck·test·format. CI와 같음)
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+## Expo는 기억 말고 문서
 
-```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
-npx tsc --noEmit            # typecheck
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
-```
+`package.json`의 `expo` 메이저 버전 → `https://docs.expo.dev/versions/v<메이저>.0.0/`. 그 외는 `https://docs.expo.dev/llms.txt`
 
-Run lint and typecheck before declaring any task done.
+## 명령어
 
-## Navigation & Routing
+- 패키지 추가 `pnpm expo install <pkg>` (`pnpm add` 금지) · 버전 맞춤 `pnpm expo install --fix`
+- `pnpm start -c` (SVG 추가 후 캐시 초기화) · 토큰 재생성 `pnpm tokens:build`
+- 네이티브 모듈·Pretendard는 Expo Go에서 안 보임 → 개발 빌드 `npx expo run:ios`
 
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
+## 절대 규칙 (lint로 못 잡는 것만)
 
-## Building with EAS
+- `ios/`·`android/` 직접 수정 금지. 네이티브 설정은 `app.json`·config plugin (CNG). Expo 모듈 우선
+- 토큰 JSON 수정·`design-token` 브랜치 작업 금지 → `.claude/docs/design-tokens.md`
+- 비밀 키를 `EXPO_PUBLIC_*`에 넣지 않음 → `.claude/rules/server-env.md`
+- `src/app/`에는 라우트 파일만 → `.claude/rules/routing.md`
+- 코드 스타일은 `eslint.config.js`·`.prettierrc`가 원본 (에러 메시지에 대안 있음). 문서에 다시 적지 않음
 
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
+## 작업별 시작 문서
 
-## Rules
+`.claude/skills/*/SKILL.md`는 절차 (Claude Code는 `/이름`)
 
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+- 파일 위치: `.claude/docs/architecture.md`
+- 새 화면: `.claude/skills/new-screen/SKILL.md`
+- Figma 구현: `.claude/skills/figma-publish/SKILL.md`
+- 아이콘·에셋: `.claude/skills/add-icon/SKILL.md` · `.claude/skills/add-asset/SKILL.md`
+- 토큰·폰트: `.claude/docs/design-tokens.md`
+- API 연동: `.claude/rules/data-fetching.md`
+- 테스트: `.claude/skills/add-test/SKILL.md`
+- 커밋·PR: `.claude/skills/commit/SKILL.md` · `.claude/skills/pr/SKILL.md`
+- CodeRabbit 리뷰 대응: `.claude/skills/coderabbit-review/SKILL.md`
+- 지침 문서 수정: `.claude/docs/writing-docs.md`

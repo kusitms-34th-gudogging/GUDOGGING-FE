@@ -14,7 +14,7 @@ module.exports = defineConfig([
       'simple-import-sort/exports': 'error',
     },
   },
-  // CLAUDE.md 절대 규칙
+  // 코드 스타일 규칙의 원본 (AGENTS.md "코드 스타일"이 여기를 가리킴). 메시지에 대안을 적어둘 것
   {
     files: ['src/**/*.{ts,tsx}'],
     rules: {
