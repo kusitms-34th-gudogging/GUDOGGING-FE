@@ -49,6 +49,7 @@ jobs:
         continue-on-error: true
         run: pnpm test --ci --passWithNoTests --json --outputFile=ci-logs/jest.json 2>&1 | tee ci-logs/test.txt
 
+      # Expo 패치가 나오면 코드와 무관하게 실패할 수 있어서 경고만 (PR을 막지 않음)
       - name: Expo Doctor
         id: doctor
         continue-on-error: true
@@ -101,7 +102,7 @@ jobs:
           | Format | $(icon "$FORMAT") | |
           | Typecheck | $(icon "$TYPECHECK") | |
           | Test | $(icon "$TEST") | ${TEST_DETAIL} |
-          | Expo Doctor | $(icon "$DOCTOR") | |
+          | Expo Doctor | $([ "$DOCTOR" = "success" ] && echo "✅" || echo "⚠️") | $([ "$DOCTOR" = "success" ] || echo "경고만 · \`npx expo install --fix\`로 해결") |
           $(failed_log "Lint" "$LINT" ci-logs/lint.txt)
           $(failed_log "Format" "$FORMAT" ci-logs/format.txt)
           $(failed_log "Typecheck" "$TYPECHECK" ci-logs/typecheck.txt)
@@ -123,7 +124,7 @@ jobs:
       - name: Fail if any check failed
         if: always()
         env:
-          OUTCOMES: ${{ steps.lint.outcome }} ${{ steps.format.outcome }} ${{ steps.typecheck.outcome }} ${{ steps.test.outcome }} ${{ steps.doctor.outcome }}
+          OUTCOMES: ${{ steps.lint.outcome }} ${{ steps.format.outcome }} ${{ steps.typecheck.outcome }} ${{ steps.test.outcome }}
         run: |
           for o in $OUTCOMES; do
             if [ "$o" != "success" ]; then echo "::error::실패한 검사가 있습니다. PR 댓글을 확인하세요."; exit 1; fi
