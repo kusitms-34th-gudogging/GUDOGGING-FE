@@ -1,7 +1,7 @@
 // AI 지침 문서(AGENTS.md · CLAUDE.md · .claude/**)가 서로 연결된 상태인지 검사
 // 1) 문서에 적힌 .md 경로가 실제로 있는지  2) 규칙은 paths, docs·스킬은 다른 문서의 안내가 있는지
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { basename, dirname, join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 
 const root = process.cwd();
 const walk = (dir) =>
@@ -13,7 +13,6 @@ const walk = (dir) =>
 
 const docs = [join(root, 'AGENTS.md'), join(root, 'CLAUDE.md'), ...walk(join(root, '.claude'))];
 const rel = (p) => relative(root, p);
-const byName = new Set(docs.map((p) => basename(p)));
 const errors = [];
 
 for (const file of docs) {
@@ -26,8 +25,9 @@ for (const file of docs) {
   ];
   for (const ref of refs) {
     if (/[*{]|:\/\//.test(ref)) continue; // 글롭·자리표시자·URL은 파일이 아님
-    const ok = ref.includes('/') ? existsSync(join(root, ref)) : byName.has(ref);
-    if (!ok) errors.push(`${rel(file)}: 없는 문서 \`${ref}\``);
+    // 경로는 저장소 루트 기준 (파일명만 쓰면 루트 파일로 봄 → .claude 안 문서는 전체 경로로 적어야 통과)
+    if (!existsSync(join(root, ref)))
+      errors.push(`${rel(file)}: 없는 문서 \`${ref}\` (루트 기준 전체 경로로)`);
   }
 }
 

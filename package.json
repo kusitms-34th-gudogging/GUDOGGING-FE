@@ -67,7 +67,8 @@
   "packageManager": "pnpm@10.10.0",
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --fix",
-    "*.{json,md,css}": "prettier --write"
+    "*.{json,md,css}": "prettier --write",
+    "{AGENTS.md,CLAUDE.md,.claude/**/*.md}": "node scripts/check-docs.mjs"
   },
   "jest": {
     "preset": "jest-expo",
