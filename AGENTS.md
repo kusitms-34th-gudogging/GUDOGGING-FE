@@ -8,7 +8,7 @@
 
 1. 경로별 규칙(`.claude/rules/*.md`)은 frontmatter `paths`에 맞는 파일을 다룰 때 읽음 (Claude Code·CodeRabbit은 자동)
 2. 아래 "작업별 시작 문서"를 읽고, 각 문서 맨 아래 `이럴 때 더 읽기`에서 **조건에 맞는 것만** 따라 읽음
-3. 끝내기 전 `pnpm check` (lint·typecheck·test·format. CI와 같음)
+3. 끝내기 전 `pnpm check` (문서 연결·lint·typecheck·test·format. CI와 같음)
 
 ## Expo는 기억 말고 문서
 

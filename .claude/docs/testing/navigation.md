@@ -23,10 +23,14 @@ const Home = () => (
   </Pressable>
 );
 
+beforeEach(() => jest.useFakeTimers());
+afterEach(() => jest.useRealTimers());
+
 it('프로필 버튼을 누르면 프로필로 이동한다', async () => {
   await renderRouter({ index: Home, profile: () => null }, { initialUrl: '/' });
 
-  await userEvent.setup().press(screen.getByRole('button', { name: '프로필' }));
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+  await user.press(screen.getByRole('button', { name: '프로필' }));
 
   expect(screen).toHavePathname('/profile');
 });

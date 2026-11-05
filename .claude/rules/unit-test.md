@@ -16,7 +16,7 @@ paths:
 | 화면 전환 | RNTL + `expo-router/testing-library` | 버튼 → 다음 화면 이동 | 누르면 `/profile`로 경로 변경 |
 
 - 화면 전환은 E2E가 아니라 여기서(`renderRouter`) 검증
-- 실기기에서만 확인되는 것(네이티브 모듈·권한·폰트·키보드)은 E2E로 (`.claude/rules/e2e-test.md`)
+- 실기기에서만 확인되는 것(네이티브 모듈·권한·폰트·키보드)은 E2E로
 
 ## 1. 테스트 대상 고르기 (팀 규칙)
 

@@ -17,7 +17,6 @@
 - 상태 props 이름: 켜짐 `value`/`onValueChange`, 체크 `checked`/`onCheckedChange`, 선택 `selected`/`onSelect`
 - 라벨·문구는 하드코딩하지 않고 props로
 - Figma에 component set이 있으면 variant·boolean property 전부 구현
-- variant 스타일 작성법(cva)은 `.claude/docs/styling/cva.md`
 
 ## 이럴 때 더 읽기
 

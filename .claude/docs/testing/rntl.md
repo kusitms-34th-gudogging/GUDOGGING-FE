@@ -17,11 +17,16 @@ import { render, screen, userEvent } from '@testing-library/react-native';
 
 import { Button } from '@/components/common/Button';
 
+// userEvent.press는 실제 타이머면 내부에서 기다림 → 가짜 타이머 (.claude/rules/unit-test.md "속도")
+beforeEach(() => jest.useFakeTimers());
+afterEach(() => jest.useRealTimers());
+
 it('disabled면 onPress가 호출되지 않는다', async () => {
   const onPress = jest.fn();
   await render(<Button label="저장" disabled onPress={onPress} />);
 
-  await userEvent.setup().press(screen.getByRole('button', { name: '저장' }));
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+  await user.press(screen.getByRole('button', { name: '저장' }));
 
   expect(onPress).not.toHaveBeenCalled();
 });

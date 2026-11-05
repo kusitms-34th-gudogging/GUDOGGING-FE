@@ -21,7 +21,7 @@ tokens/tailwind-token.json                       ← 생성 파일, 손으로 �
 - radius 키가 Tailwind 방향 유틸(`rounded-t`, `rounded-l`, `rounded-ee` 등)과 겹치면 빌드 실패
 - 서로 다른 Figma 경로가 같은 theme 키로 가면 빌드 실패 (키 중복)
 - RN 대응 변환: 자간 `%` → px, 그림자 → `box-shadow` 문자열, duration `'150ms'` → `150`
-- 지금은 tailwind-merge를 쓰지 않음 (`.claude/rules/styling.md`). 도입하면 토큰 카테고리 추가마다 `extendTailwindMerge` 갱신
+- 지금은 tailwind-merge를 쓰지 않음. 도입하면 토큰 카테고리 추가마다 `extendTailwindMerge` 갱신
 
 ## 폰트
 

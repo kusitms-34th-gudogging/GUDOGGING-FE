@@ -10,7 +10,7 @@ tokens/            # 디자인 토큰 (루트). default-token.json 원본, tailw
 src/
 ├─ app/            # 라우트 전용. screens 컴포넌트를 반환하는 얇은 껍데기
 │  ├─ api/         # +api 파일(서버 API 라우트)
-│  └─ _layout.tsx  # 루트 레이아웃 (global.css, nativewindInterop import, QueryClientProvider)
+│  └─ _layout.tsx  # 루트 레이아웃 (global.css, nativewindInterop import, Provider 감싸기)
 ├─ screens/        # 화면 본체(XxxScreen.tsx)만
 ├─ components/
 │  ├─ common/      # 디자인 시스템 컴포넌트 + 2개 이상 도메인에서 쓰는 컴포넌트
@@ -29,18 +29,18 @@ src/
 
 ## 어디에 둘까
 
-| 만들 것                              | 위치                                                                                                                 |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| 새 화면                              | `src/screens/XxxScreen.tsx` + `src/app/xxx.tsx` (껍데기)                                                             |
-| 한 도메인 안에서만 쓰는 컴포넌트     | `src/components/{도메인}/`                                                                                           |
-| 디자인 시스템 / 2개 이상 도메인 공용 | `src/components/common/`                                                                                             |
-| 커스텀 훅                            | `src/hooks/useXxx.ts`                                                                                                |
-| API 호출 훅                          | `src/hooks/use{리소스}.ts` (`.claude/rules/data-fetching.md`)                                                        |
-| 테스트                               | 대상 폴더의 `__tests__/Xxx.test.tsx`, E2E는 `.maestro/` (`.claude/rules/unit-test.md` · `.claude/rules/e2e-test.md`) |
-| 순수 함수                            | `src/utils/`                                                                                                         |
-| 라이브러리 설정·인스턴스 (부수효과)  | `src/lib/` (request, queryClient)                                                                                    |
-| 서버 API                             | `src/app/api/xxx+api.ts` + 로직은 `src/server/`                                                                      |
-| 여러 곳에서 공유하는 타입            | `src/types/` (그 전까진 쓰는 곳 옆)                                                                                  |
+| 만들 것                              | 위치                                                     |
+| ------------------------------------ | -------------------------------------------------------- |
+| 새 화면                              | `src/screens/XxxScreen.tsx` + `src/app/xxx.tsx` (껍데기) |
+| 한 도메인 안에서만 쓰는 컴포넌트     | `src/components/{도메인}/`                               |
+| 디자인 시스템 / 2개 이상 도메인 공용 | `src/components/common/`                                 |
+| 커스텀 훅                            | `src/hooks/useXxx.ts`                                    |
+| API 호출 훅                          | `src/hooks/use{리소스}.ts`                               |
+| 테스트                               | 대상 폴더의 `__tests__/Xxx.test.tsx`, E2E는 `.maestro/`  |
+| 순수 함수                            | `src/utils/`                                             |
+| 라이브러리 설정·인스턴스 (부수효과)  | `src/lib/` (request, queryClient)                        |
+| 서버 API                             | `src/app/api/xxx+api.ts` + 로직은 `src/server/`          |
+| 여러 곳에서 공유하는 타입            | `src/types/` (그 전까진 쓰는 곳 옆)                      |
 
 ## 컴포넌트 파일 → 폴더 전환
 

@@ -24,7 +24,7 @@ paths:
 - 컴포넌트 내부 최상위 요소에 margin 쓰지 않음. 바깥 여백은 사용처가 정함
 - 디자인과 다른 모양이 필요하면 `className`으로 우회하지 않고 Figma에 variant 추가 요청
 
-## 디자인 토큰 고르기 (클래스 이름·매핑표: `.claude/docs/styling/token-classes.md`)
+## 디자인 토큰 고르기
 
 - 토큰 클래스 → Tailwind 기본 스케일 → arbitrary value(`w-[123px]`) 순. arbitrary가 반복되면 토큰 등록 요청
 - 색은 semantic 우선 (`text-text-primary`), primary 팔레트(`bg-gray-100`)는 semantic에 없을 때만

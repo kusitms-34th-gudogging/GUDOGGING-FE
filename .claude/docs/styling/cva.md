@@ -3,7 +3,6 @@
 참고 코드: `src/components/common/Button.tsx`
 
 - Figma에 variant property(`Type`, `Size` 등)가 있으면 `cva`(class-variance-authority), 없으면 `cn`만
-- tailwind-merge 쓰지 않음 (`cn`은 clsx 그대로)
 
 ```tsx
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -12,7 +11,7 @@ import { Pressable, Text } from 'react-native';
 import { cn } from '@/utils/cn';
 
 // 클래스는 예시. 실제 값은 Figma 변수 기준
-const buttonVariants = cva('items-center justify-center rounded-button', {
+const buttonVariants = cva('items-center justify-center rounded-button transition-colors', {
   variants: {
     variant: {
       primary: 'bg-action-primary active:bg-action-primary-pressed',
@@ -28,7 +27,7 @@ const buttonVariants = cva('items-center justify-center rounded-button', {
   defaultVariants: { variant: 'primary', size: 'lg' },
 });
 
-const buttonLabelVariants = cva('', {
+const buttonLabelVariants = cva('transition-colors', {
   variants: {
     variant: {
       primary: 'text-text-on-brand',

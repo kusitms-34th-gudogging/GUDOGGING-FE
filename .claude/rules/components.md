@@ -14,7 +14,7 @@ paths:
 - 컴포넌트·화면 파일은 PascalCase: `ProfileCard.tsx`, `HomeScreen.tsx`
 - 훅·유틸 파일은 export 이름 그대로 camelCase: `useProfile.ts`, `cn.ts`
 - 도메인 폴더는 camelCase: `components/subscription/`
-- 예외: 라우트 파일(`src/app/`), SVG(`.claude/rules/icons.md`·`.claude/rules/graphics.md`의 snake_case)
+- 예외: 라우트 파일(`src/app/`), SVG 파일(snake_case)
 
 ## import
 
@@ -30,7 +30,7 @@ paths:
 
 - 컴포넌트에서 API 호출 금지. 화면이 API 훅(`src/hooks/`)을 호출하고 로딩·에러 UI를 그린 뒤 결과를 props로 넘김
 - 도메인 타입을 props로 받는 건 허용 (`subscription: Subscription`)
-- 타입은 중복 정의하지 않고 가져와서 확장 (타입 파일 위치: `.claude/docs/architecture.md`)
+- 타입은 중복 정의하지 않고 가져와서 확장
 
 ## 접근성
 
