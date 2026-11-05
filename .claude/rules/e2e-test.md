@@ -80,6 +80,7 @@ appId: com.example.app # app.json의 ios.bundleIdentifier로 교체
 ---
 - launchApp:
     clearState: true
+    clearKeychain: true # 토큰이 iOS 키체인에 남음
 - tapOn:
     id: 'login_button'
 - runFlow:
