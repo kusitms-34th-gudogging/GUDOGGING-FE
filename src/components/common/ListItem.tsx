@@ -17,6 +17,7 @@ interface ListItemProps {
   showSubtitle?: boolean;
   cost?: string;
   showCost?: boolean;
+  costColor?: string;
   logo?: ImageSourcePropType | ComponentType<SvgProps>;
   showLogo?: boolean;
   iconLeft?: ComponentType<SvgProps>;
@@ -38,6 +39,7 @@ export const ListItem = ({
   showSubtitle,
   cost,
   showCost,
+  costColor = 'text-text-primary',
   logo,
   showLogo,
   iconLeft: IconLeft,
@@ -80,7 +82,7 @@ export const ListItem = ({
     </View>
     <View className="flex-row items-center gap-inline-xs">
       {showCost && cost && (
-        <Text numberOfLines={1} className="max-w-[120px] text-text-primary text-body2-semibold">
+        <Text numberOfLines={1} className={cn('max-w-[120px] text-body2-semibold', costColor)}>
           {cost}
         </Text>
       )}
