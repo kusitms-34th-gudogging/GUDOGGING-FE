@@ -223,7 +223,8 @@ export const Dial = ({
   // 범위 밖 연도는 범위 안으로 맞춰 표시·일수 계산·onValueChange가 같은 연도를 씀
   const year = Math.min(Math.max(value.getFullYear(), minYear), maxYear);
   const month = value.getMonth();
-  const day = value.getDate();
+  // 연도를 맞추면 윤일이 사라질 수 있어 일도 그 달 말일 안으로 (2024-02-29 → 2026-02-28)
+  const day = Math.min(value.getDate(), daysInMonth(year, month));
   // 월·연도가 바뀌어 일수가 줄면 마지막 날로 (1월 31일 → 2월 28일)
   const change = (y: number, m: number, d: number) =>
     onValueChange(new Date(y, m, Math.min(d, daysInMonth(y, m))));

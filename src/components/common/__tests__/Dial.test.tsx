@@ -72,6 +72,13 @@ describe('Dial', () => {
     expect(onValueChange).toHaveBeenCalledWith(new Date(2026, 6, 15));
   });
 
+  it('범위 밖 윤일은 맞춘 연도의 말일로 보정해 읽어준다', async () => {
+    await renderDial(new Date(2024, 1, 29));
+    expect(screen.getByRole('adjustable', { name: '일' })).toHaveAccessibilityValue({
+      text: '28일',
+    });
+  });
+
   it('각 열이 현재 날짜를 읽어준다', async () => {
     await renderDial(new Date(2026, 0, 31));
     expect(screen.getByRole('adjustable', { name: '연' })).toHaveAccessibilityValue({
