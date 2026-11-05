@@ -6,8 +6,8 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { colors } from '@tokens';
-import { type ReactNode, useEffect, useRef } from 'react';
-import { Text, View } from 'react-native';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { Cta } from './Cta';
 
@@ -49,7 +49,8 @@ interface BottomSheetProps {
   children: ReactNode;
 }
 
-// 높이는 내용에 맞춤 (Figma Hug). 내용 스크롤(Dial)과 겹치지 않게 손잡이로만 끌어서 닫음
+// 높이는 내용에 맞추되(Figma Hug) 내용이 길면 제목·확인 버튼은 두고 children만 스크롤. 내용 스크롤(Dial)과 겹치지 않게 손잡이로만 끌어서 닫음
+const CONTENT_MAX_RATIO = 0.4;
 export const BottomSheet = ({
   visible,
   onClose,
@@ -63,6 +64,11 @@ export const BottomSheet = ({
 }: BottomSheetProps) => {
   const ref = useRef<BottomSheetModal>(null);
   const presented = useRef(false);
+  // 내용이 짧을 땐 ScrollView를 쓰지 않음. 안쪽 Dial의 세로 스크롤을 바깥 스크롤이 가져가고,
+  // 시트 높이 측정도 ScrollView 안에서는 어긋남(CTA가 잘림). 최대 높이는 화면 비율 (className으로는 못 씀)
+  const [tall, setTall] = useState(false);
+  const maxHeight = useWindowDimensions().height * CONTENT_MAX_RATIO;
+  const contentStyle = { height: maxHeight };
 
   // 딤 탭·드래그로 닫히면 시트가 이미 정리된 뒤 onClose가 불림. 그때 dismiss()를 또 부르면
   // gorhom 내부 상태가 '닫는 중'에 멈춰 다음 present()가 무시됨 → 열려 있을 때만 dismiss
@@ -96,7 +102,15 @@ export const BottomSheet = ({
                 <Text className="text-text-secondary text-caption1-regular">{description}</Text>
               )}
             </View>
-            {children}
+            {tall ? (
+              <ScrollView bounces={false} style={contentStyle}>
+                {children}
+              </ScrollView>
+            ) : (
+              <View onLayout={(e) => setTall(e.nativeEvent.layout.height > maxHeight)}>
+                {children}
+              </View>
+            )}
             <Cta
               label={confirmLabel}
               disabled={confirmDisabled}
