@@ -74,6 +74,10 @@
   },
   "jest": {
     "preset": "jest-expo",
+    "resolver": "<rootDir>/jest-resolver.js",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest-setup.ts"
+    ],
     "moduleNameMapper": {
       "\\.svg$": "react-native-svg"
     },
