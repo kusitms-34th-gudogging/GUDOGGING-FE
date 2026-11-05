@@ -19,6 +19,8 @@
 - 패키지 추가 `pnpm expo install <pkg>` (`pnpm add` 금지) · 버전 맞춤 `pnpm expo install --fix`
 - `pnpm start -c` (SVG 추가 후 캐시 초기화) · 토큰 재생성 `pnpm tokens:build`
 - 네이티브 모듈·Pretendard는 Expo Go에서 안 보임 → 개발 빌드 `npx expo run:ios`
+- 의존성·설정 진단 `npx expo-doctor` · 클라우드 빌드·제출·OTA는 EAS (`npx eas-cli@latest build|submit|update`, `https://docs.expo.dev/eas/index.md`)
+- 라우팅은 Expo Router (`https://docs.expo.dev/router/introduction.md`)
 
 ## 절대 규칙 (lint로 못 잡는 것만)
 

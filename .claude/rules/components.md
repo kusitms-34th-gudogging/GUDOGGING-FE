@@ -23,6 +23,11 @@ import 경로·`any`·`interface`·named export는 `eslint.config.js`가 강제 
 - barrel `index.ts` 만들지 않음 → `@/components/common/Button`처럼 파일 경로로 직접 import (예외: `assets/icons`·`assets/graphics`)
 - 도메인끼리 import 금지. 다른 도메인에서도 쓰게 되면 그때 `common/`으로 옮김
 
+## 타입
+
+- props 타입 이름은 `{ComponentName}Props` (`ButtonProps`, `ProfileScreenProps`)
+- `any` 대신 `unknown` + 타입 가드
+
 ## 데이터
 
 - 컴포넌트에서 API 호출 금지. 화면이 API 훅(`src/hooks/`)을 호출하고 로딩·에러 UI를 그린 뒤 결과를 props로 넘김

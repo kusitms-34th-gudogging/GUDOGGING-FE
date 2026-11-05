@@ -7,7 +7,7 @@ design-token 브랜치: tokens/default-token.json   ← 원본, 손으로 안 �
    │ GitHub Actions(design-token.yml): dev 머지 → pnpm tokens:build → 커밋 → dev 대상 PR 생성/갱신
    ▼
 tokens/tailwind-token.json                       ← 생성 파일, 손으로 안 고침
-   ├─ tailwind.config.js (theme.extend + typography 플러그인) → className
+   ├─ tailwind.config.js (theme.extend에 JSON을 require + typography 플러그인. CSS @theme 아님) → className
    └─ tokens/index.ts → `@tokens` (motion·gradient·grid)
 ```
 
