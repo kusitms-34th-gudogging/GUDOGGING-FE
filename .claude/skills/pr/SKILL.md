@@ -1,6 +1,6 @@
 ---
 name: pr
-description: 현재 브랜치로 dev 대상 PR을 .github/pull_request_template.md 양식에 맞춰 생성
+description: PR을 올릴 때 사용. "PR 올려줘", "PR 만들어줘" 요청 시 현재 브랜치로 dev 대상 PR을 .github/pull_request_template.md 양식에 맞춰 생성
 disable-model-invocation: true
 ---
 
