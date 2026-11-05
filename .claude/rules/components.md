@@ -9,8 +9,6 @@ paths:
 
 # 컴포넌트 규칙
 
-import 경로·`any`·`interface`·named export는 `eslint.config.js`가 강제 (`AGENTS.md` "코드 스타일")
-
 ## 파일명
 
 - 컴포넌트·화면 파일은 PascalCase: `ProfileCard.tsx`, `HomeScreen.tsx`

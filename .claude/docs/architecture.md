@@ -60,4 +60,3 @@ components/home/profileCard/Avatar.tsx  #          내부 조각
 ## 이럴 때 더 읽기
 
 - 파일 이름을 정할 때 → `.claude/rules/components.md` "파일명"
-- 만들 파일 종류의 규칙 → `AGENTS.md` "작업별 시작 문서"
