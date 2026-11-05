@@ -44,6 +44,11 @@ jobs:
         continue-on-error: true
         run: pnpm typecheck 2>&1 | tee ci-logs/typecheck.txt
 
+      - name: Docs
+        id: docs
+        continue-on-error: true
+        run: pnpm docs:check 2>&1 | tee ci-logs/docs.txt
+
       - name: Test
         id: test
         continue-on-error: true
@@ -66,6 +71,7 @@ jobs:
           LINT: ${{ steps.lint.outcome }}
           FORMAT: ${{ steps.format.outcome }}
           TYPECHECK: ${{ steps.typecheck.outcome }}
+          DOCS: ${{ steps.docs.outcome }}
           TEST: ${{ steps.test.outcome }}
           DOCTOR: ${{ steps.doctor.outcome }}
         run: |
@@ -101,11 +107,13 @@ jobs:
           | Lint | $(icon "$LINT") | |
           | Format | $(icon "$FORMAT") | |
           | Typecheck | $(icon "$TYPECHECK") | |
+          | Docs | $(icon "$DOCS") | |
           | Test | $(icon "$TEST") | ${TEST_DETAIL} |
           | Expo Doctor | $([ "$DOCTOR" = "success" ] && echo "✅" || echo "⚠️") | $([ "$DOCTOR" = "success" ] || echo "경고만 · \`npx expo install --fix\`로 해결") |
           $(failed_log "Lint" "$LINT" ci-logs/lint.txt)
           $(failed_log "Format" "$FORMAT" ci-logs/format.txt)
           $(failed_log "Typecheck" "$TYPECHECK" ci-logs/typecheck.txt)
+          $(failed_log "Docs" "$DOCS" ci-logs/docs.txt)
           $(failed_log "Test" "$TEST" ci-logs/test.txt)
           $(failed_log "Expo Doctor" "$DOCTOR" ci-logs/doctor.txt)
 
@@ -124,7 +132,7 @@ jobs:
       - name: Fail if any check failed
         if: always()
         env:
-          OUTCOMES: ${{ steps.lint.outcome }} ${{ steps.format.outcome }} ${{ steps.typecheck.outcome }} ${{ steps.test.outcome }}
+          OUTCOMES: ${{ steps.lint.outcome }} ${{ steps.format.outcome }} ${{ steps.typecheck.outcome }} ${{ steps.docs.outcome }} ${{ steps.test.outcome }}
         run: |
           for o in $OUTCOMES; do
             if [ "$o" != "success" ]; then echo "::error::실패한 검사가 있습니다. PR 댓글을 확인하세요."; exit 1; fi
