@@ -25,11 +25,13 @@
 className으로 표현할 수 없는 토큰만 `tokens/index.ts`에서 export.
 
 ```ts
-import { gradient, motion } from '@tokens';
+import { colors, gradient, motion } from '@tokens';
 
 withTiming(1, { duration: motion.press, easing: Easing.bezier(...motion['ease-move']) });
 <LinearGradient colors={gradient[100].colors} locations={gradient[100].locations} start={...} end={...} />
+interpolateColor(distance, [0, 1], [colors.text.primary, colors.text.tertiary]);
 ```
 
 - duration은 ms 숫자, easing은 bezier 4튜플
+- colors는 Reanimated `interpolateColor`처럼 색 값(hex)이 직접 필요할 때만. 고정 색은 className으로
 - gradient는 `expo-linear-gradient` props 형태 (`{ colors, locations }`). 방향은 토큰에 없어 `start`/`end` 직접 지정

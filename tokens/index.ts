@@ -13,4 +13,4 @@ export const motion = tokens.motion as Omit<
   'ease-exit': Bezier;
 };
 
-export const { gradient, grid } = tokens;
+export const { colors, gradient, grid } = tokens;
