@@ -66,6 +66,12 @@ describe('Dial', () => {
     expect(atMin).not.toHaveBeenCalled();
   });
 
+  it('범위 밖 연도는 minYear로 맞춰서 월을 바꿔도 그 연도로 전달한다', async () => {
+    const onValueChange = await renderDial(new Date(2024, 5, 15));
+    await adjust('월', 'increment');
+    expect(onValueChange).toHaveBeenCalledWith(new Date(2026, 6, 15));
+  });
+
   it('각 열이 현재 날짜를 읽어준다', async () => {
     await renderDial(new Date(2026, 0, 31));
     expect(screen.getByRole('adjustable', { name: '연' })).toHaveAccessibilityValue({

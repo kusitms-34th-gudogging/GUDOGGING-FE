@@ -220,7 +220,8 @@ export const Dial = ({
   className,
 }: DialProps) => {
   const years = range(minYear, maxYear);
-  const year = value.getFullYear();
+  // 범위 밖 연도는 범위 안으로 맞춰 표시·일수 계산·onValueChange가 같은 연도를 씀
+  const year = Math.min(Math.max(value.getFullYear(), minYear), maxYear);
   const month = value.getMonth();
   const day = value.getDate();
   // 월·연도가 바뀌어 일수가 줄면 마지막 날로 (1월 31일 → 2월 28일)
@@ -230,7 +231,7 @@ export const Dial = ({
   const columns: DialColumnProps[] = [
     {
       items: years.map((y) => `${y}년`),
-      selectedIndex: Math.max(years.indexOf(year), 0),
+      selectedIndex: years.indexOf(year),
       onSelect: (i) => change(years[i], month, day),
       accessibilityLabel: '연',
       loop: false,
