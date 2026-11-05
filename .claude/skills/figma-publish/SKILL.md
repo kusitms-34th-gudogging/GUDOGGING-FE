@@ -17,7 +17,7 @@ Figma MCP 출력(React + Tailwind 웹 코드)은 **참고 자료**지 정답이 
 
 ## 2. 디자인 시스템 매핑 (핵심)
 
-먼저 읽기: `.claude/docs/design-tokens.md`(Figma 경로 → 클래스 매핑표) · `.claude/rules/styling.md` · `.claude/rules/components.md` · `.claude/docs/components/figma-props.md` · `.claude/docs/architecture.md`
+먼저 읽기: `.claude/docs/styling/token-classes.md`(Figma 경로 → 클래스 매핑표) · `.claude/rules/styling.md` · `.claude/rules/components.md`
 
 **토큰**
 
