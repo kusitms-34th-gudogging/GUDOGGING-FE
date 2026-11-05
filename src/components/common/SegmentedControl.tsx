@@ -1,5 +1,7 @@
 import { View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import { useSlidingIndicator } from '@/hooks/useSlidingIndicator';
 import { cn } from '@/utils/cn';
 
 import { Segment } from './Segment';
@@ -21,18 +23,32 @@ export const SegmentedControl = <T extends string>({
   selected,
   onSelect,
   className,
-}: SegmentedControlProps<T>) => (
-  <View
-    accessibilityRole="tablist"
-    className={cn('flex-row rounded-lg bg-bg-muted p-inset-2xs', className)}
-  >
-    {options.map((option) => (
-      <Segment
-        key={option.value}
-        label={option.label}
-        selected={option.value === selected}
-        onSelect={() => onSelect(option.value)}
-      />
-    ))}
-  </View>
-);
+}: SegmentedControlProps<T>) => {
+  const { indicatorStyle, onItemLayout, ready } = useSlidingIndicator(
+    options.findIndex((option) => option.value === selected),
+  );
+
+  return (
+    <View
+      accessibilityRole="tablist"
+      className={cn('flex-row rounded-lg bg-bg-muted p-inset-2xs', className)}
+    >
+      {ready && (
+        <Animated.View
+          pointerEvents="none"
+          style={indicatorStyle}
+          className="absolute bottom-inset-2xs left-0 top-inset-2xs rounded-button bg-surface-raised shadow-elevation-1"
+        />
+      )}
+      {options.map((option, index) => (
+        <Segment
+          key={option.value}
+          label={option.label}
+          selected={option.value === selected}
+          onSelect={() => onSelect(option.value)}
+          onLayout={onItemLayout(index)}
+        />
+      ))}
+    </View>
+  );
+};
