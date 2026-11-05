@@ -7,11 +7,15 @@ import { Button } from '@/components/common/Button';
 const TestIcon = () => <View testID="button-icon" />;
 
 describe('Button', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
   it('누르면 onPress가 호출된다', async () => {
     const onPress = jest.fn();
     await render(<Button label="저장" onPress={onPress} />);
 
-    await userEvent.setup().press(screen.getByRole('button', { name: '저장' }));
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await user.press(screen.getByRole('button', { name: '저장' }));
 
     expect(onPress).toHaveBeenCalledTimes(1);
   });
@@ -20,7 +24,8 @@ describe('Button', () => {
     const onPress = jest.fn();
     await render(<Button label="저장" disabled onPress={onPress} />);
 
-    await userEvent.setup().press(screen.getByRole('button', { name: '저장' }));
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await user.press(screen.getByRole('button', { name: '저장' }));
 
     expect(onPress).not.toHaveBeenCalled();
   });
