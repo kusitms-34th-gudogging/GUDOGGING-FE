@@ -8,8 +8,6 @@ interface TextFieldProps extends Omit<
   'className' | 'editable' | 'placeholderTextColor'
 > {
   label: string;
-  showLabel?: boolean;
-  suffix?: string;
   helper?: string;
   showHelper?: boolean;
   error?: boolean;
@@ -19,8 +17,6 @@ interface TextFieldProps extends Omit<
 
 export const TextField = ({
   label,
-  showLabel = true,
-  suffix,
   helper,
   showHelper,
   error,
@@ -34,12 +30,10 @@ export const TextField = ({
   const showError = error && !disabled;
 
   return (
-    <View className={cn('gap-stack-sm', suffix ? 'min-w-[120px]' : 'min-w-[200px]', className)}>
-      {showLabel && (
-        <Text numberOfLines={1} className="text-text-primary text-body3-regular">
-          {label}
-        </Text>
-      )}
+    <View className={cn('min-w-[200px] gap-stack-sm', className)}>
+      <Text numberOfLines={1} className="text-text-primary text-body3-regular">
+        {label}
+      </Text>
       <View
         className={cn(
           // 테두리를 항상 1px로 두고(기본은 투명) 패딩(16)에서 빼서, 포커스 시 글자가 밀리지 않게 함 (Figma 안쪽 stroke와 동일)
@@ -51,7 +45,7 @@ export const TextField = ({
       >
         <TextInput
           {...inputProps}
-          accessibilityLabel={suffix ? `${label}, ${suffix}` : label}
+          accessibilityLabel={label}
           accessibilityHint={showHelper || showError ? helper : undefined}
           editable={!disabled}
           onFocus={(e) => {
@@ -69,16 +63,6 @@ export const TextField = ({
             disabled ? 'text-text-disabled' : 'text-text-primary',
           )}
         />
-        {suffix && (
-          <Text
-            className={cn(
-              'transition-colors text-body2-regular',
-              disabled ? 'text-text-disabled' : 'text-text-secondary',
-            )}
-          >
-            {suffix}
-          </Text>
-        )}
       </View>
       {showHelper && helper && (
         <Text
