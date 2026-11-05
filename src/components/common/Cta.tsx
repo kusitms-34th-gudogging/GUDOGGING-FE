@@ -35,7 +35,7 @@ export const Cta = ({ variant, label, disabled, onPress, className }: CtaProps) 
     disabled={disabled}
     onPress={onPress}
     className={cn(
-      'h-bottom-cta w-full items-center justify-center rounded-cta px-inset-lg',
+      'h-bottom-cta w-full items-center justify-center rounded-cta px-inset-lg transition-colors',
       disabled ? 'bg-action-disabled' : ctaVariants({ variant }),
       className,
     )}
@@ -43,7 +43,7 @@ export const Cta = ({ variant, label, disabled, onPress, className }: CtaProps) 
     <Text
       numberOfLines={1}
       className={cn(
-        'text-center text-body1-semibold',
+        'text-center transition-colors text-body1-semibold',
         disabled ? 'text-text-on-disabled' : ctaLabelVariants({ variant }),
       )}
     >

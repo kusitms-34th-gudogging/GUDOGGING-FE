@@ -16,15 +16,15 @@ export const Toggle = ({ value, onValueChange, accessibilityLabel, className }: 
     accessibilityLabel={accessibilityLabel}
     onPress={() => onValueChange(!value)}
     className={cn(
-      'h-[31px] w-[51px] rounded-full p-s2',
+      'h-[31px] w-[51px] rounded-full p-s2 transition-colors duration-200',
       value ? 'bg-action-primary' : 'bg-border-default',
       className,
     )}
   >
     <View
       className={cn(
-        'size-[27px] rounded-full bg-surface-default shadow-[0_2px_6px_0_rgba(0,0,0,0.15)]',
-        value && 'translate-x-[20px]',
+        'size-[27px] rounded-full bg-surface-default shadow-[0_2px_6px_0_rgba(0,0,0,0.15)] transition-transform duration-200',
+        value ? 'translate-x-[20px]' : 'translate-x-0',
       )}
     />
   </Pressable>

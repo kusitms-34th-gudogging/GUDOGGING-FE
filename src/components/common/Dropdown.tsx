@@ -56,7 +56,7 @@ export const Dropdown = ({
         <Text
           numberOfLines={1}
           className={cn(
-            'flex-1 text-body2-regular',
+            'flex-1 transition-colors text-body2-regular',
             value ? 'text-text-primary' : 'text-text-tertiary',
           )}
         >
@@ -64,7 +64,12 @@ export const Dropdown = ({
         </Text>
         {showIcon && (
           // 열리면 chevron만 위로 뒤집음 (캘린더 등 교체 아이콘은 그대로)
-          <View className={cn(open && Icon === ChevronDownIcon ? 'rotate-180' : 'rotate-0')}>
+          <View
+            className={cn(
+              'transition-transform',
+              open && Icon === ChevronDownIcon ? 'rotate-180' : 'rotate-0',
+            )}
+          >
             <Icon className="size-icon-list text-icon-secondary" />
           </View>
         )}

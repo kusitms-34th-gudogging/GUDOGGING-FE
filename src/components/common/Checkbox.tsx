@@ -31,7 +31,7 @@ export const Checkbox = ({
     >
       <View
         className={cn(
-          'size-s24 items-center justify-center rounded-sm',
+          'size-s24 items-center justify-center rounded-sm transition-colors',
           disabled && 'border-default border-border-subtle bg-bg-subtle',
           !disabled && checked && 'bg-action-primary',
           !disabled && !checked && 'border-default border-border-strong bg-surface-default',
