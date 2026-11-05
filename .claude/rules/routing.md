@@ -19,3 +19,9 @@ export default function ProfileRoute() {
   return <ProfileScreen />;
 }
 ```
+
+## 이럴 때 더 읽기
+
+- 새 화면을 만들 때 → `.claude/skills/new-screen/SKILL.md`
+- `src/app/api`(서버 API)를 만들 때 → `.claude/rules/server-env.md`
+- 화면 전환을 테스트할 때 → `.claude/docs/testing/navigation.md`

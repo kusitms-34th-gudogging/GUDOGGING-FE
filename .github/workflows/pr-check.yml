@@ -1,0 +1,139 @@
+name: PR Check
+
+# 리뷰어가 Actions 로그를 열지 않아도 PR 화면에서 검사 결과를 보게 함
+# 검사는 끝까지 다 돌리고(어디서 깨졌는지 한 번에), 댓글은 PR당 하나만 유지
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash # -eo pipefail: tee 앞 명령이 실패하면 단계도 실패
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: mkdir -p ci-logs
+
+      - name: Lint
+        id: lint
+        continue-on-error: true
+        run: pnpm lint 2>&1 | tee ci-logs/lint.txt
+
+      - name: Format
+        id: format
+        continue-on-error: true
+        run: pnpm exec prettier --check . 2>&1 | tee ci-logs/format.txt
+
+      - name: Typecheck
+        id: typecheck
+        continue-on-error: true
+        run: pnpm typecheck 2>&1 | tee ci-logs/typecheck.txt
+
+      - name: Docs
+        id: docs
+        continue-on-error: true
+        run: pnpm docs:check 2>&1 | tee ci-logs/docs.txt
+
+      - name: Test
+        id: test
+        continue-on-error: true
+        run: pnpm test --ci --passWithNoTests --json --outputFile=ci-logs/jest.json 2>&1 | tee ci-logs/test.txt
+
+      # Expo 패치가 나오면 코드와 무관하게 실패할 수 있어서 경고만 (PR을 막지 않음)
+      - name: Expo Doctor
+        id: doctor
+        continue-on-error: true
+        run: npx expo-doctor 2>&1 | tee ci-logs/doctor.txt
+
+      - name: Comment results on PR
+        if: always() && github.event.pull_request.head.repo.full_name == github.repository # 포크 PR은 댓글 권한 없음
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          LINT: ${{ steps.lint.outcome }}
+          FORMAT: ${{ steps.format.outcome }}
+          TYPECHECK: ${{ steps.typecheck.outcome }}
+          DOCS: ${{ steps.docs.outcome }}
+          TEST: ${{ steps.test.outcome }}
+          DOCTOR: ${{ steps.doctor.outcome }}
+        run: |
+          MARKER='<!-- pr-check-report -->'
+          icon() { [ "$1" = "success" ] && echo "✅" || echo "❌"; }
+
+          TEST_DETAIL=""
+          if [ -f ci-logs/jest.json ]; then
+            # 실패한 테스트 이름(최대 5개)까지 표에 표시. 파일 자체가 안 돌면(import 에러 등) 개수로 표시
+            TEST_DETAIL=$(jq -r '
+              [.testResults[].assertionResults[] | select(.status == "failed")
+                | (.ancestorTitles + [.title]) | join(" › ") | gsub("\\|"; "\\|")] as $f
+              | "\(.numPassedTests)/\(.numTotalTests) 통과"
+                + (if ($f | length) > 0 then " · 실패: " + ($f[:5] | join(", "))
+                    + (if ($f | length) > 5 then " 외 \(($f | length) - 5)개" else "" end) else "" end)
+                + (if .numRuntimeErrorTestSuites > 0 then " · 실행 안 된 테스트 파일 \(.numRuntimeErrorTestSuites)개" else "" end)
+            ' ci-logs/jest.json)
+          fi
+
+          # 실패한 단계만 로그 마지막 40줄을 접어서 보여줌
+          failed_log() {  # $1: 이름, $2: outcome, $3: 로그 파일
+            if [ "$2" != "success" ] && [ -f "$3" ]; then
+              printf '\n<details><summary>%s 로그</summary>\n\n```\n%s\n```\n</details>\n' "$1" "$(tail -n 40 "$3")"
+            fi
+          }
+
+          BODY=$(cat <<EOF
+          $MARKER
+          ## 🔍 PR Check 결과
+
+          | 검사 | 결과 | 비고 |
+          | --- | --- | --- |
+          | Lint | $(icon "$LINT") | |
+          | Format | $(icon "$FORMAT") | |
+          | Typecheck | $(icon "$TYPECHECK") | |
+          | Docs | $(icon "$DOCS") | |
+          | Test | $(icon "$TEST") | ${TEST_DETAIL} |
+          | Expo Doctor | $([ "$DOCTOR" = "success" ] && echo "✅" || echo "⚠️") | $([ "$DOCTOR" = "success" ] || echo "경고만 · \`npx expo install --fix\`로 해결") |
+          $(failed_log "Lint" "$LINT" ci-logs/lint.txt)
+          $(failed_log "Format" "$FORMAT" ci-logs/format.txt)
+          $(failed_log "Typecheck" "$TYPECHECK" ci-logs/typecheck.txt)
+          $(failed_log "Docs" "$DOCS" ci-logs/docs.txt)
+          $(failed_log "Test" "$TEST" ci-logs/test.txt)
+          $(failed_log "Expo Doctor" "$DOCTOR" ci-logs/doctor.txt)
+
+          커밋 \`${SHA:0:7}\` · [실행 로그](${RUN_URL})
+          EOF
+          )
+
+          COMMENT_ID=$(gh api "repos/${GH_REPO}/issues/${PR_NUMBER}/comments" --paginate \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$MARKER\"))) | .id" | head -n 1)
+          if [ -n "$COMMENT_ID" ]; then
+            gh api -X PATCH "repos/${GH_REPO}/issues/comments/${COMMENT_ID}" -f body="$BODY" > /dev/null
+          else
+            gh api -X POST "repos/${GH_REPO}/issues/${PR_NUMBER}/comments" -f body="$BODY" > /dev/null
+          fi
+
+      - name: Fail if any check failed
+        if: always()
+        env:
+          OUTCOMES: ${{ steps.lint.outcome }} ${{ steps.format.outcome }} ${{ steps.typecheck.outcome }} ${{ steps.docs.outcome }} ${{ steps.test.outcome }}
+        run: |
+          for o in $OUTCOMES; do
+            if [ "$o" != "success" ]; then echo "::error::실패한 검사가 있습니다. PR 댓글을 확인하세요."; exit 1; fi
+          done

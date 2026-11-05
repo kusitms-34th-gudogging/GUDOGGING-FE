@@ -5,15 +5,11 @@ description: SVG 아이콘을 추가할 때 사용. "아이콘 추가해줘" 요
 
 # 아이콘 추가
 
-1. 단색 SVG인지 확인. 여러 색이면 이 폴더에 넣지 말고 사용자에게 알림
-2. SVG 안 색을 `#000` 또는 `#000000`으로 통일 (그래야 currentColor로 변환됨)
-3. 선(stroke) 아이콘이면 `<path>`에 `vector-effect="non-scaling-stroke"` 추가 (`size-icon-xs` 등으로 줄여도 선 굵기 유지)
-4. 파일명 `icon_{모양}_{방향(화살표만)}_{fill|regular|thin}.svg` 로 `src/assets/icons/`에 저장
-5. `src/assets/icons/index.ts`에 export 추가 (기존 `export {};` 플레이스홀더는 첫 아이콘 추가 시 제거)
+규칙(파일명·색·선 굵기·사용법)은 `.claude/rules/icons.md`. 아래는 순서만
 
-   ```ts
-   export { default as ArrowLeftIcon } from './icon_arrow_left_fill.svg';
-   ```
-
-6. 사용: `import { ArrowLeftIcon } from '@/assets/icons';` → `<ArrowLeftIcon className="size-icon-md text-icon-primary" />`
-7. 사용자에게 `pnpm start -c`로 캐시 초기화 필요하다고 안내
+1. `.claude/rules/icons.md`를 읽음
+2. 단색 SVG인지 확인. 여러 색이면 아이콘이 아니므로 `.claude/skills/add-asset/SKILL.md`로 안내하고 멈춤
+3. 규칙대로 색 통일, 선 아이콘이면 `vector-effect` 추가
+4. 규칙의 파일명으로 `src/assets/icons/`에 저장
+5. `src/assets/icons/index.ts`에 export 추가
+6. 사용자에게 `pnpm start -c`로 캐시 초기화가 필요하다고 안내

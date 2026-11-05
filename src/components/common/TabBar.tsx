@@ -1,6 +1,8 @@
 import { View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { CalendarIcon, HomeIcon, UserIcon, WalletIcon } from '@/assets/icons';
+import { useSlidingIndicator } from '@/hooks/useSlidingIndicator';
 import { cn } from '@/utils/cn';
 
 import { TabItem } from './TabItem';
@@ -21,23 +23,37 @@ interface TabBarProps {
 }
 
 // 화면 배치(좌우 20, 하단 Safe Area + 16)는 사용처가 정함
-export const TabBar = ({ selected, onSelect, className }: TabBarProps) => (
-  <View
-    accessibilityRole="tablist"
-    className={cn(
-      'w-full max-w-[335px] flex-row items-center rounded-pill bg-surface-raised p-inset-2xs shadow-elevation-2',
-      className,
-    )}
-  >
-    {TABS.map(({ menu, label, icon }) => (
-      <TabItem
-        key={menu}
-        icon={icon}
-        accessibilityLabel={label}
-        selected={selected === menu}
-        onSelect={() => onSelect(menu)}
-        className="flex-1"
-      />
-    ))}
-  </View>
-);
+export const TabBar = ({ selected, onSelect, className }: TabBarProps) => {
+  const { indicatorStyle, onItemLayout, ready } = useSlidingIndicator(
+    TABS.findIndex(({ menu }) => menu === selected),
+  );
+
+  return (
+    <View
+      accessibilityRole="tablist"
+      className={cn(
+        'w-full max-w-[335px] flex-row items-center rounded-pill bg-surface-raised p-inset-2xs shadow-elevation-2',
+        className,
+      )}
+    >
+      {ready && (
+        <Animated.View
+          pointerEvents="none"
+          style={indicatorStyle}
+          className="absolute bottom-inset-2xs left-0 top-inset-2xs rounded-pill bg-bg-muted"
+        />
+      )}
+      {TABS.map(({ menu, label, icon }, index) => (
+        <TabItem
+          key={menu}
+          icon={icon}
+          accessibilityLabel={label}
+          selected={selected === menu}
+          onSelect={() => onSelect(menu)}
+          onLayout={onItemLayout(index)}
+          className="flex-1"
+        />
+      ))}
+    </View>
+  );
+};

@@ -1,21 +1,24 @@
 # 폴더 구조 · 파일 위치 판단
 
-SDK 55+ 기본 템플릿(`app` · `components` · `constants` · `hooks`) + Expo 팀 권장 폴더(`screens` · `utils` · `server`).
+SDK 55+ 기본 템플릿(`app` · `components` · `constants` · `hooks`) + Expo 팀 권장 폴더(`screens` · `utils` · `server`). + `lib`(팀 결정: 부수효과 있는 설정 코드를 순수 함수 `utils`와 분리).
 앱 코드는 전부 `src/`, 설정 파일(`app.json`, `eas.json` 등)은 루트.
 
 ```txt
 tokens/            # 디자인 토큰 (루트). default-token.json 원본, tailwind-token.json 생성물, index.ts → @tokens
+.maestro/          # E2E 플로우 (Maestro YAML)
+.eas/workflows/    # EAS Workflows (E2E CI)
 src/
 ├─ app/            # 라우트 전용. screens 컴포넌트를 반환하는 얇은 껍데기
 │  ├─ api/         # +api 파일(서버 API 라우트)
-│  └─ _layout.tsx  # 루트 레이아웃 (global.css, nativewindInterop import)
+│  └─ _layout.tsx  # 루트 레이아웃 (global.css, nativewindInterop import, Provider 감싸기)
 ├─ screens/        # 화면 본체(XxxScreen.tsx)만
 ├─ components/
 │  ├─ common/      # 디자인 시스템 컴포넌트 + 2개 이상 도메인에서 쓰는 컴포넌트
 │  └─ {도메인}/    # 한 도메인 안에서만 쓰는 컴포넌트 (화면 만들 때 추가)
-├─ hooks/          # useXxx.ts
+├─ hooks/          # useXxx.ts (API 훅 포함: useQuery/useMutation)
 ├─ constants/      # 상수, 테마 값
-├─ utils/          # 순수 유틸 함수 (cn, nativewindInterop), 테스트는 옆에
+├─ lib/            # 외부 라이브러리 설정·인스턴스 (nativewindInterop, request, queryClient). 부수효과 있는 코드
+├─ utils/          # 순수 유틸 함수 (cn)
 ├─ server/         # API 라우트에서만 쓰는 코드 (auth, db)
 └─ assets/
    ├─ fonts/       # Pretendard (app.json expo-font 플러그인으로 임베드)
@@ -32,11 +35,12 @@ src/
 | 한 도메인 안에서만 쓰는 컴포넌트     | `src/components/{도메인}/`                               |
 | 디자인 시스템 / 2개 이상 도메인 공용 | `src/components/common/`                                 |
 | 커스텀 훅                            | `src/hooks/useXxx.ts`                                    |
+| API 호출 훅                          | `src/hooks/use{리소스}.ts`                               |
+| 테스트                               | 대상 폴더의 `__tests__/Xxx.test.tsx`, E2E는 `.maestro/`  |
 | 순수 함수                            | `src/utils/`                                             |
+| 라이브러리 설정·인스턴스 (부수효과)  | `src/lib/` (request, queryClient)                        |
 | 서버 API                             | `src/app/api/xxx+api.ts` + 로직은 `src/server/`          |
 | 여러 곳에서 공유하는 타입            | `src/types/` (그 전까진 쓰는 곳 옆)                      |
-
-- 도메인끼리 import 금지. 다른 도메인에서도 쓰게 되면 `common/`으로 옮김
 
 ## 컴포넌트 파일 → 폴더 전환
 
@@ -52,3 +56,7 @@ components/home/profileCard/Avatar.tsx  #          내부 조각
 
 `tsconfig.json`의 `paths`로 `@/*` → `src/*`, `@tokens` → `tokens/` (JS 토큰). Expo CLI가 바로 지원하므로 `babel-plugin-module-resolver` 불필요.
 `tsconfig.json` 변경 후엔 개발 서버 재시작.
+
+## 이럴 때 더 읽기
+
+- 파일 이름을 정할 때 → `.claude/rules/components.md` "파일명"

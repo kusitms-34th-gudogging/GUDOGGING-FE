@@ -65,14 +65,14 @@ export const TextField = ({
           placeholderClassName={disabled ? 'text-text-disabled' : 'text-text-tertiary'}
           // iOS TextInput은 lineHeight 주면 글자가 아래로 쏠림 (Text와 달리 baseline 보정 없음) → iOS만 0(=미지정)으로 덮어씀
           className={cn(
-            'ios:!leading-[0px] flex-1 text-body2-regular',
+            'ios:!leading-[0px] flex-1 transition-colors text-body2-regular',
             disabled ? 'text-text-disabled' : 'text-text-primary',
           )}
         />
         {suffix && (
           <Text
             className={cn(
-              'text-body2-regular',
+              'transition-colors text-body2-regular',
               disabled ? 'text-text-disabled' : 'text-text-secondary',
             )}
           >
@@ -84,7 +84,7 @@ export const TextField = ({
         <Text
           numberOfLines={2}
           className={cn(
-            'text-caption1-regular',
+            'transition-colors text-caption1-regular',
             showError ? 'text-text-error' : 'text-text-tertiary',
           )}
         >

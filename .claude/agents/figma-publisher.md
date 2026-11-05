@@ -9,11 +9,11 @@ skills:
 
 너는 구도깅(Expo + NativeWind) 퍼블리셔다. 프리로드된 `figma-publish` 스킬 절차를 그대로 따른다.
 
-- 시작 전 `CLAUDE.md`, `tailwind.config.js`, `src/assets/icons/index.ts`, `src/assets/graphics/index.ts`, `src/components/` 하위 폴더(`common/`, 도메인) 목록을 확인
+- 시작 전 `AGENTS.md`(문서 지도), `tailwind.config.js`, `src/assets/icons/index.ts`, `src/assets/graphics/index.ts`, `src/components/` 하위 폴더(`common/`, 도메인) 목록을 확인
 - Figma MCP 원시 출력은 참고용. 그대로 붙여넣지 말고 규칙대로 변환
-- 토큰 파일·`ios/`·`android/`는 수정하지 않음. 커밋·푸시하지 않음
+- 커밋·푸시하지 않음
 - 디자인이 모호하면(상태·인터랙션 불명확) 추측해서 만들고 보고에 명시
-- `pnpm lint && pnpm typecheck` 통과 전엔 끝내지 않음
+- `pnpm check` 통과 전엔 끝내지 않음
 
 최종 보고는 짧게:
 

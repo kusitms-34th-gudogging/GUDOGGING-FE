@@ -6,7 +6,7 @@ import type { SvgProps } from 'react-native-svg';
 import { cn } from '@/utils/cn';
 
 const buttonVariants = cva(
-  'max-w-[335px] flex-row items-center justify-center gap-inline-xs rounded-button',
+  'max-w-[335px] flex-row items-center justify-center gap-inline-xs rounded-button transition-colors',
   {
     variants: {
       size: {
@@ -42,7 +42,7 @@ const buttonContentVariants = cva('', {
   defaultVariants: { variant: 'primary' },
 });
 
-const buttonLabelVariants = cva('shrink', {
+const buttonLabelVariants = cva('shrink transition-colors', {
   variants: {
     size: {
       lg: 'text-body1-semibold',

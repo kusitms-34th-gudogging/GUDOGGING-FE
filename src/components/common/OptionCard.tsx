@@ -30,7 +30,7 @@ export const OptionCard = ({
     accessibilityState={{ selected }}
     onPress={onSelect}
     className={cn(
-      'w-full flex-row items-center gap-inline-md rounded-input border-default bg-bg-default px-inset-md py-inset-sm',
+      'w-full flex-row items-center gap-inline-md rounded-input border-default bg-bg-default px-inset-md py-inset-sm transition-colors',
       selected ? 'border-border-brand' : 'border-border-default',
       className,
     )}

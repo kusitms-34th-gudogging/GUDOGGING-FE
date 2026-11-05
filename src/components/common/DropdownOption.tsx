@@ -16,7 +16,7 @@ export const DropdownOption = ({ label, selected, onSelect, className }: Dropdow
     accessibilityState={{ selected }}
     onPress={onSelect}
     className={cn(
-      'h-touch-target flex-row items-center gap-inline-sm rounded-sm px-inset-xs',
+      'h-touch-target flex-row items-center gap-inline-sm rounded-sm px-inset-xs transition-colors',
       selected && 'bg-bg-subtle',
       className,
     )}

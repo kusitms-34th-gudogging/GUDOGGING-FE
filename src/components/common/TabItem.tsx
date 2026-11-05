@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { Pressable } from 'react-native';
+import { type LayoutChangeEvent, Pressable } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
 import { cn } from '@/utils/cn';
@@ -9,6 +9,7 @@ interface TabItemProps {
   accessibilityLabel: string;
   selected: boolean;
   onSelect: () => void;
+  onLayout?: (e: LayoutChangeEvent) => void;
   className?: string;
 }
 
@@ -18,6 +19,7 @@ export const TabItem = ({
   accessibilityLabel,
   selected,
   onSelect,
+  onLayout,
   className,
 }: TabItemProps) => (
   <Pressable
@@ -25,9 +27,9 @@ export const TabItem = ({
     accessibilityLabel={accessibilityLabel}
     accessibilityState={{ selected }}
     onPress={onSelect}
+    onLayout={onLayout}
     className={cn(
       'h-nav-bar min-w-[48px] max-w-[140px] items-center justify-center rounded-pill',
-      selected && 'bg-bg-muted',
       className,
     )}
   >

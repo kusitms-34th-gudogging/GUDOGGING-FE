@@ -5,7 +5,7 @@ paths:
 
 # 그래픽 에셋 규칙
 
-아이콘(`icons.md`)과 달리 **색이 고정된 SVG**. 쓰는 곳에서는 크기만 조절하고 색은 바꾸지 않음
+아이콘과 달리 **색이 고정된 SVG**. 쓰는 곳에서는 크기만 조절하고 색은 바꾸지 않음
 
 ## 폴더
 
@@ -60,3 +60,8 @@ import { WalletColorAsset } from '@/assets/graphics';
 - 크기는 size·spacing 토큰 우선, 없으면 arbitrary(`size-[80px]`). 반복되면 토큰 등록 요청
 - 카테고리를 새로 추가하면 `AssetTile.tsx`의 `tone`(cva, `-bgx` 포함)과 `categoryAssets`에도 추가 (tone만 넣고 `categoryAssets`를 빠뜨리면 타입 에러로 잡힘)
 - SVG 추가·이동 후 `pnpm start -c`로 캐시 초기화
+
+## 이럴 때 더 읽기
+
+- 에셋을 새로 추가할 때 → `.claude/skills/add-asset/SKILL.md`
+- 단색이고 쓰는 곳마다 색이 바뀌면(아이콘) → `.claude/rules/icons.md`

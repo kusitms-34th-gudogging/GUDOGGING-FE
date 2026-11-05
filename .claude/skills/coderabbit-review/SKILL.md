@@ -31,7 +31,7 @@ description: PR에 달린 CodeRabbit 리뷰를 확인하고 대응할 때 사용
 
 - **반영**: 실제 버그·보안·로직 문제
 - **보류**: 맞는 말이지만 이번 PR 범위 밖 → 이슈로 분리 제안
-- **반영 안 함**: 이미 해결됨, 오탐, `.coderabbit.yaml`에서 제외한 스타일·네이밍 지적, 프로젝트 규칙(`CLAUDE.md`)과 충돌
+- **반영 안 함**: 이미 해결됨, 오탐, `.coderabbit.yaml`에서 제외한 스타일·네이밍 지적, 프로젝트 규칙(`AGENTS.md`·`.claude/rules/`)과 충돌
 
 사용자에게 표로 보고하고 **확인받은 뒤** 수정:
 
@@ -41,8 +41,8 @@ description: PR에 달린 CodeRabbit 리뷰를 확인하고 대응할 때 사용
 ## 3. 반영
 
 - 최소 수정. suggestion 블록은 그대로 붙이지 말고 프로젝트 규칙에 맞게
-- `pnpm lint && pnpm typecheck` 통과
-- 커밋은 `/commit` 컨벤션, 리뷰 반영이면 타입 `FIX`
+- `pnpm check` 통과
+- 커밋은 `.claude/skills/commit/convention.md`, 리뷰 반영이면 타입 `FIX`
 
 ## 4. GitHub에 아무것도 쓰지 않음
 
