@@ -1,20 +1,9 @@
-import { cva, type VariantProps } from 'class-variance-authority';
 import { Modal as RNModal, Pressable, Text, View } from 'react-native';
 
-const modalTextVariants = cva('w-full gap-stack-sm px-inset-lg', {
-  variants: {
-    buttons: {
-      none: 'py-section',
-      confirm: 'pb-inset-lg pt-section',
-      both: 'pb-inset-lg pt-section',
-    },
-  },
-  defaultVariants: { buttons: 'none' },
-});
-
-interface ModalProps extends VariantProps<typeof modalTextVariants> {
+interface ModalProps {
   visible: boolean;
   onClose: () => void;
+  buttons?: 'none' | 'confirm' | 'both';
   title: string;
   description?: string;
   showDescription?: boolean;
@@ -27,7 +16,7 @@ interface ModalProps extends VariantProps<typeof modalTextVariants> {
 export const Modal = ({
   visible,
   onClose,
-  buttons,
+  buttons = 'none',
   title,
   description,
   showDescription = true,
@@ -44,19 +33,22 @@ export const Modal = ({
         onPress={onClose}
         className="absolute inset-0 bg-bg-dim"
       />
-      <View className="w-[311px] overflow-hidden rounded-modal bg-surface-raised shadow-elevation-3">
-        <View className={modalTextVariants({ buttons })}>
-          <Text numberOfLines={2} className="text-center text-text-primary text-head4-bold">
+      <View className="w-[280px] overflow-hidden rounded-card bg-surface-raised shadow-elevation-3">
+        <View className="w-full gap-stack-xs px-inset-md py-s20">
+          <Text numberOfLines={2} className="text-center text-text-primary text-body2-semibold">
             {title}
           </Text>
           {showDescription && description && (
-            <Text numberOfLines={5} className="text-center text-text-secondary text-body2-regular">
+            <Text
+              numberOfLines={5}
+              className="text-center text-text-secondary text-caption1-regular"
+            >
               {description}
             </Text>
           )}
         </View>
-        {buttons && buttons !== 'none' && (
-          <View className="flex-row border-t-default border-border-default">
+        {buttons !== 'none' && (
+          <View className="flex-row border-t-[0.5px] border-border-default">
             {buttons === 'both' && (
               <Pressable
                 accessibilityRole="button"
@@ -64,11 +56,11 @@ export const Modal = ({
                   onCancel?.();
                   onClose();
                 }}
-                className="h-bottom-cta flex-1 items-center justify-center border-r-default border-border-default px-inset-md"
+                className="h-touch-target flex-1 items-center justify-center border-r-[0.5px] border-border-default px-inset-md"
               >
                 <Text
                   numberOfLines={1}
-                  className="max-w-[120px] text-text-secondary text-body1-semibold"
+                  className="max-w-[120px] text-text-secondary text-body3-semibold"
                 >
                   {cancelLabel}
                 </Text>
@@ -80,9 +72,9 @@ export const Modal = ({
                 onConfirm?.();
                 onClose();
               }}
-              className="h-bottom-cta flex-1 items-center justify-center px-inset-md"
+              className="h-touch-target flex-1 items-center justify-center px-inset-md"
             >
-              <Text numberOfLines={1} className="max-w-[120px] text-text-brand text-body1-semibold">
+              <Text numberOfLines={1} className="max-w-[120px] text-text-brand text-body3-semibold">
                 {confirmLabel}
               </Text>
             </Pressable>
