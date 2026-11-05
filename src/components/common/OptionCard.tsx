@@ -8,9 +8,11 @@ import { AssetTile } from './AssetTile';
 
 interface OptionCardProps {
   title: string;
-  description: string;
-  asset: ComponentType<SvgProps>;
-  monoAsset: ComponentType<SvgProps>;
+  description?: string;
+  showDescription?: boolean;
+  asset?: ComponentType<SvgProps>;
+  monoAsset?: ComponentType<SvgProps>;
+  showAsset?: boolean;
   selected: boolean;
   onSelect: () => void;
   className?: string;
@@ -19,8 +21,10 @@ interface OptionCardProps {
 export const OptionCard = ({
   title,
   description,
+  showDescription = true,
   asset,
   monoAsset,
+  showAsset = true,
   selected,
   onSelect,
   className,
@@ -35,18 +39,17 @@ export const OptionCard = ({
       className,
     )}
   >
-    {selected ? (
-      <AssetTile tone="brand-bgx" asset={asset} />
-    ) : (
-      <AssetTile tone="mono-bgx" asset={monoAsset} />
-    )}
+    {showAsset && selected && asset && <AssetTile tone="brand-bgx" asset={asset} />}
+    {showAsset && !selected && monoAsset && <AssetTile tone="mono-bgx" asset={monoAsset} />}
     <View className="flex-1 gap-inline-xs">
       <Text numberOfLines={1} className="text-text-primary text-body2-semibold">
         {title}
       </Text>
-      <Text numberOfLines={2} className="text-text-secondary text-caption2-regular">
-        {description}
-      </Text>
+      {showDescription && description && (
+        <Text numberOfLines={2} className="text-text-secondary text-caption2-regular">
+          {description}
+        </Text>
+      )}
     </View>
   </Pressable>
 );
