@@ -4,12 +4,14 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/metro-runtime": "~58.0.17",
+    "@gorhom/bottom-sheet": "^5.2.14",
     "@tanstack/react-query": "^5.105.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "expo": "~58.0.23",
     "expo-constants": "~58.0.15",
     "expo-font": "~58.0.11",
+    "expo-haptics": "~58.0.7",
     "expo-linking": "~58.0.16",
     "expo-router": "~58.0.30",
     "expo-splash-screen": "~58.0.13",
@@ -73,6 +75,13 @@
   },
   "jest": {
     "preset": "jest-expo",
+    "resolver": "<rootDir>/jest-resolver.js",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest-setup.ts"
+    ],
+    "moduleNameMapper": {
+      "\\.svg$": "react-native-svg"
+    },
     "transformIgnorePatterns": [
       "node_modules/(?!(.pnpm|(jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|standard-navigation))"
     ]

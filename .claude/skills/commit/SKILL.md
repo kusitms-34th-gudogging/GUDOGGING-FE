@@ -1,6 +1,6 @@
 ---
 name: commit
-description: 구도깅 커밋 컨벤션(#이슈번호 [타입] 작업내용)에 맞춰 변경사항을 커밋
+description: 커밋할 때 사용. "커밋해줘", "커밋하자" 요청 시 구도깅 커밋 컨벤션(#이슈번호 [타입] 작업내용)에 맞춰 변경사항을 커밋
 disable-model-invocation: true
 ---
 
