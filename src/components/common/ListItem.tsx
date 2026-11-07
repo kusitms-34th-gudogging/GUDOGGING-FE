@@ -70,8 +70,8 @@ export const ListItem = ({
       </View>
     )}
     {showIconLeft && IconLeft && <IconLeft className={cn('size-[28px]', iconLeftColor)} />}
-    <View className="flex-1 gap-stack-xs">
-      <Text numberOfLines={1} className="text-text-primary text-body2-semibold">
+    <View className="flex-1 gap-s2">
+      <Text numberOfLines={1} className="text-text-primary text-body3-semibold">
         {title}
       </Text>
       {showSubtitle && subtitle && (
@@ -82,7 +82,7 @@ export const ListItem = ({
     </View>
     <View className="flex-row items-center gap-inline-xs">
       {showCost && cost && (
-        <Text numberOfLines={1} className={cn('max-w-[120px] text-body2-semibold', costColor)}>
+        <Text numberOfLines={1} className={cn('max-w-[120px] text-body3-semibold', costColor)}>
           {cost}
         </Text>
       )}
