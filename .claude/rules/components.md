@@ -13,7 +13,7 @@ paths:
 
 - 컴포넌트·화면 파일은 PascalCase: `ProfileCard.tsx`, `HomeScreen.tsx`
 - 훅·유틸 파일은 export 이름 그대로 camelCase: `useProfile.ts`, `cn.ts`
-- 도메인 폴더는 camelCase: `components/subscription/`
+- 도메인 폴더는 camelCase: `components/subscription/`, `screens/subscription/`
 - 예외: 라우트 파일(`src/app/`), SVG 파일(snake_case)
 
 ## import

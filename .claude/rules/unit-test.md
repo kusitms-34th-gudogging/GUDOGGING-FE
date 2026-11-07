@@ -58,7 +58,7 @@ paths:
 ```txt
 src/
 ├─ app/                         # ❌ 테스트 파일 금지 (전부 라우트로 인식됨)
-├─ screens/__tests__/
+├─ screens/home/__tests__/
 │  └─ HomeScreen.test.tsx       # 화면 렌더 · 화면 전환 (renderRouter)
 ├─ components/common/__tests__/
 │  └─ Button.test.tsx           # 컴포넌트 상호작용

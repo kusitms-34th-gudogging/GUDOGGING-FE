@@ -1,6 +1,8 @@
+import { Canvas } from '@shopify/react-native-skia';
 import { cssInterop } from 'nativewind';
 import { TextInput } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg from 'react-native-svg';
 
 // 서드파티 View라 className 매핑이 없어서 style로 연결
@@ -18,3 +20,7 @@ cssInterop(Svg, {
     nativeStyleToProp: { width: true, height: true, color: true },
   },
 });
+
+cssInterop(Canvas, { className: 'style' });
+
+cssInterop(SafeAreaView, { className: 'style' });
