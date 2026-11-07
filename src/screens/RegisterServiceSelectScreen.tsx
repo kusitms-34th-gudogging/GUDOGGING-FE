@@ -1,29 +1,14 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 
-import { CloseIcon } from '@/assets/icons';
+import { CloseIcon, PlusIcon } from '@/assets/icons';
 import { Chip } from '@/components/common/Chip';
 import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
 import { SearchBar } from '@/components/common/SearchBar';
 import { TopBar } from '@/components/common/TopBar';
-
-interface Service {
-  id: string;
-  name: string;
-}
-
-// shortcut: 하드코딩 목록, 서비스 목록 API 연동 시 props로 교체
-const SERVICES: Service[] = [
-  { id: 'netflix', name: 'Netflix' },
-  { id: 'chatgpt', name: 'ChatGPT' },
-  { id: 'youtube', name: 'YouTube Premium' },
-  { id: 'spotify', name: 'Spotify' },
-  { id: 'coupang', name: '쿠팡 와우' },
-  { id: 'disney', name: '디즈니+' },
-  { id: 'tving', name: '티빙' },
-];
+import { SERVICES } from '@/constants/services';
 
 export const RegisterServiceSelectScreen = () => {
   const [query, setQuery] = useState('');
@@ -33,6 +18,11 @@ export const RegisterServiceSelectScreen = () => {
     setSelectedIds((ids) => (ids.includes(id) ? ids.filter((v) => v !== id) : [...ids, id]));
   const selected = SERVICES.filter((s) => selectedIds.includes(s.id));
   const count = selected.length;
+  // shortcut: 영문·한글 이름 부분 일치만
+  const keyword = query.trim().toLowerCase();
+  const results = keyword
+    ? SERVICES.filter((s) => `${s.name} ${s.nameKo}`.toLowerCase().includes(keyword))
+    : SERVICES;
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -78,24 +68,46 @@ export const RegisterServiceSelectScreen = () => {
             )}
           </View>
         </View>
-        {/* 뷰포트에 최대 5개, 이후 스크롤 */}
-        <ScrollView className="max-h-[361px]" contentContainerClassName="gap-inline-xs">
-          {SERVICES.map((s) => (
-            <ListItem
-              key={s.id}
-              title={s.name}
-              logo={require('@/assets/images/logo_placeholder.png')}
-              showLogo
-              showCheckBox
-              checked={selectedIds.includes(s.id)}
-              onCheckedChange={() => toggle(s.id)}
-            />
-          ))}
-        </ScrollView>
+        {/* 화면이 작으면 리스트가 줄어들도록 shrink */}
+        <View className="shrink gap-inline-sm">
+          {!!keyword && <Text className="text-text-primary text-body3-regular">검색 결과</Text>}
+          <View className="shrink gap-inline-xs">
+            {/* 뷰포트에 최대 5개, 이후 스크롤 */}
+            <ScrollView className="max-h-[361px] shrink" contentContainerClassName="gap-inline-xs">
+              {results.map((s) => (
+                <ListItem
+                  key={s.id}
+                  title={s.name}
+                  logo={require('@/assets/images/logo_placeholder.png')}
+                  showLogo
+                  showCheckBox
+                  checked={selectedIds.includes(s.id)}
+                  onCheckedChange={() => toggle(s.id)}
+                />
+              ))}
+            </ScrollView>
+            {!!keyword && (
+              // A-03 화면이 생기면 onPress 연결
+              <Pressable
+                accessibilityRole="button"
+                className="h-[69px] flex-row items-center gap-inline-md border-b-default border-border-default px-inline-xs active:opacity-pressed"
+              >
+                <PlusIcon className="size-[28px] text-icon-secondary" />
+                <Text className="text-text-secondary text-body2-semibold">직접 입력하기</Text>
+              </Pressable>
+            )}
+          </View>
+        </View>
       </View>
       <View className="pb-safe px-screen-x">
-        {/* A-04 화면이 생기면 onPress 연결 */}
-        <Cta label={`${count}개 선택 완료`} disabled={count === 0} className="mb-[14px]" />
+        <Cta
+          label={`${count}개 선택 완료`}
+          disabled={count === 0}
+          onPress={() =>
+            router.push({ pathname: '/register/selected', params: { ids: selectedIds.join(',') } })
+          }
+          className="mb-[14px]"
+        />
       </View>
     </View>
   );
