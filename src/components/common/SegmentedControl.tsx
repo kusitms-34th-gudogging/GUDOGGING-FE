@@ -31,7 +31,7 @@ export const SegmentedControl = <T extends string>({
   return (
     <View
       accessibilityRole="tablist"
-      className={cn('flex-row rounded-lg bg-bg-muted p-inset-2xs', className)}
+      className={cn('flex-row justify-center rounded-lg bg-bg-muted p-inset-2xs', className)}
     >
       {ready && (
         <Animated.View
@@ -47,6 +47,7 @@ export const SegmentedControl = <T extends string>({
           selected={option.value === selected}
           onSelect={() => onSelect(option.value)}
           onLayout={onItemLayout(index)}
+          className="flex-1"
         />
       ))}
     </View>
