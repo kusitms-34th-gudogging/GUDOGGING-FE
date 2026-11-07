@@ -22,8 +22,63 @@ export const PAID_AT = [
 ] as const;
 export type PaidAt = (typeof PAID_AT)[number]['value'];
 
+export interface FoundSubscription {
+  id: string;
+  name: string;
+  payment: Partial<PaymentInfo>;
+  issue?: string;
+  amountUncertain?: boolean;
+  checked: boolean;
+}
+
+// shortcut: 스크린샷 분석 API 없이 샘플 결과, API 연동 시 분석 응답 훅으로 교체
+export const FOUND_SAMPLE: FoundSubscription[] = [
+  {
+    id: 'chatgpt',
+    name: 'ChatGPT Plus',
+    payment: {
+      category: '생산성·AI',
+      amount: 29000,
+      cycle: 1,
+      unit: '개월',
+      nextDate: new Date(2026, 10, 12),
+      paidAt: 'appstore',
+    },
+    issue: '금액을 읽지 못했어요',
+    amountUncertain: true,
+    checked: true,
+  },
+  {
+    id: 'custom-found-millie',
+    name: '밀리의 서재',
+    payment: { category: '교육·학습', amount: 9900, cycle: 1, unit: '개월', paidAt: 'web' },
+    issue: '결제일 확인 필요해요',
+    checked: false,
+  },
+  {
+    id: 'netflix',
+    name: 'Netflix',
+    payment: { category: '영상·OTT', amount: 13500, cycle: 1, unit: '개월', paidAt: 'web' },
+    issue: '금액·결제일 확인 필요해요',
+    amountUncertain: true,
+    checked: true,
+  },
+  {
+    id: 'youtube',
+    name: 'YouTube Premium',
+    payment: {
+      category: '영상·OTT',
+      amount: 17000,
+      cycle: 1,
+      unit: '개월',
+      nextDate: new Date(2026, 10, 12),
+      paidAt: 'appstore',
+    },
+    checked: true,
+  },
+];
+
 export interface PaymentInfo {
-  // 직접 입력한 구독만 (사전 등록 서비스는 SERVICES의 이름)
   name?: string;
   category: string;
   amount: number;
