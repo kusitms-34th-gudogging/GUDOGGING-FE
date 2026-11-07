@@ -52,7 +52,7 @@ export const RegisterDoneScreen = ({ serviceIds }: RegisterDoneScreenProps) => {
       >
         <LottieView
           ref={lottieRef}
-          source={require('@/assets/lottie/piggy_coin.json')}
+          source={require('@/assets/lotties/piggy_coin.json')}
           autoPlay={false}
           loop={false}
           progress={lastFrame}

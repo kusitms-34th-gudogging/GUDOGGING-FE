@@ -24,7 +24,7 @@ src/
    ├─ fonts/       # Pretendard (app.json expo-font 플러그인으로 임베드)
    ├─ graphics/    # 색 고정 SVG (category/·shared/) → index.ts에서 컴포넌트로 export
    ├─ icons/       # 단색 SVG 아이콘 → index.ts에서 컴포넌트로 export
-   ├─ lottie/      # Lottie 모션 JSON (LottieView source에 require)
+   ├─ lotties/     # Lottie 모션 JSON (LottieView source에 require)
    └─ images/      # 앱 아이콘·스플래시 등
 ```
 
