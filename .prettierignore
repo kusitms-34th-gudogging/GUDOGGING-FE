@@ -5,3 +5,6 @@ tokens/*.json
 
 # GitHub Actions 워크플로
 .github/workflows/
+
+# Lottie 내보내기 JSON
+src/assets/lottie/*.json

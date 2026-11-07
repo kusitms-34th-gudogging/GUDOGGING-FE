@@ -1,3 +1,4 @@
+import LottieView from 'lottie-react-native';
 import { cssInterop } from 'nativewind';
 import { TextInput } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -18,3 +19,6 @@ cssInterop(Svg, {
     nativeStyleToProp: { width: true, height: true, color: true },
   },
 });
+
+// 서드파티 View라 className 매핑이 없어서 style로 연결
+cssInterop(LottieView, { className: 'style' });
