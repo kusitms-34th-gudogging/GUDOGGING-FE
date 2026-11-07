@@ -1,3 +1,4 @@
+import { colors } from '@tokens';
 import { useState } from 'react';
 import { Text, TextInput, type TextInputProps, View } from 'react-native';
 
@@ -56,7 +57,7 @@ export const TextField = ({
             setFocused(false);
             onBlur?.(e);
           }}
-          placeholderClassName={disabled ? 'text-text-disabled' : 'text-text-tertiary'}
+          placeholderTextColor={disabled ? colors.text.disabled : colors.text.tertiary}
           // iOS TextInput은 lineHeight 주면 글자가 아래로 쏠림 (Text와 달리 baseline 보정 없음) → iOS만 0(=미지정)으로 덮어씀
           className={cn(
             'ios:!leading-[0px] flex-1 transition-colors text-body2-regular',

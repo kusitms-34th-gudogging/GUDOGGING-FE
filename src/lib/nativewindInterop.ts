@@ -1,17 +1,13 @@
 import LottieView from 'lottie-react-native';
 import { cssInterop } from 'nativewind';
-import { TextInput } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Svg from 'react-native-svg';
 
+// 서드파티 컴포넌트만 여기서 연결. RN 기본 컴포넌트(TextInput 등)는 NativeWind가 첫 렌더 때
+// 기본 설정으로 다시 등록해 덮어씀 (react-native-css-interop wrap-jsx) → 여기서 바꿔도 적용 안 됨
+
 // 서드파티 View라 className 매핑이 없어서 style로 연결
 cssInterop(GestureHandlerRootView, { className: 'style' });
-
-// placeholderClassName은 타입만 있고 런타임 매핑이 없어서 placeholderTextColor로 연결
-cssInterop(TextInput, {
-  className: { target: 'style', nativeStyleToProp: { textAlign: true } },
-  placeholderClassName: { target: false, nativeStyleToProp: { color: 'placeholderTextColor' } },
-});
 
 cssInterop(Svg, {
   className: {

@@ -1,3 +1,4 @@
+import { colors } from '@tokens';
 import { useState } from 'react';
 import { Text, TextInput, type TextInputProps, View } from 'react-native';
 
@@ -39,7 +40,7 @@ export const TextArea = ({
           setFocused(false);
           onBlur?.(e);
         }}
-        placeholderClassName="text-text-tertiary"
+        placeholderTextColor={colors.text.tertiary}
         // iOS multiline은 기본 위쪽 여백이 붙어서 패딩을 TextInput에 직접 줌. 테두리 1px만큼 패딩(16)에서 뺌 (TextField와 동일)
         className={cn(
           'h-[160px] rounded-input border p-[15px] text-text-primary text-caption1-regular',

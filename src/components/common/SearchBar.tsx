@@ -1,3 +1,4 @@
+import { colors } from '@tokens';
 import { cva, type VariantProps } from 'class-variance-authority';
 import type { ComponentType } from 'react';
 import { Pressable, TextInput, type TextInputProps, View } from 'react-native';
@@ -44,7 +45,7 @@ export const SearchBar = ({
       value={value}
       onChangeText={onChangeText}
       returnKeyType="search"
-      placeholderClassName="text-text-tertiary"
+      placeholderTextColor={colors.text.tertiary}
       // iOS TextInput은 lineHeight 주면 글자가 아래로 쏠림 → iOS만 0(=미지정)으로 덮어씀 (TextField와 동일)
       className="ios:!leading-[0px] flex-1 text-text-primary text-body1-regular"
     />
