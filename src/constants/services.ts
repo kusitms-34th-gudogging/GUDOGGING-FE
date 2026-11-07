@@ -14,3 +14,19 @@ export const SERVICES: Service[] = [
   { id: 'disney', name: '디즈니+', nameKo: '디즈니 플러스' },
   { id: 'tving', name: '티빙', nameKo: '티빙' },
 ];
+
+export const PAID_AT = [
+  { value: 'web', label: '웹·직접 결제' },
+  { value: 'appstore', label: 'App Store' },
+  { value: 'playstore', label: 'Google Play' },
+] as const;
+export type PaidAt = (typeof PAID_AT)[number]['value'];
+
+export interface PaymentInfo {
+  category: string;
+  amount: number;
+  cycle: number;
+  unit: string;
+  nextDate: Date;
+  paidAt: PaidAt;
+}
