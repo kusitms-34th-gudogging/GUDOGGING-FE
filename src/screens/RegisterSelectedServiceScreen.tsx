@@ -5,8 +5,7 @@ import { ChevronRightIcon, PlusIcon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
 import { TopBar } from '@/components/common/TopBar';
-import { SERVICES } from '@/constants/services';
-import { useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { useRegisterDraft, useRegisterServices } from '@/hooks/useRegisterDraft';
 import { formatPaymentSummary, formatWon } from '@/utils/formatPayment';
 
 interface RegisterSelectedServiceScreenProps {
@@ -17,13 +16,7 @@ export const RegisterSelectedServiceScreen = ({
   serviceIds,
 }: RegisterSelectedServiceScreenProps) => {
   const { payments } = useRegisterDraft();
-  // 선택한 사전 등록 서비스 + 직접 입력한 구독
-  const services = [
-    ...SERVICES.filter((s) => serviceIds.includes(s.id)),
-    ...Object.entries(payments)
-      .filter(([id]) => id.startsWith('custom-'))
-      .map(([id, p]) => ({ id, name: p.name ?? '' })),
-  ];
+  const services = useRegisterServices(serviceIds);
   const allEntered = services.length > 0 && services.every((s) => payments[s.id]);
 
   return (
@@ -80,10 +73,13 @@ export const RegisterSelectedServiceScreen = ({
         </ScrollView>
       </View>
       <View className="pb-safe px-screen-x">
-        {/* 모든 서비스 결제 정보 입력이 완료되면 활성화 */}
+        {/* 모든 서비스 결제 정보 입력이 완료되면 활성화. shortcut: 등록 API 없이 완료 화면으로만 이동, API 연동 시 저장 성공 후 이동 */}
         <Cta
           label={`${services.length}개 구독 등록하기`}
           disabled={!allEntered}
+          onPress={() =>
+            router.push({ pathname: '/register/done', params: { ids: serviceIds.join(',') } })
+          }
           className="mb-[14px]"
         />
       </View>
