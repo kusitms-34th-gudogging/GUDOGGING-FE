@@ -92,7 +92,7 @@ export const AlertBlurBackground = () => {
       importantForAccessibility="no-hide-descendants"
       className="pt-safe absolute inset-x-0 top-0 items-center"
     >
-      <View className="-mt-[44px] h-[812px] w-[375px]">
+      <View className="-mt-status-bar h-screen-height w-screen-width">
         <Animated.View style={fadeStyle} className="absolute inset-0">
           {/* 연한 블러: 중심 (188, 280), 지름 440, sigma 60. 블러가 번질 여유까지 포함한 800 틀 */}
           <Animated.View style={washStyle} className="absolute -left-[212px] -top-[120px]">

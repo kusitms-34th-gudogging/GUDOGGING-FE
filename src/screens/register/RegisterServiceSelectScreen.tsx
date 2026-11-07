@@ -51,7 +51,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
         <View className="gap-stack-lg">
           <SearchBar value={query} onChangeText={setQuery} placeholder="검색" />
           <View className="gap-stack-md">
-            <View className="gap-[2px]">
+            <View className="gap-s2">
               <Text className="text-text-primary text-head4-bold">
                 등록할 서비스를 모두 선택해 주세요.
               </Text>

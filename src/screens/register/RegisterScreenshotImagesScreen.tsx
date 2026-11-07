@@ -58,7 +58,7 @@ export const RegisterScreenshotImagesScreen = () => {
           </View>
         </View>
         <View className="flex-row gap-stack-sm">
-          <View className="py-[2px]">
+          <View className="py-s2">
             <AlertCircleIcon className="size-icon-list text-icon-secondary" />
           </View>
           <Text className="text-text-secondary text-caption1-regular">

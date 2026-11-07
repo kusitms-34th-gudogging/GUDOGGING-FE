@@ -40,7 +40,7 @@ export const RegisterGmailGuideScreen = () => (
             </View>
           ))}
         </View>
-        <Text className="px-[2px] text-text-secondary text-caption2-regular">
+        <Text className="px-s2 text-text-secondary text-caption2-regular">
           {'지금 등록하지 않아도 괜찮아요.\n[홈 - 구독 등록하기]에서 언제든 추가할 수 있어요.'}
         </Text>
       </View>

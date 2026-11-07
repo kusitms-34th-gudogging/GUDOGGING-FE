@@ -16,7 +16,7 @@ export const CategoryPullBackground = () => {
       importantForAccessibility="no-hide-descendants"
       className="pt-safe absolute inset-x-0 top-0 items-center"
     >
-      <View className="-mt-[44px] h-[812px] w-[480px]">
+      <View className="-mt-status-bar h-screen-height w-[480px]">
         {reduceMotion ? (
           <AnalyzeColorAsset className="absolute left-[188px] top-[316px] size-[104px]" />
         ) : (
