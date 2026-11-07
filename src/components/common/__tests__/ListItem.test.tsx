@@ -1,4 +1,4 @@
-import { render, screen, userEvent } from '@testing-library/react-native';
+import { render, screen, userEvent, within } from '@testing-library/react-native';
 import { View } from 'react-native';
 
 import { ListItem } from '@/components/common/ListItem';
@@ -116,5 +116,29 @@ describe('ListItem', () => {
     await user.press(screen.getByText('입력하기'));
 
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('체크박스는 오른쪽 글씨 버튼에 묶이지 않고 따로 눌린다', async () => {
+    const onPress = jest.fn();
+    const onCheckedChange = jest.fn();
+    await render(
+      <ListItem
+        title="넷플릭스"
+        cost="17,000원"
+        showCost
+        iconRightAction={{ accessibilityLabel: '넷플릭스 수정하기', onPress }}
+        showCheckBox
+        onCheckedChange={onCheckedChange}
+      />,
+    );
+
+    const button = screen.getByRole('button', { name: '넷플릭스 수정하기' });
+    expect(within(button).queryByRole('checkbox')).not.toBeOnTheScreen();
+
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await user.press(screen.getByRole('checkbox', { name: '넷플릭스' }));
+
+    expect(onCheckedChange).toHaveBeenCalledWith(true);
+    expect(onPress).not.toHaveBeenCalled();
   });
 });

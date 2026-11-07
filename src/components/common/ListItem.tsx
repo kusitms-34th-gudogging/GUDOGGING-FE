@@ -80,12 +80,19 @@ export const ListItem = ({
         </Text>
       )}
     </View>
-    {/* iconRightAction이 있으면 오른쪽 글씨와 아이콘을 함께 누름 */}
-    <Trailing action={iconRightAction}>
-      {showCost && cost && (
-        <Text numberOfLines={1} className={cn('max-w-[120px] text-body3-semibold', costColor)}>
-          {cost}
-        </Text>
+    <View className="flex-row items-center gap-inline-xs">
+      {/* iconRightAction이 있으면 오른쪽 글씨와 아이콘을 함께 누름. 체크박스는 따로 눌려서 밖에 둠 */}
+      {((showCost && cost) || (showIconRight && IconRight)) && (
+        <Trailing action={iconRightAction}>
+          {showCost && cost && (
+            <Text numberOfLines={1} className={cn('max-w-[120px] text-body3-semibold', costColor)}>
+              {cost}
+            </Text>
+          )}
+          {showIconRight && IconRight && (
+            <IconRight className={cn('size-icon-list', iconRightColor)} />
+          )}
+        </Trailing>
       )}
       {showCheckBox && (
         // Figma 인스턴스(34×44)에 맞춤: 44 체크박스를 34 틀로 잘라 레이아웃·터치 영역 모두 34×44
@@ -97,8 +104,7 @@ export const ListItem = ({
           />
         </View>
       )}
-      {showIconRight && IconRight && <IconRight className={cn('size-icon-list', iconRightColor)} />}
-    </Trailing>
+    </View>
   </View>
 );
 
