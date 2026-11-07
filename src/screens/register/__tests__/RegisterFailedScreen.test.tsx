@@ -3,6 +3,15 @@ import { renderRouter, screen } from 'expo-router/testing-library';
 
 import { RegisterFailedScreen } from '@/screens/register/RegisterFailedScreen';
 
+// 배경 블러는 Skia 네이티브 렌더링이라 그리지 않음 (장식이라 화면 동작과 무관)
+jest.mock('@shopify/react-native-skia', () => ({
+  Canvas: () => null,
+  Circle: () => null,
+  Blur: () => null,
+  LinearGradient: () => null,
+  vec: (x: number, y: number) => ({ x, y }),
+}));
+
 beforeEach(() => jest.useFakeTimers());
 afterEach(() => jest.useRealTimers());
 

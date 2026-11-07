@@ -1,3 +1,4 @@
+import { Blur, Canvas, Circle, LinearGradient, vec } from '@shopify/react-native-skia';
 import { colors } from '@tokens';
 import { useEffect } from 'react';
 import { View } from 'react-native';
@@ -11,16 +12,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, {
-  Circle,
-  Defs,
-  Ellipse,
-  FeGaussianBlur,
-  Filter,
-  LinearGradient,
-  RadialGradient,
-  Stop,
-} from 'react-native-svg';
+import Svg, { Circle as SvgCircle, Defs, Ellipse, RadialGradient, Stop } from 'react-native-svg';
 
 // 0 ↔ 1 왕복 무한 반복 (ms는 한 방향 시간)
 const pingPong = (ms: number) =>
@@ -90,56 +82,32 @@ export const AlertBlurBackground = () => {
       pointerEvents="none"
       accessible={false}
       importantForAccessibility="no-hide-descendants"
+      accessibilityElementsHidden
       className="pt-safe absolute inset-x-0 top-0 items-center"
     >
       <View className="-mt-status-bar h-screen-height w-screen-width">
         <Animated.View style={fadeStyle} className="absolute inset-0">
+          {/* 블러는 Skia로 한 번만 그리고, 움직임은 감싼 View의 transform·opacity로만 줌 */}
           {/* 연한 블러: 중심 (188, 280), 지름 440, sigma 60. 블러가 번질 여유까지 포함한 800 틀 */}
           <Animated.View style={washStyle} className="absolute -left-[212px] -top-[120px]">
-            <Svg width={800} height={800} viewBox="-212 -120 800 800">
-              <Defs>
-                <Filter
-                  id="wash"
-                  filterUnits="userSpaceOnUse"
-                  x={-212}
-                  y={-120}
-                  width={800}
-                  height={800}
-                >
-                  <FeGaussianBlur stdDeviation={60} />
-                </Filter>
-              </Defs>
-              <Circle cx={188} cy={280} r={220} fill={colors.red['200']} filter="url(#wash)" />
-            </Svg>
+            <Canvas className="size-[800px]">
+              <Circle cx={400} cy={400} r={220} color={colors.red['200']}>
+                <Blur blur={60} />
+              </Circle>
+            </Canvas>
           </Animated.View>
           {/* 빨강 블러: 중심 (188, 280), 지름 300, sigma 60 */}
           <Animated.View style={coreStyle} className="absolute -left-[142px] -top-[50px]">
-            <Svg width={660} height={660} viewBox="-142 -50 660 660">
-              <Defs>
+            <Canvas className="size-[660px]">
+              <Circle cx={330} cy={330} r={150}>
                 <LinearGradient
-                  id="core-fill"
-                  gradientUnits="userSpaceOnUse"
-                  x1={113}
-                  y1={150.094}
-                  x2={263}
-                  y2={409.906}
-                >
-                  <Stop offset={0} stopColor={colors.red['600']} />
-                  <Stop offset={1} stopColor={colors.red['500']} />
-                </LinearGradient>
-                <Filter
-                  id="core"
-                  filterUnits="userSpaceOnUse"
-                  x={-142}
-                  y={-50}
-                  width={660}
-                  height={660}
-                >
-                  <FeGaussianBlur stdDeviation={60} />
-                </Filter>
-              </Defs>
-              <Circle cx={188} cy={280} r={150} fill="url(#core-fill)" filter="url(#core)" />
-            </Svg>
+                  start={vec(255, 200.094)}
+                  end={vec(405, 459.906)}
+                  colors={[colors.red['600'], colors.red['500']]}
+                />
+                <Blur blur={60} />
+              </Circle>
+            </Canvas>
           </Animated.View>
         </Animated.View>
         {/* 아이콘·문구 뒤 흰 영역은 움직이지 않아 글자 뒤가 항상 밝음 */}
@@ -161,7 +129,7 @@ export const AlertBlurBackground = () => {
               ))}
             </RadialGradient>
           </Defs>
-          <Circle cx={188} cy={368} r={150} fill="url(#icon-pool)" />
+          <SvgCircle cx={188} cy={368} r={150} fill="url(#icon-pool)" />
           <Ellipse cx={188} cy={500} rx={280} ry={160} fill="url(#text-pool)" />
         </Svg>
       </View>
