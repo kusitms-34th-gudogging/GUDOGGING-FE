@@ -7,4 +7,4 @@ tokens/*.json
 .github/workflows/
 
 # Lottie 내보내기 JSON
-src/assets/lotties/*.json
+src/assets/animations/*.json

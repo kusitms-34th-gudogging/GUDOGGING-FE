@@ -21,7 +21,7 @@ export const CategoryPullBackground = () => {
           <AnalyzeColorAsset className="absolute left-[188px] top-[316px] size-[104px]" />
         ) : (
           <LottieView
-            source={require('@/assets/lotties/category_pull.json')}
+            source={require('@/assets/animations/category_pull.json')}
             autoPlay
             loop
             className="size-full"
