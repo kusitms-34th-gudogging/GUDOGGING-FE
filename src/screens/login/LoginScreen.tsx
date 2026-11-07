@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Text, View } from 'react-native';
 import Animated, {
   Easing,
@@ -28,7 +28,16 @@ export const LoginScreen = ({ onLogin, onLoggedIn }: LoginScreenProps) => {
   const exit = useSharedValue(0);
   const reduceMotion = useReducedMotion();
   const locked = useRef(false);
+  const mounted = useRef(true);
   const [loading, setLoading] = useState(false);
+
+  // 화면이 사라진 뒤에는 대기 중이던 로그인 완료(페이드·이동)를 무효화
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   const idleTextStyle = useAnimatedStyle(() => ({
     opacity: 1 - Math.min(1, progress.value / 0.2),
@@ -56,16 +65,19 @@ export const LoginScreen = ({ onLogin, onLoggedIn }: LoginScreenProps) => {
       await onLogin?.(provider);
       // 응답이 전환보다 빨라도 전환을 끝까지 보여 준 뒤 사라짐
       await sleep(Math.max(0, transitionMs - (Date.now() - startedAt)));
+      if (!mounted.current) return;
       // 갈 곳이 없으면 사라지지 않고 L-02에 머문다 (빈 화면 방지)
       if (!onLoggedIn) return;
+      const complete = () => mounted.current && onLoggedIn(provider);
       exit.value = withTiming(
         1,
         { duration: EXIT_SEC * 1000, easing: Easing.out(Easing.cubic) },
         (finished) => {
-          if (finished) scheduleOnRN(onLoggedIn, provider);
+          if (finished) scheduleOnRN(complete);
         },
       );
     } catch {
+      if (!mounted.current) return;
       animateTo(0);
       setLoading(false);
       locked.current = false;
