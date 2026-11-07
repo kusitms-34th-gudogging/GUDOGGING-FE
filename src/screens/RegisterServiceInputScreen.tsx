@@ -35,15 +35,24 @@ const formatDate = (d: Date) =>
 const startOfToday = () => new Date(new Date().setHours(0, 0, 0, 0));
 
 interface RegisterServiceInputScreenProps {
-  serviceId: string;
+  // 없으면 직접 입력으로 새 구독 추가 (A-02 직접 입력하기)
+  serviceId?: string;
+  // 직접 입력 저장 후 A-04로 넘길 A-02 선택 목록
+  selectedIds?: string;
 }
 
-export const RegisterServiceInputScreen = ({ serviceId }: RegisterServiceInputScreenProps) => {
+export const RegisterServiceInputScreen = ({
+  serviceId,
+  selectedIds,
+}: RegisterServiceInputScreenProps) => {
   const service = SERVICES.find((s) => s.id === serviceId);
+  // 사전 등록 서비스만 서비스명 잠금, 직접 입력은 서비스명도 입력·수정
+  const isCustom = !service;
   const { payments, setPayment } = useRegisterDraft();
   // 이미 저장한 값이 있으면 이어서 수정
-  const saved = payments[serviceId];
-  const [category, setCategory] = useState(saved?.category ?? CATEGORIES[0]);
+  const saved = serviceId ? payments[serviceId] : undefined;
+  const [name, setName] = useState(saved?.name ?? '');
+  const [category, setCategory] = useState(saved?.category ?? (isCustom ? '기타' : CATEGORIES[0]));
   const [amount, setAmount] = useState(saved ? String(saved.amount) : '');
   const [cycle, setCycle] = useState(String(saved?.cycle ?? 1));
   const [unit, setUnit] = useState(saved?.unit ?? '개월');
@@ -56,7 +65,8 @@ export const RegisterServiceInputScreen = ({ serviceId }: RegisterServiceInputSc
   const [draftDate, setDraftDate] = useState(startOfToday);
 
   const cycleNum = Number(cycle);
-  const valid = Number(amount) > 0 && cycleNum >= 1 && cycleNum <= 31 && !!nextDate;
+  const nameValid = !isCustom || (name.trim().length >= 1 && name.trim().length <= 30);
+  const valid = nameValid && Number(amount) > 0 && cycleNum >= 1 && cycleNum <= 31 && !!nextDate;
   const closeMenu = () => setCategoryOpen(false);
 
   return (
@@ -75,14 +85,26 @@ export const RegisterServiceInputScreen = ({ serviceId }: RegisterServiceInputSc
       >
         {/* 드롭다운 메뉴 바깥(빈 곳)을 누르면 닫힘. 안쪽 버튼·입력칸은 각자 터치를 가져감 */}
         <Pressable accessible={false} onPress={closeMenu} className="grow gap-stack-lg">
-          <View className="flex-row items-center gap-inline-md">
-            <Image
-              source={require('@/assets/images/logo_placeholder.png')}
-              className="size-logo-card"
-            />
-            <Text className="text-text-primary text-body2-semibold">{service?.name}</Text>
-          </View>
+          {service && (
+            <View className="flex-row items-center gap-inline-md">
+              <Image
+                source={require('@/assets/images/logo_placeholder.png')}
+                className="size-logo-card"
+              />
+              <Text className="text-text-primary text-body2-semibold">{service.name}</Text>
+            </View>
+          )}
           <View className="gap-inline-md">
+            {isCustom && (
+              <TextField
+                label="서비스명"
+                placeholder="서비스명을 입력해 주세요"
+                maxLength={30}
+                value={name}
+                onChangeText={setName}
+                onFocus={closeMenu}
+              />
+            )}
             <Dropdown
               label="카테고리"
               placeholder="카테고리를 선택해 주세요"
@@ -163,7 +185,8 @@ export const RegisterServiceInputScreen = ({ serviceId }: RegisterServiceInputSc
           disabled={!valid}
           onPress={() => {
             if (!nextDate) return;
-            setPayment(serviceId, {
+            setPayment(serviceId ?? `custom-${Date.now()}`, {
+              name: isCustom ? name.trim() : undefined,
               category,
               amount: Number(amount),
               cycle: cycleNum,
@@ -171,7 +194,13 @@ export const RegisterServiceInputScreen = ({ serviceId }: RegisterServiceInputSc
               nextDate,
               paidAt,
             });
-            router.back();
+            // 새 직접 입력은 A-02 자리를 A-04로 바꿔 목록에 합류, 기존 항목 수정은 A-04로 돌아감
+            if (serviceId) router.back();
+            else
+              router.replace({
+                pathname: '/register/selected',
+                params: { ids: selectedIds ?? '' },
+              });
           }}
           className="mb-[14px]"
         />

@@ -23,6 +23,8 @@ export const PAID_AT = [
 export type PaidAt = (typeof PAID_AT)[number]['value'];
 
 export interface PaymentInfo {
+  // 직접 입력한 구독만 (사전 등록 서비스는 SERVICES의 이름)
+  name?: string;
   category: string;
   amount: number;
   cycle: number;

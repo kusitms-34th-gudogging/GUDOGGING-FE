@@ -16,8 +16,14 @@ interface RegisterSelectedServiceScreenProps {
 export const RegisterSelectedServiceScreen = ({
   serviceIds,
 }: RegisterSelectedServiceScreenProps) => {
-  const services = SERVICES.filter((s) => serviceIds.includes(s.id));
   const { payments } = useRegisterDraft();
+  // 선택한 사전 등록 서비스 + 직접 입력한 구독
+  const services = [
+    ...SERVICES.filter((s) => serviceIds.includes(s.id)),
+    ...Object.entries(payments)
+      .filter(([id]) => id.startsWith('custom-'))
+      .map(([id, p]) => ({ id, name: p.name ?? '' })),
+  ];
   const allEntered = services.length > 0 && services.every((s) => payments[s.id]);
 
   return (

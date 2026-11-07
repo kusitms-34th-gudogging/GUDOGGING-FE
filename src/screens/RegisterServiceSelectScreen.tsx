@@ -87,9 +87,14 @@ export const RegisterServiceSelectScreen = () => {
               ))}
             </ScrollView>
             {!!keyword && (
-              // A-03 화면이 생기면 onPress 연결
               <Pressable
                 accessibilityRole="button"
+                onPress={() =>
+                  router.push({
+                    pathname: '/register/input',
+                    params: { ids: selectedIds.join(',') },
+                  })
+                }
                 className="h-[69px] flex-row items-center gap-inline-md border-b-default border-border-default px-inline-xs active:opacity-pressed"
               >
                 <PlusIcon className="size-[28px] text-icon-secondary" />
