@@ -8,7 +8,10 @@ afterEach(() => jest.useRealTimers());
 
 it('직접 등록하기를 누르면 서비스 선택(A-02)으로 이동한다', async () => {
   await renderRouter(
-    { 'register/failed': RegisterFailedScreen, 'register/select': () => null },
+    {
+      'register/failed': () => <RegisterFailedScreen source="screenshot" />,
+      'register/select': () => null,
+    },
     { initialUrl: '/register/failed' },
   );
 

@@ -28,8 +28,23 @@ import { AlertColorAsset } from '@/assets/graphics';
 import { Cta } from '@/components/common/Cta';
 import { TopBar } from '@/components/common/TopBar';
 
-const TITLE = '구독 정보를 찾지 못했어요.';
-const DESCRIPTION = '구독 목록이 잘 보이지 않거나\n지원하지 않는 화면일 수 있어요.';
+// A-08e 스크린샷·A-12e Gmail이 모션은 같고 문구만 다름
+const COPY = {
+  screenshot: {
+    header: '스크린샷으로 등록',
+    title: '구독 정보를 찾지 못했어요.',
+    description: '구독 목록이 잘 보이지 않거나\n지원하지 않는 화면일 수 있어요.',
+  },
+  gmail: {
+    header: 'Gmail에서 불러오기',
+    title: '결제 메일을 읽지 못했어요.',
+    description: '결제 메일 형식이 달라\n구독 정보를 가져오지 못했어요.',
+  },
+};
+
+interface RegisterFailedScreenProps {
+  source: keyof typeof COPY;
+}
 
 const easeInOut = Easing.inOut(Easing.ease);
 // 0 ↔ 1 왕복 무한 반복 (ms는 한 방향 시간)
@@ -41,7 +56,8 @@ const shake = () =>
     ...[-7, 6, -3, 0].map((deg) => withTiming(deg, { duration: 162, easing: easeInOut })),
   );
 
-export const RegisterFailedScreen = () => {
+export const RegisterFailedScreen = ({ source }: RegisterFailedScreenProps) => {
+  const { header, title, description } = COPY[source];
   const [reduceMotion, setReduceMotion] = useState(false);
   const fade = useSharedValue(0);
   const wash = useSharedValue(0);
@@ -52,7 +68,7 @@ export const RegisterFailedScreen = () => {
   const iconRotate = useSharedValue(0);
 
   useEffect(() => {
-    AccessibilityInfo.announceForAccessibility(`${TITLE} ${DESCRIPTION}`);
+    AccessibilityInfo.announceForAccessibility(`${title} ${description}`);
     void AccessibilityInfo.isReduceMotionEnabled().then((reduce) => {
       setReduceMotion(reduce);
       if (reduce) {
@@ -71,7 +87,7 @@ export const RegisterFailedScreen = () => {
         withDelay(360, withSequence(shake(), withTiming(0, { duration: 144 }), shake())),
       );
     });
-  }, [fade, wash, washTone, core, coreTone, iconIn, iconRotate]);
+  }, [title, description, fade, wash, washTone, core, coreTone, iconIn, iconRotate]);
 
   const fadeStyle = useAnimatedStyle(() => ({ opacity: fade.get() }));
   // 동작 줄이기면 Figma 정지 값 (연한 50%, 빨강 20%)
@@ -98,7 +114,6 @@ export const RegisterFailedScreen = () => {
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
-      {/* 812 프레임 기준 좌표를 확대 없이 상태바(44) 위부터 깔아 확인 중 화면과 그래픽 위치를 맞춤 */}
       <View
         pointerEvents="none"
         accessible={false}
@@ -107,7 +122,6 @@ export const RegisterFailedScreen = () => {
       >
         <View className="-mt-[44px] h-[812px] w-[375px]">
           <Animated.View style={fadeStyle} className="absolute inset-0">
-            {/* 연한 블러: 중심 (188, 280), 지름 440, sigma 60. 블러가 번질 여유까지 포함한 800 틀 */}
             <Animated.View style={washStyle} className="absolute -left-[212px] -top-[120px]">
               <Svg width={800} height={800} viewBox="-212 -120 800 800">
                 <Defs>
@@ -125,7 +139,6 @@ export const RegisterFailedScreen = () => {
                 <Circle cx={188} cy={280} r={220} fill={colors.red['200']} filter="url(#wash)" />
               </Svg>
             </Animated.View>
-            {/* 빨강 블러: 중심 (188, 280), 지름 300, sigma 60 */}
             <Animated.View style={coreStyle} className="absolute -left-[142px] -top-[50px]">
               <Svg width={660} height={660} viewBox="-142 -50 660 660">
                 <Defs>
@@ -155,7 +168,6 @@ export const RegisterFailedScreen = () => {
               </Svg>
             </Animated.View>
           </Animated.View>
-          {/* 아이콘·문구 뒤 흰 영역은 움직이지 않아 글자 뒤가 항상 밝음 */}
           <Svg
             width={560}
             height={442}
@@ -208,12 +220,11 @@ export const RegisterFailedScreen = () => {
       </View>
       <TopBar
         variant="detail"
-        title="스크린샷으로 등록"
+        title={header}
         onBack={() => router.back()}
         showAction1={false}
         showAction2={false}
       />
-      {/* 확인 중 화면과 같은 자리: 아이콘 y 316, 제목 y 441, 설명 y 477 (상태바 44 + Top bar 56 기준) */}
       <View className="flex-1 items-center pt-[216px]">
         <Animated.View
           style={iconStyle}
@@ -223,8 +234,8 @@ export const RegisterFailedScreen = () => {
           <AlertColorAsset className="size-[104px]" />
         </Animated.View>
         <View className="mt-[21px] items-center gap-stack-sm">
-          <Text className="text-center text-text-primary text-head3-bold">{TITLE}</Text>
-          <Text className="text-center text-text-primary text-body2-regular">{DESCRIPTION}</Text>
+          <Text className="text-center text-text-primary text-head3-bold">{title}</Text>
+          <Text className="text-center text-text-primary text-body2-regular">{description}</Text>
         </View>
       </View>
       <View className="pb-safe px-screen-x">
@@ -247,7 +258,6 @@ interface BlobRange {
   still: number;
 }
 
-// 움직임·진하기를 각자 0 ↔ 1 진행값에서 범위로 옮김
 const useBlobStyle = (
   move: SharedValue<number>,
   tone: SharedValue<number>,
