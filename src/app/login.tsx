@@ -5,5 +5,9 @@ import { LoginScreen } from '@/screens/login/LoginScreen';
 export default function LoginRoute() {
   const router = useRouter();
 
-  return <LoginScreen onLoggedIn={() => router.replace('/onboarding')} />;
+  return (
+    <LoginScreen
+      onLoggedIn={(provider) => router.replace({ pathname: '/onboarding', params: { provider } })}
+    />
+  );
 }

@@ -11,14 +11,13 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import { SocialLoginButton } from '@/components/common/SocialLoginButton';
 import { LOGIN_TRANSITION_SEC, LoginBackdrop } from '@/components/login/LoginBackdrop';
-
-type LoginProvider = 'apple' | 'google';
+import type { LoginProvider } from '@/types/auth';
 
 interface LoginScreenProps {
   /** 로그인 요청. reject되면 L-01로 되돌림 */
   onLogin?: (provider: LoginProvider) => Promise<void>;
   /** 로그인 성공 후 화면이 사라지고 나면 (온보딩 등 다음 화면으로 이동) */
-  onLoggedIn?: () => void;
+  onLoggedIn?: (provider: LoginProvider) => void;
 }
 
 const EXIT_SEC = 0.3;
@@ -63,7 +62,7 @@ export const LoginScreen = ({ onLogin, onLoggedIn }: LoginScreenProps) => {
         1,
         { duration: EXIT_SEC * 1000, easing: Easing.out(Easing.cubic) },
         (finished) => {
-          if (finished) scheduleOnRN(onLoggedIn);
+          if (finished) scheduleOnRN(onLoggedIn, provider);
         },
       );
     } catch {
