@@ -39,11 +39,11 @@ const METHODS = [
   },
 ] as const;
 
-// Gmail 첫 화면은 아직 없음
-const FIRST_SCREEN: Partial<Record<RegisterMethod, '/register/select' | '/register/screenshot'>> = {
+const FIRST_SCREEN = {
   screenshot: '/register/screenshot',
+  gmail: '/register/gmail',
   manual: '/register/select',
-};
+} as const satisfies Record<RegisterMethod, string>;
 
 export const RegisterSubscriptionScreen = () => {
   const [selected, setSelected] = useState<RegisterMethod>();
@@ -72,8 +72,7 @@ export const RegisterSubscriptionScreen = () => {
               selected={selected === method}
               onSelect={() => {
                 setSelected(method);
-                const next = FIRST_SCREEN[method];
-                if (next) router.push(next);
+                router.push(FIRST_SCREEN[method]);
               }}
             />
           ))}
