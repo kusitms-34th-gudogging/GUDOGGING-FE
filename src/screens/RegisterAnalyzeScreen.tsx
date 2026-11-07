@@ -5,6 +5,7 @@ import { AccessibilityInfo, Text, View } from 'react-native';
 
 import { AnalyzeColorAsset } from '@/assets/graphics';
 import { TopBar } from '@/components/common/TopBar';
+import { FOUND_SAMPLE } from '@/constants/services';
 
 const MESSAGE = '구독 정보를 찾고 있어요.';
 const MIN_VISIBLE_MS = 1500;
@@ -15,8 +16,10 @@ export const RegisterAnalyzeScreen = () => {
   useEffect(() => {
     void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
     AccessibilityInfo.announceForAccessibility(MESSAGE);
-    // shortcut: 분석 API 없이 최소 노출 시간 1.5초 뒤 결과 화면으로, API 연동 시 응답과 1.5초 중 늦은 쪽에 이동하고 실패면 A-08e
-    const timer = setTimeout(() => router.replace('/register/found'), MIN_VISIBLE_MS);
+    // shortcut: 분석 API 없이 최소 노출 시간 1.5초 뒤 이동, API 연동 시 응답과 1.5초 중 늦은 쪽에 이동
+    // 확인 필요 항목이 없으면 인식 실패(A-08e)로
+    const next = FOUND_SAMPLE.some((f) => f.issue) ? '/register/found' : '/register/failed';
+    const timer = setTimeout(() => router.replace(next), MIN_VISIBLE_MS);
     return () => clearTimeout(timer);
   }, []);
 
