@@ -39,8 +39,9 @@ const METHODS = [
   },
 ] as const;
 
-// 스크린샷·Gmail 첫 화면은 아직 없음
-const FIRST_SCREEN: Partial<Record<RegisterMethod, '/register/select'>> = {
+// Gmail 첫 화면은 아직 없음
+const FIRST_SCREEN: Partial<Record<RegisterMethod, '/register/select' | '/register/screenshot'>> = {
+  screenshot: '/register/screenshot',
   manual: '/register/select',
 };
 
