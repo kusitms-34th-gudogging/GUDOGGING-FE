@@ -39,11 +39,12 @@ const METHODS = [
   },
 ] as const;
 
-interface RegisterSubscriptionScreenProps {
-  onSelectMethod?: (method: RegisterMethod) => void;
-}
+// 스크린샷·Gmail 첫 화면은 아직 없음
+const FIRST_SCREEN: Partial<Record<RegisterMethod, '/register/select'>> = {
+  manual: '/register/select',
+};
 
-export const RegisterSubscriptionScreen = ({ onSelectMethod }: RegisterSubscriptionScreenProps) => {
+export const RegisterSubscriptionScreen = () => {
   const [selected, setSelected] = useState<RegisterMethod>();
 
   return (
@@ -70,7 +71,8 @@ export const RegisterSubscriptionScreen = ({ onSelectMethod }: RegisterSubscript
               selected={selected === method}
               onSelect={() => {
                 setSelected(method);
-                onSelectMethod?.(method);
+                const next = FIRST_SCREEN[method];
+                if (next) router.push(next);
               }}
             />
           ))}
