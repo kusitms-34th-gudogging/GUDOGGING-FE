@@ -2,10 +2,12 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 
+import { ImageColorAsset, ImageMonoAsset } from '@/assets/graphics';
 import { BottomSheet } from '@/components/common/BottomSheet';
 import { Cta } from '@/components/common/Cta';
 import { Dial } from '@/components/common/Dial';
 import { Dropdown } from '@/components/common/Dropdown';
+import { OptionCard } from '@/components/common/OptionCard';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { TextField } from '@/components/common/TextField';
 import { TopBar } from '@/components/common/TopBar';
@@ -21,7 +23,12 @@ const CATEGORIES = [
   '엔터테인먼트',
   '기타',
 ];
-const CYCLE_UNITS = ['일', '주', '개월', '년'];
+const CYCLE_UNITS = [
+  { unit: '일', example: 'ex) 20일마다 결제돼요' },
+  { unit: '주', example: 'ex) 2주마다 결제돼요' },
+  { unit: '개월', example: 'ex) 1개월마다 결제돼요' },
+  { unit: '년', example: 'ex) 1년마다 결제돼요' },
+];
 
 const formatDate = (d: Date) =>
   `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
@@ -42,15 +49,15 @@ export const RegisterServiceInputScreen = ({ serviceId }: RegisterServiceInputSc
   const [unit, setUnit] = useState(saved?.unit ?? '개월');
   const [nextDate, setNextDate] = useState(saved?.nextDate);
   const [paidAt, setPaidAt] = useState<PaidAt>(saved?.paidAt ?? 'web');
-  const [openMenu, setOpenMenu] = useState<'category' | 'unit'>();
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [unitSheet, setUnitSheet] = useState(false);
+  const [draftUnit, setDraftUnit] = useState<string>();
   const [dateSheet, setDateSheet] = useState(false);
   const [draftDate, setDraftDate] = useState(startOfToday);
 
   const cycleNum = Number(cycle);
   const valid = Number(amount) > 0 && cycleNum >= 1 && cycleNum <= 31 && !!nextDate;
-  const toggleMenu = (menu: 'category' | 'unit') =>
-    setOpenMenu((m) => (m === menu ? undefined : menu));
-  const closeMenu = () => setOpenMenu(undefined);
+  const closeMenu = () => setCategoryOpen(false);
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -80,12 +87,12 @@ export const RegisterServiceInputScreen = ({ serviceId }: RegisterServiceInputSc
               label="카테고리"
               placeholder="카테고리를 선택해 주세요"
               value={category}
-              open={openMenu === 'category'}
-              onPress={() => toggleMenu('category')}
+              open={categoryOpen}
+              onPress={() => setCategoryOpen((o) => !o)}
               options={CATEGORIES}
               onSelect={(v) => {
                 setCategory(v);
-                setOpenMenu(undefined);
+                closeMenu();
               }}
             />
             <TextField
@@ -112,12 +119,10 @@ export const RegisterServiceInputScreen = ({ serviceId }: RegisterServiceInputSc
                 showLabel={false}
                 placeholder="단위"
                 value={unit}
-                open={openMenu === 'unit'}
-                onPress={() => toggleMenu('unit')}
-                options={CYCLE_UNITS}
-                onSelect={(v) => {
-                  setUnit(v);
-                  setOpenMenu(undefined);
+                onPress={() => {
+                  closeMenu();
+                  setDraftUnit(undefined);
+                  setUnitSheet(true);
                 }}
                 className="w-[127px]"
               />
@@ -172,10 +177,33 @@ export const RegisterServiceInputScreen = ({ serviceId }: RegisterServiceInputSc
         />
       </View>
       <BottomSheet
+        visible={unitSheet}
+        onClose={() => setUnitSheet(false)}
+        title="결제 주기 단위를 선택해 주세요"
+        confirmLabel="확인"
+        confirmDisabled={!draftUnit}
+        onConfirm={() => draftUnit && setUnit(draftUnit)}
+      >
+        <View className="gap-[6px]">
+          {CYCLE_UNITS.map((c) => (
+            <OptionCard
+              key={c.unit}
+              title={c.unit}
+              description={c.example}
+              asset={ImageColorAsset}
+              monoAsset={ImageMonoAsset}
+              selected={draftUnit === c.unit}
+              onSelect={() => setDraftUnit(c.unit)}
+            />
+          ))}
+        </View>
+      </BottomSheet>
+      <BottomSheet
         visible={dateSheet}
         onClose={() => setDateSheet(false)}
-        title="다음 결제일"
-        confirmLabel="선택"
+        title="다음 결제일을 선택해 주세요"
+        description="카드 결제 내역이나 앱 구독 화면에서 확인할 수 있어요."
+        confirmLabel="확인"
         // 과거 결제일은 허용하지 않음 (명세)
         confirmDisabled={draftDate < startOfToday()}
         onConfirm={() => setNextDate(draftDate)}
