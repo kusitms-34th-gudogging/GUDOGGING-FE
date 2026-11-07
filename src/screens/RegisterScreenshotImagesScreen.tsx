@@ -67,8 +67,12 @@ export const RegisterScreenshotImagesScreen = () => {
         </View>
       </View>
       <View className="pb-safe px-screen-x">
-        {/* TODO: A-08 구독 정보 분석 화면 생기면 연결 */}
-        <Cta label="구독 정보 불러오기" disabled={uris.length === 0} className="mb-[14px]" />
+        <Cta
+          label="구독 정보 불러오기"
+          disabled={uris.length === 0}
+          onPress={() => router.push('/register/analyze')}
+          className="mb-[14px]"
+        />
       </View>
     </View>
   );
