@@ -19,7 +19,7 @@ const STEPS = [
 
 export const RegisterScreenshotGuideScreen = () => {
   const { show } = useToast();
-  // 구독 관리 화면을 한 번 열고 나면 뒤로가기 + 버튼 2개 상태로 바뀜
+  // 구독 관리 화면을 열고 돌아오면 뒤로가기 + 버튼 2개 상태
   const [opened, setOpened] = useState(false);
 
   const openSubscriptions = () =>
@@ -29,18 +29,12 @@ export const RegisterScreenshotGuideScreen = () => {
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
-      {/* shortcut: 온보딩 진입 화면(건너뛰기, 뒤로가기 없음) 기준, A-01에서 들어오는 버전은 디자인 받으면 분기 */}
       <TopBar
         variant="detail"
         title="스크린샷으로 등록"
-        showBack={opened}
         onBack={() => router.back()}
         showAction1={false}
         showAction2={false}
-        showTextAction={!opened}
-        textAction="건너뛰기"
-        // TODO: 온보딩(O-03 이후) 다음 화면 정해지면 연결
-        onTextActionPress={() => {}}
       />
       <View className="flex-1 gap-inset-lg px-screen-x pt-stack-md">
         <View className="gap-inline-sm">
@@ -71,8 +65,11 @@ export const RegisterScreenshotGuideScreen = () => {
         {opened ? (
           <View className="mb-[14px] flex-row gap-inline-sm">
             <Button variant="tonal" label="구독 목록 열기" onPress={openSubscriptions} />
-            {/* TODO: A-07 이미지 업로드 화면 생기면 연결 */}
-            <Button label="스크린샷 등록하기" className="flex-1" />
+            <Button
+              label="스크린샷 등록하기"
+              onPress={() => router.push('/register/images')}
+              className="flex-1"
+            />
           </View>
         ) : (
           <Cta label="스크린샷 찍으러 가기" onPress={openSubscriptions} className="mb-[14px]" />
