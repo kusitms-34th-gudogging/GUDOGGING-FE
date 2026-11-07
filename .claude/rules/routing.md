@@ -13,7 +13,7 @@ paths:
 
 ```tsx
 // src/app/profile.tsx
-import { ProfileScreen } from '@/screens/ProfileScreen';
+import { ProfileScreen } from '@/screens/profile/ProfileScreen';
 
 export default function ProfileRoute() {
   return <ProfileScreen />;
