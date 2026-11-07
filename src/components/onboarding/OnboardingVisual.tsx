@@ -259,13 +259,15 @@ const drawVisual = (
 };
 
 interface OnboardingVisualProps {
+  /** 캔버스 높이. 모자라면 비율을 유지한 채 줄어듦 (기본은 폭에 맞춘 436 비율) */
+  height: number;
   /** 현재 페이지. 2로 가면 방출이 멈추고 점이 돌아옴 */
   page: 1 | 2;
   /** 0(O-01) ~ 1(O-02). 점 복귀·꼬리 사라짐을 이 값 하나로 만듦 */
   step: SharedValue<number>;
 }
 
-export const OnboardingVisual = ({ page, step }: OnboardingVisualProps) => {
+export const OnboardingVisual = ({ height, page, step }: OnboardingVisualProps) => {
   const { width } = useWindowDimensions();
   const reduceMotion = useReducedMotion();
   const t = useSharedValue(0);
@@ -296,16 +298,23 @@ export const OnboardingVisual = ({ page, step }: OnboardingVisualProps) => {
       { width: W, height: H },
     ),
   );
-  const scale = useDerivedValue(() => [{ scale: width / W }]);
+  // 폭·높이 중 빡빡한 쪽에 맞춰 비율 스케일하고 가운데 정렬
+  const fit = Math.min(width / W, height / H);
+  const frame = useDerivedValue(() => [
+    { translateX: (width - W * fit) / 2 },
+    { translateY: (height - H * fit) / 2 },
+    { scale: fit },
+  ]);
+  const canvasStyle = { width, height };
 
   return (
     <Canvas
       accessible={false}
       importantForAccessibility="no-hide-descendants"
       pointerEvents="none"
-      className="aspect-[375/436] w-full"
+      style={canvasStyle}
     >
-      <Group transform={scale}>
+      <Group transform={frame}>
         <Picture picture={picture} />
       </Group>
     </Canvas>

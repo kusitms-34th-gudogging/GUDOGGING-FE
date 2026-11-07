@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text, useWindowDimensions, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -7,12 +7,23 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Cta } from '@/components/common/Cta';
 import { TopBar } from '@/components/common/TopBar';
 import { NotificationSheet } from '@/components/onboarding/NotificationSheet';
 import { OnboardingVisual } from '@/components/onboarding/OnboardingVisual';
+import { cn } from '@/utils/cn';
+
+// 화면 높이 계산용 고정 블록 (상단바 · 문구 · CTA + 하단 여백)
+const TOP_BAR = 56;
+const HEAD = 92;
+const CTA_AREA = 72;
+const VISUAL_GAP = 8;
+const VISUAL_GAP_COMPACT = 24; // 작은 기기: 비주얼 아래끝과 문구 사이 24 이상
+const CTA_GAP_COMPACT = 48; // 작은 기기: 문구와 CTA 사이 최소 간격
+const VISUAL_RATIO = 436 / 375;
+const VISUAL_MIN = 200;
 
 const SWAP_SEC = 0.5;
 const STEP_SEC = 0.8;
@@ -37,6 +48,19 @@ export const OnboardingScreen = ({ onRequestNotification, onComplete }: Onboardi
   const step = useSharedValue(0);
   const reduceMotion = useReducedMotion();
   const finishing = useRef(false);
+
+  // 비주얼은 폭에 맞춘 높이가 기본이고, 안 들어가는 작은 화면(SE 등)에서만 줄임
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const available = height - insets.top - insets.bottom;
+  const natural = width * VISUAL_RATIO;
+  const compact = available - (TOP_BAR + VISUAL_GAP + HEAD + CTA_AREA) < natural;
+  const visualHeight = compact
+    ? Math.max(
+        VISUAL_MIN,
+        available - (TOP_BAR + VISUAL_GAP_COMPACT + HEAD + CTA_GAP_COMPACT + CTA_AREA),
+      )
+    : natural;
 
   // 동작 줄이기: 위치 이동 없이 문구만 0.2초 크로스페이드
   const goTo = (next: 1 | 2) => {
@@ -86,9 +110,9 @@ export const OnboardingScreen = ({ onRequestNotification, onComplete }: Onboardi
           textAction="건너뛰기"
           onTextActionPress={() => setSheetVisible(true)}
         />
-        <OnboardingVisual page={page} step={step} />
+        <OnboardingVisual height={visualHeight} page={page} step={step} />
 
-        <View className="relative mt-s8 h-[92px] px-screen-x">
+        <View className={cn('relative h-[92px] px-screen-x', compact ? 'mt-s24' : 'mt-s8')}>
           <Animated.View
             accessibilityElementsHidden={page !== 1}
             importantForAccessibility={page === 1 ? 'auto' : 'no-hide-descendants'}
