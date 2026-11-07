@@ -1,3 +1,4 @@
+import { Canvas } from '@shopify/react-native-skia';
 import { cssInterop } from 'nativewind';
 import { TextInput } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -18,3 +19,5 @@ cssInterop(Svg, {
     nativeStyleToProp: { width: true, height: true, color: true },
   },
 });
+
+cssInterop(Canvas, { className: 'style' });
