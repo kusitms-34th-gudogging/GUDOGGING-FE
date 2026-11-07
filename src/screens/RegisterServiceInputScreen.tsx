@@ -11,7 +11,7 @@ import { OptionCard } from '@/components/common/OptionCard';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { TextField } from '@/components/common/TextField';
 import { TopBar } from '@/components/common/TopBar';
-import { PAID_AT, type PaidAt, SERVICES } from '@/constants/services';
+import { type FoundSubscription, PAID_AT, type PaidAt, SERVICES } from '@/constants/services';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 
 const CATEGORIES = [
@@ -39,11 +39,14 @@ interface RegisterServiceInputScreenProps {
   serviceId?: string;
   // 직접 입력 저장 후 A-04로 넘길 A-02 선택 목록
   selectedIds?: string;
+  // 불러온 구독 수정 (A-15): 서비스명 잠금, 분석 값으로 채움
+  found?: FoundSubscription;
 }
 
 export const RegisterServiceInputScreen = ({
   serviceId,
   selectedIds,
+  found,
 }: RegisterServiceInputScreenProps) => {
   const service = SERVICES.find((s) => s.id === serviceId);
   // 사전 등록 서비스만 서비스명 잠금, 직접 입력은 서비스명도 입력·수정
@@ -51,13 +54,17 @@ export const RegisterServiceInputScreen = ({
   const { payments, setPayment } = useRegisterDraft();
   // 이미 저장한 값이 있으면 이어서 수정
   const saved = serviceId ? payments[serviceId] : undefined;
+  const init = saved ?? found?.payment;
   const [name, setName] = useState(saved?.name ?? '');
-  const [category, setCategory] = useState(saved?.category ?? (isCustom ? '기타' : CATEGORIES[0]));
-  const [amount, setAmount] = useState(saved ? String(saved.amount) : '');
-  const [cycle, setCycle] = useState(String(saved?.cycle ?? 1));
-  const [unit, setUnit] = useState(saved?.unit ?? '개월');
-  const [nextDate, setNextDate] = useState(saved?.nextDate);
-  const [paidAt, setPaidAt] = useState<PaidAt>(saved?.paidAt ?? 'web');
+  const [category, setCategory] = useState<string | undefined>(
+    init?.category ?? (found ? undefined : isCustom ? '기타' : CATEGORIES[0]),
+  );
+  const [amount, setAmount] = useState(init?.amount ? String(init.amount) : '');
+  const [cycle, setCycle] = useState(init?.cycle ? String(init.cycle) : found ? '' : '1');
+  const [unit, setUnit] = useState<string | undefined>(init?.unit ?? (found ? undefined : '개월'));
+  const [nextDate, setNextDate] = useState(init?.nextDate);
+  const [paidAt, setPaidAt] = useState<PaidAt>(init?.paidAt ?? 'web');
+  const [amountChecked, setAmountChecked] = useState(!!saved || !found?.amountUncertain);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [unitSheet, setUnitSheet] = useState(false);
   const [draftUnit, setDraftUnit] = useState<string>();
@@ -65,15 +72,23 @@ export const RegisterServiceInputScreen = ({
   const [draftDate, setDraftDate] = useState(startOfToday);
 
   const cycleNum = Number(cycle);
-  const nameValid = !isCustom || (name.trim().length >= 1 && name.trim().length <= 30);
-  const valid = nameValid && Number(amount) > 0 && cycleNum >= 1 && cycleNum <= 31 && !!nextDate;
+  const nameValid = !isCustom || !!found || (name.trim().length >= 1 && name.trim().length <= 30);
+  const valid =
+    nameValid &&
+    !!category &&
+    amountChecked &&
+    Number(amount) > 0 &&
+    cycleNum >= 1 &&
+    cycleNum <= 31 &&
+    !!unit &&
+    !!nextDate;
   const closeMenu = () => setCategoryOpen(false);
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
       <TopBar
         variant="detail"
-        title="구독 정보 입력"
+        title={found ? '구독 정보 수정' : '구독 정보 입력'}
         onBack={() => router.back()}
         showAction1={false}
         showAction2={false}
@@ -85,17 +100,19 @@ export const RegisterServiceInputScreen = ({
       >
         {/* 드롭다운 메뉴 바깥(빈 곳)을 누르면 닫힘. 안쪽 버튼·입력칸은 각자 터치를 가져감 */}
         <Pressable accessible={false} onPress={closeMenu} className="grow gap-stack-lg">
-          {service && (
+          {(service || found) && (
             <View className="flex-row items-center gap-inline-md">
               <Image
                 source={require('@/assets/images/logo_placeholder.png')}
                 className="size-logo-card"
               />
-              <Text className="text-text-primary text-body2-semibold">{service.name}</Text>
+              <Text className="text-text-primary text-body2-semibold">
+                {found?.name ?? service?.name}
+              </Text>
             </View>
           )}
           <View className="gap-inline-md">
-            {isCustom && (
+            {isCustom && !found && (
               <TextField
                 label="서비스명"
                 placeholder="서비스명을 입력해 주세요"
@@ -121,8 +138,14 @@ export const RegisterServiceInputScreen = ({
               label="결제 금액"
               placeholder="결제 금액을 입력해 주세요"
               keyboardType="number-pad"
-              value={amount}
-              onChangeText={(t) => setAmount(t.replace(/\D/g, ''))}
+              value={amount.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              onChangeText={(t) => {
+                setAmount(t.replace(/\D/g, ''));
+                setAmountChecked(true);
+              }}
+              error={!amountChecked}
+              helper="금액을 정확히 읽지 못했어요. 실제 결제 금액을 확인해 주세요."
+              showHelper={!amountChecked}
               onFocus={closeMenu}
             />
             <View className="flex-row items-end gap-inset-xs">
@@ -181,12 +204,12 @@ export const RegisterServiceInputScreen = ({
       </ScrollView>
       <View className="pb-safe px-screen-x">
         <Cta
-          label="저장하기"
+          label={found ? '수정 완료' : '저장하기'}
           disabled={!valid}
           onPress={() => {
-            if (!nextDate) return;
+            if (!category || !unit || !nextDate) return;
             setPayment(serviceId ?? `custom-${Date.now()}`, {
-              name: isCustom ? name.trim() : undefined,
+              name: isCustom ? (found?.name ?? name.trim()) : undefined,
               category,
               amount: Number(amount),
               cycle: cycleNum,
