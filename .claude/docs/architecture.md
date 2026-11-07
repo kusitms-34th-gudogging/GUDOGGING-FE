@@ -11,7 +11,7 @@ src/
 ├─ app/            # 라우트 전용. screens 컴포넌트를 반환하는 얇은 껍데기
 │  ├─ api/         # +api 파일(서버 API 라우트)
 │  └─ _layout.tsx  # 루트 레이아웃 (global.css, nativewindInterop import, Provider 감싸기)
-├─ screens/        # 화면 본체(XxxScreen.tsx)만
+├─ screens/        # 화면 본체. {도메인}/XxxScreen.tsx만
 ├─ components/
 │  ├─ common/      # 디자인 시스템 컴포넌트 + 2개 이상 도메인에서 쓰는 컴포넌트
 │  └─ {도메인}/    # 한 도메인 안에서만 쓰는 컴포넌트 (화면 만들 때 추가)
@@ -22,6 +22,7 @@ src/
 ├─ server/         # API 라우트에서만 쓰는 코드 (auth, db)
 └─ assets/
    ├─ fonts/       # Pretendard (app.json expo-font 플러그인으로 임베드)
+   ├─ animations/  # Lottie JSON (snake_case.json)
    ├─ graphics/    # 색 고정 SVG (category/·shared/) → index.ts에서 컴포넌트로 export
    ├─ icons/       # 단색 SVG 아이콘 → index.ts에서 컴포넌트로 export
    ├─ lotties/     # Lottie 모션 JSON (LottieView source에 require)
@@ -30,18 +31,20 @@ src/
 
 ## 어디에 둘까
 
-| 만들 것                              | 위치                                                     |
-| ------------------------------------ | -------------------------------------------------------- |
-| 새 화면                              | `src/screens/XxxScreen.tsx` + `src/app/xxx.tsx` (껍데기) |
-| 한 도메인 안에서만 쓰는 컴포넌트     | `src/components/{도메인}/`                               |
-| 디자인 시스템 / 2개 이상 도메인 공용 | `src/components/common/`                                 |
-| 커스텀 훅                            | `src/hooks/useXxx.ts`                                    |
-| API 호출 훅                          | `src/hooks/use{리소스}.ts`                               |
-| 테스트                               | 대상 폴더의 `__tests__/Xxx.test.tsx`, E2E는 `.maestro/`  |
-| 순수 함수                            | `src/utils/`                                             |
-| 라이브러리 설정·인스턴스 (부수효과)  | `src/lib/` (request, queryClient)                        |
-| 서버 API                             | `src/app/api/xxx+api.ts` + 로직은 `src/server/`          |
-| 여러 곳에서 공유하는 타입            | `src/types/` (그 전까진 쓰는 곳 옆)                      |
+| 만들 것                              | 위치                                                              |
+| ------------------------------------ | ----------------------------------------------------------------- |
+| 새 화면                              | `src/screens/{도메인}/XxxScreen.tsx` + `src/app/xxx.tsx` (껍데기) |
+| 한 도메인 안에서만 쓰는 컴포넌트     | `src/components/{도메인}/`                                        |
+| 디자인 시스템 / 2개 이상 도메인 공용 | `src/components/common/`                                          |
+| 커스텀 훅                            | `src/hooks/useXxx.ts`                                             |
+| API 호출 훅                          | `src/hooks/use{리소스}.ts`                                        |
+| 테스트                               | 대상 폴더의 `__tests__/Xxx.test.tsx`, E2E는 `.maestro/`           |
+| 순수 함수                            | `src/utils/`                                                      |
+| 라이브러리 설정·인스턴스 (부수효과)  | `src/lib/` (request, queryClient)                                 |
+| 서버 API                             | `src/app/api/xxx+api.ts` + 로직은 `src/server/`                   |
+| 여러 곳에서 공유하는 타입            | `src/types/` (그 전까진 쓰는 곳 옆)                               |
+
+- 도메인 폴더 이름은 `screens/`와 `components/`가 같게 맞춤 (`screens/onboarding/` ↔ `components/onboarding/`). 도메인에 화면이 하나뿐이어도 폴더로 만듦
 
 ## 컴포넌트 파일 → 폴더 전환
 

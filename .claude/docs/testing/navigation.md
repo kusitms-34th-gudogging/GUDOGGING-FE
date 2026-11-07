@@ -9,7 +9,7 @@
 - 화면 안 `useFocusEffect`(expo-router)도 `renderRouter`에서 실제로 호출됨
 
 ```tsx
-// src/screens/__tests__/HomeScreen.test.tsx
+// src/screens/home/__tests__/HomeScreen.test.tsx
 import { userEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';

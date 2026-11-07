@@ -1,6 +1,8 @@
+import { Canvas } from '@shopify/react-native-skia';
 import LottieView from 'lottie-react-native';
 import { cssInterop } from 'nativewind';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg from 'react-native-svg';
 
 // 서드파티 컴포넌트만 여기서 연결. RN 기본 컴포넌트(TextInput 등)는 NativeWind가 첫 렌더 때
@@ -18,3 +20,7 @@ cssInterop(Svg, {
 
 // 서드파티 View라 className 매핑이 없어서 style로 연결
 cssInterop(LottieView, { className: 'style' });
+
+cssInterop(Canvas, { className: 'style' });
+
+cssInterop(SafeAreaView, { className: 'style' });

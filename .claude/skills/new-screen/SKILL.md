@@ -7,7 +7,7 @@ description: 새 화면(페이지)을 만들 때 사용. "화면 만들어줘", 
 
 먼저 읽기: `.claude/rules/routing.md` · `.claude/rules/components.md` · `.claude/rules/styling.md`
 
-1. 화면 본체: `src/screens/{Name}Screen.tsx`
+1. 화면 본체: `src/screens/{도메인}/{Name}Screen.tsx` (도메인 폴더가 없으면 만듦. 이름은 `components/{도메인}/`과 맞춤)
 
    ```tsx
    import { Text, View } from 'react-native';
@@ -22,7 +22,7 @@ description: 새 화면(페이지)을 만들 때 사용. "화면 만들어줘", 
 2. 라우트 껍데기: `src/app/{route}.tsx` (동적 세그먼트는 `[id].tsx`, 그룹/중첩은 폴더 + `_layout.tsx`)
 
    ```tsx
-   import { ProfileScreen } from '@/screens/ProfileScreen';
+   import { ProfileScreen } from '@/screens/profile/ProfileScreen';
 
    export default function ProfileRoute() {
      return <ProfileScreen />;
