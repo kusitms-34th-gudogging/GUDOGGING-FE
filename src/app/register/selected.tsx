@@ -1,4 +1,4 @@
-import { RegisterSelectedServiceScreen } from '@/screens/RegisterSelectedServiceScreen';
+import { RegisterSelectedServiceScreen } from '@/screens/register/RegisterSelectedServiceScreen';
 
 export default function RegisterSelectedServiceRoute() {
   return <RegisterSelectedServiceScreen />;

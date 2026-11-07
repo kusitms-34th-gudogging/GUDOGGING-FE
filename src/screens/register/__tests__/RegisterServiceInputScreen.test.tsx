@@ -5,8 +5,8 @@ import { act, renderRouter, screen } from 'expo-router/testing-library';
 import { Pressable, Text } from 'react-native';
 
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { RegisterServiceInputScreen } from '@/screens/RegisterServiceInputScreen';
-import { RegisterServiceSelectScreen } from '@/screens/RegisterServiceSelectScreen';
+import { RegisterServiceInputScreen } from '@/screens/register/RegisterServiceInputScreen';
+import { RegisterServiceSelectScreen } from '@/screens/register/RegisterServiceSelectScreen';
 
 // 시트 애니메이션·제스처는 네이티브라 라이브러리 mock으로 내용만 렌더
 jest.mock('@gorhom/bottom-sheet', () => jest.requireActual('@gorhom/bottom-sheet/mock'));

@@ -1,4 +1,4 @@
-import { RegisterScreenshotGuideScreen } from '@/screens/RegisterScreenshotGuideScreen';
+import { RegisterScreenshotGuideScreen } from '@/screens/register/RegisterScreenshotGuideScreen';
 
 export default function RegisterScreenshotGuideRoute() {
   return <RegisterScreenshotGuideScreen />;

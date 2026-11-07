@@ -4,7 +4,7 @@ import { router, Stack } from 'expo-router';
 import { act, renderRouter, screen } from 'expo-router/testing-library';
 
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { RegisterSubscriptionScreen } from '@/screens/RegisterSubscriptionScreen';
+import { RegisterSubscriptionScreen } from '@/screens/register/RegisterSubscriptionScreen';
 
 const renderScreen = async () => {
   await renderRouter(

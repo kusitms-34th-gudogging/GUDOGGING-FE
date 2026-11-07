@@ -1,4 +1,4 @@
-import { RegisterGmailGuideScreen } from '@/screens/RegisterGmailGuideScreen';
+import { RegisterGmailGuideScreen } from '@/screens/register/RegisterGmailGuideScreen';
 
 export default function RegisterGmailGuideRoute() {
   return <RegisterGmailGuideScreen />;

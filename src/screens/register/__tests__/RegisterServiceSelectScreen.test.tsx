@@ -5,7 +5,7 @@ import { renderRouter, screen } from 'expo-router/testing-library';
 import { Pressable, Text } from 'react-native';
 
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { RegisterServiceSelectScreen } from '@/screens/RegisterServiceSelectScreen';
+import { RegisterServiceSelectScreen } from '@/screens/register/RegisterServiceSelectScreen';
 
 const Start = () => (
   <Pressable accessibilityRole="button" onPress={() => router.push('/register/select')}>

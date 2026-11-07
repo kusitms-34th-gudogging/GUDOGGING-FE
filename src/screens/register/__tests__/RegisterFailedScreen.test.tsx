@@ -1,7 +1,7 @@
 import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
-import { RegisterFailedScreen } from '@/screens/RegisterFailedScreen';
+import { RegisterFailedScreen } from '@/screens/register/RegisterFailedScreen';
 
 beforeEach(() => jest.useFakeTimers());
 afterEach(() => jest.useRealTimers());

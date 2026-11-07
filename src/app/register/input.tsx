@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 
 import { FOUND_SAMPLE } from '@/constants/services';
-import { RegisterServiceInputScreen } from '@/screens/RegisterServiceInputScreen';
+import { RegisterServiceInputScreen } from '@/screens/register/RegisterServiceInputScreen';
 
 export default function RegisterServiceInputRoute() {
   const { id, found } = useLocalSearchParams<{ id?: string; found?: string }>();

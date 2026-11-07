@@ -1,4 +1,4 @@
-import { RegisterFoundScreen } from '@/screens/RegisterFoundScreen';
+import { RegisterFoundScreen } from '@/screens/register/RegisterFoundScreen';
 
 export default function RegisterFoundRoute() {
   return <RegisterFoundScreen />;
