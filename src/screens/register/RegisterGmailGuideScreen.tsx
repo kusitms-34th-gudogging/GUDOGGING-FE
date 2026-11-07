@@ -4,6 +4,8 @@ import { Text, View } from 'react-native';
 import { CheckIcon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
 import { TopBar } from '@/components/common/TopBar';
+import { GuideStep } from '@/components/register/GuideStep';
+import { ScreenTitle } from '@/components/register/ScreenTitle';
 
 const GUIDES = [
   'Gmail 연결은 선택 사항이에요.',
@@ -21,23 +23,14 @@ export const RegisterGmailGuideScreen = () => (
       showAction2={false}
     />
     <View className="flex-1 gap-inset-lg px-screen-x pt-stack-md">
-      <View className="gap-inline-sm">
-        <Text className="text-text-primary text-head1-bold">
-          {'결제 메일에서\n구독을 찾아드릴게요.'}
-        </Text>
-        <Text className="text-text-primary text-body2-regular">
-          Gmail 결제 메일에서 등록할 구독을 찾아드려요.
-        </Text>
-      </View>
+      <ScreenTitle
+        title={'결제 메일에서\n구독을 찾아드릴게요.'}
+        description="Gmail 결제 메일에서 등록할 구독을 찾아드려요."
+      />
       <View className="gap-stack-lg">
         <View className="gap-stack-lg">
           {GUIDES.map((text) => (
-            <View key={text} className="flex-row items-start gap-inset-sm">
-              <View className="py-px">
-                <CheckIcon className="size-icon-list text-icon-brand" />
-              </View>
-              <Text className="shrink text-text-primary text-body2-semibold">{text}</Text>
-            </View>
+            <GuideStep key={text} icon={CheckIcon} iconClassName="text-icon-brand" label={text} />
           ))}
         </View>
         <Text className="px-s2 text-text-secondary text-caption2-regular">

@@ -6,6 +6,8 @@ import { Step1Icon, Step2Icon, Step3Icon } from '@/assets/icons';
 import { Button } from '@/components/common/Button';
 import { Cta } from '@/components/common/Cta';
 import { TopBar } from '@/components/common/TopBar';
+import { GuideStep } from '@/components/register/GuideStep';
+import { ScreenTitle } from '@/components/register/ScreenTitle';
 import { useToast } from '@/hooks/useToast';
 
 // Apple 계정의 전체 구독 목록 (App Store 구독 관리)
@@ -37,23 +39,14 @@ export const RegisterScreenshotGuideScreen = () => {
         showAction2={false}
       />
       <View className="flex-1 gap-inset-lg px-screen-x pt-stack-md">
-        <View className="gap-inline-sm">
-          <Text className="text-text-primary text-head1-bold">
-            {'스크린샷으로\n구독을 가져와요.'}
-          </Text>
-          <Text className="text-text-primary text-body2-regular">
-            구독 목록을 캡처하면 구독 정보를 찾아드려요.
-          </Text>
-        </View>
+        <ScreenTitle
+          title={'스크린샷으로\n구독을 가져와요.'}
+          description="구독 목록을 캡처하면 구독 정보를 찾아드려요."
+        />
         <View className="gap-inset-md">
           <View className="gap-inset-md">
-            {STEPS.map(({ icon: Icon, text }) => (
-              <View key={text} className="flex-row items-start gap-inset-sm">
-                <View className="py-px">
-                  <Icon className="size-icon-list text-icon-primary" />
-                </View>
-                <Text className="text-text-primary text-body2-semibold">{text}</Text>
-              </View>
+            {STEPS.map(({ icon, text }) => (
+              <GuideStep key={text} icon={icon} iconClassName="text-icon-primary" label={text} />
             ))}
           </View>
           <Text className="px-s2 text-text-secondary text-caption2-regular">

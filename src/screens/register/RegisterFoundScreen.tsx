@@ -2,13 +2,13 @@ import { router } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
 
 import { Cta } from '@/components/common/Cta';
-import { ListItem } from '@/components/common/ListItem';
 import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
+import { PaymentListItem } from '@/components/register/PaymentListItem';
+import { ScreenTitle } from '@/components/register/ScreenTitle';
 import { FOUND_SAMPLE, type PaymentInfo } from '@/constants/services';
 import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { formatPaymentSummary, formatWon } from '@/utils/formatPayment';
 
 export const RegisterFoundScreen = () => {
   const payments = useRegisterDraft((s) => s.payments);
@@ -32,21 +32,12 @@ export const RegisterFoundScreen = () => {
     setFoundChecked(next ? [...checked, id] : [...checked].filter((v) => v !== id));
 
   const renderItem = (f: (typeof items)[number]) => (
-    <ListItem
+    <PaymentListItem
       key={f.id}
-      title={f.name}
-      subtitle={f.payment ? formatPaymentSummary(f.payment) : f.issue}
-      showSubtitle
-      logo={require('@/assets/images/logo_placeholder.png')}
-      showLogo
-      cost={f.payment ? formatWon(f.payment.amount) : '입력하기'}
-      showCost
-      costColor={f.payment ? 'text-text-primary' : 'text-text-error'}
-      iconRightAction={{
-        accessibilityLabel: `${f.name} 결제 정보 ${f.payment ? '수정하기' : '입력하기'}`,
-        onPress: () =>
-          router.push({ pathname: '/register/input', params: { id: f.id, found: '1' } }),
-      }}
+      name={f.name}
+      payment={f.payment}
+      emptySubtitle={f.issue ?? ''}
+      onEdit={() => router.push({ pathname: '/register/input', params: { id: f.id, found: '1' } })}
       showCheckBox
       checked={checked.has(f.id)}
       onCheckedChange={(next) => toggle(f.id, next)}
@@ -63,14 +54,10 @@ export const RegisterFoundScreen = () => {
         showAction2={false}
       />
       <View className="flex-1 gap-inset-lg px-screen-x pt-stack-md">
-        <View className="gap-inline-sm">
-          <Text className="text-text-primary text-head1-bold">
-            {'찾은 구독 정보를\n확인해 주세요.'}
-          </Text>
-          <Text className="text-text-primary text-body2-regular">
-            구독이 아닌 항목은 제외할 수 있어요.
-          </Text>
-        </View>
+        <ScreenTitle
+          title={'찾은 구독 정보를\n확인해 주세요.'}
+          description="구독이 아닌 항목은 제외할 수 있어요."
+        />
         <ScrollView className="max-h-[434px] shrink" contentContainerClassName="gap-inset-lg">
           {needCheck.length > 0 && (
             <View className="gap-inline-sm">

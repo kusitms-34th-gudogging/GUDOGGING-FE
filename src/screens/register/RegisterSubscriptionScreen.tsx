@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
   CheckColorAsset,
@@ -13,6 +13,7 @@ import {
 import { Modal } from '@/components/common/Modal';
 import { OptionCard } from '@/components/common/OptionCard';
 import { TopBar } from '@/components/common/TopBar';
+import { ScreenTitle } from '@/components/register/ScreenTitle';
 import { hasRegisterDraft, useRegisterDraft } from '@/hooks/useRegisterDraft';
 
 export type RegisterMethod = 'screenshot' | 'gmail' | 'manual';
@@ -74,12 +75,10 @@ export const RegisterSubscriptionScreen = () => {
         showAction2={false}
       />
       <View className="gap-inset-lg px-screen-x pt-stack-md">
-        <View className="gap-inline-sm">
-          <Text className="text-text-primary text-head1-bold">
-            {'어떤 방법으로\n구독을 등록할까요?'}
-          </Text>
-          <Text className="text-text-primary text-body2-regular">편한 방법을 선택해 주세요.</Text>
-        </View>
+        <ScreenTitle
+          title={'어떤 방법으로\n구독을 등록할까요?'}
+          description="편한 방법을 선택해 주세요."
+        />
         <View className="gap-stack-md">
           {METHODS.map(({ method, ...card }) => (
             <OptionCard
