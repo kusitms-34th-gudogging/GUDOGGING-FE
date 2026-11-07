@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 
-import { PlusIcon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
 import { TopBar } from '@/components/common/TopBar';
+import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FOUND_SAMPLE, type PaymentInfo } from '@/constants/services';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { formatPaymentSummary, formatWon } from '@/utils/formatPayment';
@@ -86,14 +86,7 @@ export const RegisterFoundScreen = () => {
             <Text className="text-text-primary text-body3-semibold">등록 가능 {ready.length}</Text>
             <View className="gap-inline-xs">
               {ready.map(renderItem)}
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => router.push('/register/select')}
-                className="h-[69px] flex-row items-center gap-inline-md border-b-default border-border-default px-inline-xs active:opacity-pressed"
-              >
-                <PlusIcon className="size-[28px] text-icon-secondary" />
-                <Text className="text-text-secondary text-body2-semibold">서비스 더 선택하기</Text>
-              </Pressable>
+              <AddServiceRow onPress={() => router.push('/register/select')} />
             </View>
           </View>
         </ScrollView>

@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 
-import { ChevronRightIcon, PlusIcon } from '@/assets/icons';
+import { ChevronRightIcon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
 import { TopBar } from '@/components/common/TopBar';
+import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { useRegisterDraft, useRegisterServices } from '@/hooks/useRegisterDraft';
 import { formatPaymentSummary, formatWon } from '@/utils/formatPayment';
 
@@ -62,14 +63,7 @@ export const RegisterSelectedServiceScreen = ({
               />
             );
           })}
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            className="h-[69px] flex-row items-center gap-inline-md border-b-default border-border-default px-inline-xs active:opacity-pressed"
-          >
-            <PlusIcon className="size-[28px] text-icon-secondary" />
-            <Text className="text-text-secondary text-body2-semibold">서비스 더 선택하기</Text>
-          </Pressable>
+          <AddServiceRow onPress={() => router.back()} />
         </ScrollView>
       </View>
       <View className="pb-safe px-screen-x">
