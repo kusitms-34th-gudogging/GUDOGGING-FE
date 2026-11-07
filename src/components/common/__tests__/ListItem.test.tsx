@@ -98,4 +98,23 @@ describe('ListItem', () => {
     expect(screen.queryByRole('checkbox')).not.toBeOnTheScreen();
     expect(screen.queryByTestId('icon-right')).not.toBeOnTheScreen();
   });
+
+  it('iconRightAction이 있으면 오른쪽 글씨를 눌러도 onPress가 호출된다', async () => {
+    const onPress = jest.fn();
+    await render(
+      <ListItem
+        title="넷플릭스"
+        cost="입력하기"
+        showCost
+        iconRight={IconRight}
+        showIconRight
+        iconRightAction={{ accessibilityLabel: '넷플릭스 입력하기', onPress }}
+      />,
+    );
+
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await user.press(screen.getByText('입력하기'));
+
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
 });

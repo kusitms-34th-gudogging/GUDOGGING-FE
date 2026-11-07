@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { Image, type ImageSourcePropType, Pressable, Text, View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
@@ -80,7 +80,8 @@ export const ListItem = ({
         </Text>
       )}
     </View>
-    <View className="flex-row items-center gap-inline-xs">
+    {/* iconRightAction이 있으면 오른쪽 글씨와 아이콘을 함께 누름 */}
+    <Trailing action={iconRightAction}>
       {showCost && cost && (
         <Text numberOfLines={1} className={cn('max-w-[120px] text-body3-semibold', costColor)}>
           {cost}
@@ -96,22 +97,24 @@ export const ListItem = ({
           />
         </View>
       )}
-      {showIconRight &&
-        IconRight &&
-        (iconRightAction ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={iconRightAction.accessibilityLabel}
-            onPress={iconRightAction.onPress}
-          >
-            <IconRight className={cn('size-icon-list', iconRightColor)} />
-          </Pressable>
-        ) : (
-          <IconRight className={cn('size-icon-list', iconRightColor)} />
-        ))}
-    </View>
+      {showIconRight && IconRight && <IconRight className={cn('size-icon-list', iconRightColor)} />}
+    </Trailing>
   </View>
 );
+
+const Trailing = ({ action, children }: { action?: ListItemIconAction; children: ReactNode }) =>
+  action ? (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={action.accessibilityLabel}
+      onPress={action.onPress}
+      className="flex-row items-center gap-inline-xs active:opacity-pressed"
+    >
+      {children}
+    </Pressable>
+  ) : (
+    <View className="flex-row items-center gap-inline-xs">{children}</View>
+  );
 
 const SvgLogo = ({ Logo }: { Logo: ComponentType<SvgProps> }) => (
   <Logo width="100%" height="100%" />
