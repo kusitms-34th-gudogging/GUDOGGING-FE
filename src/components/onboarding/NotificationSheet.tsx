@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from 'react-native';
-import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 
 import { BellColorAsset } from '@/assets/graphics';
 import { Cta } from '@/components/common/Cta';
@@ -12,9 +12,14 @@ interface NotificationSheetProps {
 // 딤을 눌러도 닫히지 않아야 해서 gorhom 모달 대신 화면 위에 직접 올림
 export const NotificationSheet = ({ onAllow, onLater }: NotificationSheetProps) => (
   <View accessibilityViewIsModal className="absolute inset-0 justify-end">
-    <Animated.View entering={FadeIn.duration(200)} className="absolute inset-0 bg-bg-dim" />
+    <Animated.View
+      entering={FadeIn.duration(200)}
+      exiting={FadeOut.duration(250)}
+      className="absolute inset-0 bg-bg-dim"
+    />
     <Animated.View
       entering={SlideInDown.duration(300)}
+      exiting={SlideOutDown.duration(250)}
       className="items-center rounded-t-sheet bg-bg-default px-screen-x pb-s40"
     >
       <View className="mt-s20 h-[5px] w-[54px] rounded-full bg-icon-secondary" />

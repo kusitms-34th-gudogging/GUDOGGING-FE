@@ -25,8 +25,8 @@ const easeOut = (x: number) => {
 };
 
 interface OnboardingScreenProps {
-  /** OS 알림 권한 요청. 허용·거부와 관계없이 끝나면 다음으로 진행 */
-  onRequestNotification?: () => Promise<void>;
+  /** OS 알림 권한 요청. 허용·거부와 관계없이 끝나면 시트를 닫고 다음으로 진행 */
+  onRequestNotification?: () => Promise<unknown>;
   /** 알림 권한 시트까지 끝났을 때 (구독 등록 시퀀스로 이동) */
   onComplete?: () => void;
 }
@@ -56,12 +56,14 @@ export const OnboardingScreen = ({ onRequestNotification, onComplete }: Onboardi
     return { opacity: p, transform: [{ translateX: reduceMotion ? 0 : SLIDE_PX * (1 - p) }] };
   });
 
+  // 알림 받기: OS 응답까지 기다린 뒤 시트를 닫음 / 다음에 설정하기: 요청 없이 바로 닫음
   const finish = async (requestPermission: boolean) => {
     if (finishing.current) return;
     finishing.current = true;
     try {
       if (requestPermission) await onRequestNotification?.();
     } finally {
+      setSheetVisible(false);
       finishing.current = false;
     }
     onComplete?.();
