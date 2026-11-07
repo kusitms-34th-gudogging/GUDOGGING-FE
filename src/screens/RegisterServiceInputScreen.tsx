@@ -12,6 +12,7 @@ import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { TextField } from '@/components/common/TextField';
 import { TopBar } from '@/components/common/TopBar';
 import { type FoundSubscription, PAID_AT, type PaidAt, SERVICES } from '@/constants/services';
+import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 
 const CATEGORIES = [
@@ -37,21 +38,19 @@ const startOfToday = () => new Date(new Date().setHours(0, 0, 0, 0));
 interface RegisterServiceInputScreenProps {
   // 없으면 직접 입력으로 새 구독 추가 (A-02 직접 입력하기)
   serviceId?: string;
-  // 직접 입력 저장 후 A-04로 넘길 A-02 선택 목록
-  selectedIds?: string;
   // 불러온 구독 수정 (A-15): 서비스명 잠금, 분석 값으로 채움
   found?: FoundSubscription;
 }
 
 export const RegisterServiceInputScreen = ({
   serviceId,
-  selectedIds,
   found,
 }: RegisterServiceInputScreenProps) => {
   const service = SERVICES.find((s) => s.id === serviceId);
   // 사전 등록 서비스만 서비스명 잠금, 직접 입력은 서비스명도 입력·수정
   const isCustom = !service;
-  const { payments, setPayment } = useRegisterDraft();
+  const payments = useRegisterDraft((s) => s.payments);
+  const setPayment = useRegisterDraft((s) => s.setPayment);
   // 이미 저장한 값이 있으면 이어서 수정
   const saved = serviceId ? payments[serviceId] : undefined;
   const init = saved ?? found?.payment;
@@ -70,6 +69,10 @@ export const RegisterServiceInputScreen = ({
   const [draftUnit, setDraftUnit] = useState<string>();
   const [dateSheet, setDateSheet] = useState(false);
   const [draftDate, setDraftDate] = useState(startOfToday);
+  // 처음 값에서 바뀐 게 있으면 뒤로가기·스와이프로 나갈 때 이탈 팝업(A-03c)
+  const form = JSON.stringify({ name, category, amount, cycle, unit, nextDate, paidAt });
+  const [initialForm] = useState(form);
+  const { modal: leaveModal, allowLeave } = useLeaveConfirm(form !== initialForm);
 
   const cycleNum = Number(cycle);
   const nameValid = !isCustom || !!found || (name.trim().length >= 1 && name.trim().length <= 30);
@@ -217,13 +220,10 @@ export const RegisterServiceInputScreen = ({
               nextDate,
               paidAt,
             });
+            allowLeave();
             // 새 직접 입력은 A-02 자리를 A-04로 바꿔 목록에 합류, 기존 항목 수정은 A-04로 돌아감
             if (serviceId) router.back();
-            else
-              router.replace({
-                pathname: '/register/selected',
-                params: { ids: selectedIds ?? '' },
-              });
+            else router.replace('/register/selected');
           }}
           className="mb-[14px]"
         />
@@ -262,6 +262,7 @@ export const RegisterServiceInputScreen = ({
       >
         <Dial value={draftDate} onValueChange={setDraftDate} />
       </BottomSheet>
+      {leaveModal}
     </View>
   );
 };

@@ -9,13 +9,27 @@ import { ListItem } from '@/components/common/ListItem';
 import { SearchBar } from '@/components/common/SearchBar';
 import { TopBar } from '@/components/common/TopBar';
 import { SERVICES } from '@/constants/services';
+import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
+import { hasRegisterDraft, useRegisterDraft } from '@/hooks/useRegisterDraft';
 
-export const RegisterServiceSelectScreen = () => {
+interface RegisterServiceSelectScreenProps {
+  // 불러온 구독 확인(A-09)의 서비스 더 선택하기로 왔으면 흐름 안 이동이라 이탈 팝업 없음
+  more?: boolean;
+}
+
+export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScreenProps) => {
   const [query, setQuery] = useState('');
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  // 불러오기 팝업으로 이어서 등록할 수 있게 저장소에 둠
+  const selectedIds = useRegisterDraft((s) => s.selectedIds);
+  const setSelectedIds = useRegisterDraft((s) => s.setSelectedIds);
+  const hasDraft = useRegisterDraft(hasRegisterDraft);
+  // 직접 등록의 첫 화면: 등록 중이던 값이 있으면 나갈 때 이탈 팝업
+  const { modal: leaveModal } = useLeaveConfirm(!more && hasDraft);
 
   const toggle = (id: string) =>
-    setSelectedIds((ids) => (ids.includes(id) ? ids.filter((v) => v !== id) : [...ids, id]));
+    setSelectedIds(
+      selectedIds.includes(id) ? selectedIds.filter((v) => v !== id) : [...selectedIds, id],
+    );
   const selected = SERVICES.filter((s) => selectedIds.includes(s.id));
   const count = selected.length;
   // shortcut: 영문·한글 이름 부분 일치만
@@ -89,12 +103,7 @@ export const RegisterServiceSelectScreen = () => {
             {!!keyword && (
               <Pressable
                 accessibilityRole="button"
-                onPress={() =>
-                  router.push({
-                    pathname: '/register/input',
-                    params: { ids: selectedIds.join(',') },
-                  })
-                }
+                onPress={() => router.push('/register/input')}
                 className="h-[69px] flex-row items-center gap-inline-md border-b-default border-border-default px-inline-xs active:opacity-pressed"
               >
                 <PlusIcon className="size-[28px] text-icon-secondary" />
@@ -108,12 +117,11 @@ export const RegisterServiceSelectScreen = () => {
         <Cta
           label={`${count}개 선택 완료`}
           disabled={count === 0}
-          onPress={() =>
-            router.push({ pathname: '/register/selected', params: { ids: selectedIds.join(',') } })
-          }
+          onPress={() => router.push('/register/selected')}
           className="mb-[14px]"
         />
       </View>
+      {leaveModal}
     </View>
   );
 };

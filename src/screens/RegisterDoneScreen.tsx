@@ -7,20 +7,25 @@ import { AccessibilityInfo, ScrollView, Text, View } from 'react-native';
 import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
 import { TopBar } from '@/components/common/TopBar';
-import { useRegisterDraft, useRegisterServices } from '@/hooks/useRegisterDraft';
+import { getRegisteredServices, useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { formatPaymentSummary, formatWon } from '@/utils/formatPayment';
 
 interface RegisterDoneScreenProps {
   serviceIds: string[];
 }
 
-const finish = () => router.dismissTo('/');
-
 const HAPTIC_MS = 880;
 
 export const RegisterDoneScreen = ({ serviceIds }: RegisterDoneScreenProps) => {
-  const { payments } = useRegisterDraft();
-  const services = useRegisterServices(serviceIds);
+  // 들어온 시점의 값으로 그리고, 등록이 끝났으니 저장소는 바로 비움 (나간 뒤 불러오기 팝업이 뜨지 않게)
+  const [{ payments, services }] = useState(() => {
+    const { payments } = useRegisterDraft.getState();
+    return { payments, services: getRegisteredServices(serviceIds, payments) };
+  });
+  useEffect(() => {
+    useRegisterDraft.getState().reset();
+  }, []);
+  const finish = () => router.dismissTo('/');
   const navigation = useNavigation<NativeStackNavigationProp<Record<string, undefined>>>();
   const lottieRef = useRef<LottieView>(null);
   const [lastFrame, setLastFrame] = useState<number>();

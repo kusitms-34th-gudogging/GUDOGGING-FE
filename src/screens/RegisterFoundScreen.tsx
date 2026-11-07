@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
 import { Cta } from '@/components/common/Cta';
@@ -7,14 +6,18 @@ import { ListItem } from '@/components/common/ListItem';
 import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FOUND_SAMPLE, type PaymentInfo } from '@/constants/services';
+import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { formatPaymentSummary, formatWon } from '@/utils/formatPayment';
 
 export const RegisterFoundScreen = () => {
-  const { payments, setPayment } = useRegisterDraft();
-  const [checked, setChecked] = useState(
-    () => new Set(FOUND_SAMPLE.filter((f) => f.checked).map((f) => f.id)),
-  );
+  const payments = useRegisterDraft((s) => s.payments);
+  const setPayment = useRegisterDraft((s) => s.setPayment);
+  const foundChecked = useRegisterDraft((s) => s.foundChecked);
+  const setFoundChecked = useRegisterDraft((s) => s.setFoundChecked);
+  // 스크린샷·Gmail의 첫 저장 화면: 나갈 때 이탈 팝업
+  const { modal: leaveModal } = useLeaveConfirm(!!foundChecked);
+  const checked = new Set(foundChecked);
   // 수정 화면에서 저장한 값이 분석 값보다 우선. issue 없는 분석 값은 모든 칸이 채워져 있음
   const items = FOUND_SAMPLE.map((f) => ({
     ...f,
@@ -26,12 +29,7 @@ export const RegisterFoundScreen = () => {
   const allEntered = selected.length > 0 && selected.every((f) => f.payment);
 
   const toggle = (id: string, next: boolean) =>
-    setChecked((prev) => {
-      const s = new Set(prev);
-      if (next) s.add(id);
-      else s.delete(id);
-      return s;
-    });
+    setFoundChecked(next ? [...checked, id] : [...checked].filter((v) => v !== id));
 
   const renderItem = (f: (typeof items)[number]) => (
     <ListItem
@@ -86,7 +84,9 @@ export const RegisterFoundScreen = () => {
             <Text className="text-text-primary text-body3-semibold">등록 가능 {ready.length}</Text>
             <View className="gap-inline-xs">
               {ready.map(renderItem)}
-              <AddServiceRow onPress={() => router.push('/register/select')} />
+              <AddServiceRow
+                onPress={() => router.push({ pathname: '/register/select', params: { more: '1' } })}
+              />
             </View>
           </View>
         </ScrollView>
@@ -97,14 +97,26 @@ export const RegisterFoundScreen = () => {
           label="선택한 구독 등록하기"
           disabled={!allEntered}
           onPress={() => {
-            // 완료 화면은 draft의 결제 정보를 읽음. 직접 입력(custom-)은 draft에 있으면 자동으로 목록에 붙음
-            selected.forEach((f) => f.payment && !payments[f.id] && setPayment(f.id, f.payment));
-            const ids = selected.filter((f) => !f.id.startsWith('custom-')).map((f) => f.id);
-            router.push({ pathname: '/register/done', params: { ids: ids.join(',') } });
+            // 완료 화면은 draft의 결제 정보를 읽고, 체크한 항목만 받음
+            // 직접 입력(custom-)은 완료 화면이 저장한 이름을 쓰므로 찾은 이름을 같이 저장
+            selected.forEach(
+              (f) =>
+                f.payment &&
+                !payments[f.id] &&
+                setPayment(f.id, {
+                  ...f.payment,
+                  name: f.id.startsWith('custom-') ? f.name : undefined,
+                }),
+            );
+            router.push({
+              pathname: '/register/done',
+              params: { ids: selected.map((f) => f.id).join(',') },
+            });
           }}
           className="mb-[14px]"
         />
       </View>
+      {leaveModal}
     </View>
   );
 };

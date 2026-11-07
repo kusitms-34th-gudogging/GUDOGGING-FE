@@ -9,14 +9,10 @@ import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { useRegisterDraft, useRegisterServices } from '@/hooks/useRegisterDraft';
 import { formatPaymentSummary, formatWon } from '@/utils/formatPayment';
 
-interface RegisterSelectedServiceScreenProps {
-  serviceIds: string[];
-}
-
-export const RegisterSelectedServiceScreen = ({
-  serviceIds,
-}: RegisterSelectedServiceScreenProps) => {
-  const { payments } = useRegisterDraft();
+export const RegisterSelectedServiceScreen = () => {
+  // A-02에서 고른 목록은 저장소가 원본 (서비스 더 선택하기로 바꿔도 바로 반영)
+  const serviceIds = useRegisterDraft((s) => s.selectedIds);
+  const payments = useRegisterDraft((s) => s.payments);
   const services = useRegisterServices(serviceIds);
   const allEntered = services.length > 0 && services.every((s) => payments[s.id]);
 
@@ -72,7 +68,10 @@ export const RegisterSelectedServiceScreen = ({
           label={`${services.length}개 구독 등록하기`}
           disabled={!allEntered}
           onPress={() =>
-            router.push({ pathname: '/register/done', params: { ids: serviceIds.join(',') } })
+            router.push({
+              pathname: '/register/done',
+              params: { ids: services.map((s) => s.id).join(',') },
+            })
           }
           className="mb-[14px]"
         />
