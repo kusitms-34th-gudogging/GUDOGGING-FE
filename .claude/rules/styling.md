@@ -30,7 +30,7 @@ paths:
 - 색은 semantic 우선 (`text-text-primary`), primary 팔레트(`bg-gray-100`)는 semantic에 없을 때만
 - 텍스트는 typography 클래스 필수 (`text-body1-regular`). 클래스 없는 `<Text>`는 Pretendard가 아닌 시스템 폰트
 - 아이콘·버튼 크기는 size 토큰 (`size-icon-md`, `h-button-lg`)
-- className으로 안 되는 motion(등장·퇴장 애니메이션 등)·gradient·grid는 `@tokens`
+- className으로 안 되는 motion(등장·퇴장 애니메이션 등)·gradient·grid·`TextInput` 플레이스홀더 색(`placeholderTextColor={colors.text.tertiary}`)은 `@tokens`
 
 ## 플랫폼별 코드
 

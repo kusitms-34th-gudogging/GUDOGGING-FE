@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { Image, type ImageSourcePropType, Pressable, Text, View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
@@ -70,8 +70,8 @@ export const ListItem = ({
       </View>
     )}
     {showIconLeft && IconLeft && <IconLeft className={cn('size-[28px]', iconLeftColor)} />}
-    <View className="flex-1 gap-stack-xs">
-      <Text numberOfLines={1} className="text-text-primary text-body2-semibold">
+    <View className="flex-1 gap-s2">
+      <Text numberOfLines={1} className="text-text-primary text-body3-semibold">
         {title}
       </Text>
       {showSubtitle && subtitle && (
@@ -81,10 +81,18 @@ export const ListItem = ({
       )}
     </View>
     <View className="flex-row items-center gap-inline-xs">
-      {showCost && cost && (
-        <Text numberOfLines={1} className={cn('max-w-[120px] text-body2-semibold', costColor)}>
-          {cost}
-        </Text>
+      {/* iconRightAction이 있으면 오른쪽 글씨와 아이콘을 함께 누름. 체크박스는 따로 눌려서 밖에 둠 */}
+      {((showCost && cost) || (showIconRight && IconRight)) && (
+        <Trailing action={iconRightAction}>
+          {showCost && cost && (
+            <Text numberOfLines={1} className={cn('max-w-[120px] text-body3-semibold', costColor)}>
+              {cost}
+            </Text>
+          )}
+          {showIconRight && IconRight && (
+            <IconRight className={cn('size-icon-list', iconRightColor)} />
+          )}
+        </Trailing>
       )}
       {showCheckBox && (
         // Figma 인스턴스(34×44)에 맞춤: 44 체크박스를 34 틀로 잘라 레이아웃·터치 영역 모두 34×44
@@ -96,22 +104,23 @@ export const ListItem = ({
           />
         </View>
       )}
-      {showIconRight &&
-        IconRight &&
-        (iconRightAction ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={iconRightAction.accessibilityLabel}
-            onPress={iconRightAction.onPress}
-          >
-            <IconRight className={cn('size-icon-list', iconRightColor)} />
-          </Pressable>
-        ) : (
-          <IconRight className={cn('size-icon-list', iconRightColor)} />
-        ))}
     </View>
   </View>
 );
+
+const Trailing = ({ action, children }: { action?: ListItemIconAction; children: ReactNode }) =>
+  action ? (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={action.accessibilityLabel}
+      onPress={action.onPress}
+      className="flex-row items-center gap-inline-xs active:opacity-pressed"
+    >
+      {children}
+    </Pressable>
+  ) : (
+    <View className="flex-row items-center gap-inline-xs">{children}</View>
+  );
 
 const SvgLogo = ({ Logo }: { Logo: ComponentType<SvgProps> }) => (
   <Logo width="100%" height="100%" />
