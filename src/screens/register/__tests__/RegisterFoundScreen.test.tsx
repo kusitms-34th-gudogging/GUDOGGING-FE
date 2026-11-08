@@ -66,5 +66,11 @@ describe('RegisterFoundScreen', () => {
 
     expect(screen).toHavePathname('/register/done');
     expect(screen).toHaveSearchParams({ ids: 'youtube' });
+    // 완료 화면은 저장소의 결제 정보로 금액·요약을 그림
+    expect(useRegisterDraft.getState().payments.youtube).toMatchObject({
+      amount: 17000,
+      nextDate: new Date(2026, 10, 12),
+      paidAt: 'appstore',
+    });
   });
 });
