@@ -41,7 +41,8 @@ export const RegisterSelectedServiceScreen = () => {
               showChevron
             />
           ))}
-          <AddServiceRow onPress={() => router.back()} />
+          {/* 이어서 등록으로 바로 들어오면 앞 화면이 서비스 선택이 아니라서 경로로 이동 */}
+          <AddServiceRow onPress={() => router.dismissTo('/register/select')} />
         </ScrollView>
       </View>
       <View className="pb-safe px-screen-x">

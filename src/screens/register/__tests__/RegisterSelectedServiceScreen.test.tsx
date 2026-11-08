@@ -20,6 +20,7 @@ const renderSelected = async () => {
     {
       'register/selected': () => <RegisterSelectedServiceScreen />,
       'register/done': () => null,
+      'register/select': () => null,
     },
     { initialUrl: '/register/selected' },
   );
@@ -51,5 +52,14 @@ describe('RegisterSelectedServiceScreen', () => {
 
     expect(screen).toHavePathname('/register/done');
     expect(screen).toHaveSearchParams({ ids: 'netflix,youtube' });
+  });
+
+  // 이어서 등록은 선택한 구독 화면으로 바로 들어와 앞 화면이 서비스 선택이 아님
+  it('서비스 더 선택하기를 누르면 서비스 선택으로 간다', async () => {
+    const user = await renderSelected();
+
+    await user.press(screen.getByRole('button', { name: '서비스 더 선택하기' }));
+
+    expect(screen).toHavePathname('/register/select');
   });
 });

@@ -43,7 +43,8 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
       <TopBar
         variant="detail"
         title="직접 등록"
-        onBack={() => router.dismissTo('/register')}
+        // 추가 선택은 불러온 구독 확인에서 들어오므로 그 화면으로만 돌아감
+        onBack={() => (more ? router.back() : router.dismissTo('/register'))}
         showAction1={false}
         showAction2={false}
       />

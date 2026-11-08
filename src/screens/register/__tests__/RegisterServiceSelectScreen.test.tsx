@@ -65,3 +65,26 @@ describe('RegisterServiceSelectScreen 이탈 팝업', () => {
     expect(useRegisterDraft.getState().selectedIds).toEqual(['netflix']);
   });
 });
+
+it('불러온 구독 확인에서 추가 선택으로 들어왔으면 뒤로 가기에 그 화면으로 돌아간다', async () => {
+  const Found = () => (
+    <Pressable accessibilityRole="button" onPress={() => router.push('/register/select')}>
+      <Text>서비스 더 선택하기</Text>
+    </Pressable>
+  );
+  await renderRouter(
+    {
+      'register/_layout': () => <Stack />,
+      'register/index': Start,
+      'register/found': Found,
+      'register/select': () => <RegisterServiceSelectScreen more />,
+    },
+    { initialUrl: '/register/found' },
+  );
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+  await user.press(screen.getByRole('button', { name: '서비스 더 선택하기' }));
+
+  await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
+
+  expect(screen).toHavePathname('/register/found');
+});
