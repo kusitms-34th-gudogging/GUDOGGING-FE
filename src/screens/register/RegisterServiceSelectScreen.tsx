@@ -104,7 +104,9 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
             {!!keyword && (
               <Pressable
                 accessibilityRole="button"
-                onPress={() => router.push('/register/input')}
+                onPress={() =>
+                  router.push({ pathname: '/register/input', params: more ? { more: '1' } : {} })
+                }
                 className="h-[69px] flex-row items-center gap-inline-md border-b-default border-border-default px-inline-xs active:opacity-pressed"
               >
                 <PlusIcon className="size-[28px] text-icon-secondary" />
@@ -118,7 +120,9 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
         <Cta
           label={`${count}개 선택 완료`}
           disabled={count === 0}
-          onPress={() => router.push('/register/selected')}
+          onPress={() =>
+            router.push({ pathname: '/register/selected', params: more ? { more: '1' } : {} })
+          }
           className="mb-[14px]"
         />
       </View>

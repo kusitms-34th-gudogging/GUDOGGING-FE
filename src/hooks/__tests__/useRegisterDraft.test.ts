@@ -1,9 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { act, renderHook } from '@testing-library/react-native';
 
 import {
   getRegisteredServices,
   hasRegisterDraft,
   useRegisterDraft,
+  useRegisterServices,
 } from '@/hooks/useRegisterDraft';
 
 beforeEach(async () => {
@@ -68,5 +70,27 @@ describe('useRegisterDraft', () => {
       { id: 'netflix', name: 'Netflix' },
       { id: 'custom-a', name: '밀리의 서재' },
     ]);
+  });
+
+  it('선택한 구독 목록에는 직접 입력한 구독만 들어가고, 불러온 구독을 수정한 값은 빠진다', async () => {
+    const payment = {
+      category: '교육·학습',
+      amount: 9900,
+      cycle: 1,
+      unit: '개월',
+      nextDate: new Date(2026, 10, 12),
+      paidAt: 'web' as const,
+    };
+    const { result } = await renderHook(() => useRegisterServices(['netflix']));
+
+    await act(() => {
+      useRegisterDraft.getState().setPayment('custom-1', { ...payment, name: '직접 입력 구독' });
+      // 불러온 밀리의 서재를 수정해 저장한 값
+      useRegisterDraft
+        .getState()
+        .setPayment('custom-found-millie', { ...payment, name: '밀리의 서재' });
+    });
+
+    expect(result.current.map((s) => s.name)).toEqual(['Netflix', '직접 입력 구독']);
   });
 });

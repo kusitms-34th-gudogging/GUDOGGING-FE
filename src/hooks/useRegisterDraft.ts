@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { type PaymentInfo, SERVICES } from '@/constants/services';
+import { FOUND_SAMPLE, type PaymentInfo, SERVICES } from '@/constants/services';
 
 interface RegisterDraft {
   selectedIds: string[];
@@ -38,13 +38,13 @@ export const useRegisterDraft = create<RegisterDraft>()(
 export const hasRegisterDraft = ({ selectedIds, payments, foundChecked }: RegisterDraft) =>
   selectedIds.length > 0 || Object.keys(payments).length > 0 || !!foundChecked;
 
-// 선택한 사전 등록 서비스 + 직접 입력한 구독 (A-04 목록)
+// 선택한 사전 등록 서비스 + 직접 입력한 구독 (A-04 목록). 불러온 구독을 수정한 값은 불러온 구독 확인에만 보임
 export const useRegisterServices = (serviceIds: string[]) => {
   const payments = useRegisterDraft((s) => s.payments);
   return [
     ...SERVICES.filter((s) => serviceIds.includes(s.id)),
     ...Object.entries(payments)
-      .filter(([id]) => id.startsWith('custom-'))
+      .filter(([id]) => id.startsWith('custom-') && !FOUND_SAMPLE.some((f) => f.id === id))
       .map(([id, p]) => ({ id, name: p.name ?? '' })),
   ];
 };

@@ -40,11 +40,14 @@ interface RegisterServiceInputScreenProps {
   serviceId?: string;
   // 불러온 구독 수정 (A-15): 서비스명 잠금, 분석 값으로 채움
   found?: FoundSubscription;
+  // 불러온 구독 확인의 서비스 더 선택하기에서 직접 입력으로 왔으면 추가 모드 목록으로 돌아감
+  more?: boolean;
 }
 
 export const RegisterServiceInputScreen = ({
   serviceId,
   found,
+  more = false,
 }: RegisterServiceInputScreenProps) => {
   const service = SERVICES.find((s) => s.id === serviceId);
   // 사전 등록 서비스만 서비스명 잠금, 직접 입력은 서비스명도 입력·수정
@@ -223,7 +226,8 @@ export const RegisterServiceInputScreen = ({
             allowLeave();
             // 새 직접 입력은 A-02 자리를 A-04로 바꿔 목록에 합류, 기존 항목 수정은 A-04로 돌아감
             if (serviceId) router.back();
-            else router.replace('/register/selected');
+            else
+              router.replace({ pathname: '/register/selected', params: more ? { more: '1' } : {} });
           }}
           className="mb-[14px]"
         />

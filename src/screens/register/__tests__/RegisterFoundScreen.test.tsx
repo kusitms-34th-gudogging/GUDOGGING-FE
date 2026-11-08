@@ -73,4 +73,22 @@ describe('RegisterFoundScreen', () => {
       paidAt: 'appstore',
     });
   });
+
+  it('서비스 더 선택하기로 추가한 구독도 목록에 보이고 함께 등록한다', async () => {
+    useRegisterDraft.getState().setSelectedIds(['spotify']);
+    useRegisterDraft.getState().setPayment('spotify', {
+      category: '음악',
+      amount: 10900,
+      cycle: 1,
+      unit: '개월',
+      nextDate: new Date(2026, 10, 20),
+      paidAt: 'appstore',
+    });
+    useRegisterDraft.getState().setFoundChecked(['youtube', 'spotify']);
+    const user = await renderFound();
+
+    await user.press(screen.getByRole('button', CTA));
+
+    expect(screen).toHaveSearchParams({ ids: 'youtube,spotify' });
+  });
 });
