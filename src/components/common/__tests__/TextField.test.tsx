@@ -63,4 +63,17 @@ describe('TextField', () => {
 
     expect(screen.queryByHintText('2자 이상 입력')).not.toBeOnTheScreen();
   });
+
+  it('showLabel을 끄면 라벨 글자는 숨지만 입력칸은 라벨 이름으로 찾을 수 있다', async () => {
+    await render(<TextField label="결제 주기" showLabel={false} />);
+
+    expect(screen.queryByText('결제 주기')).not.toBeOnTheScreen();
+    expect(screen.getByLabelText('결제 주기')).toBeOnTheScreen();
+  });
+
+  it('suffix가 있으면 값 뒤에 단위가 보인다', async () => {
+    await render(<TextField label="결제 금액" suffix="원" />);
+
+    expect(screen.getByText('원')).toBeOnTheScreen();
+  });
 });
