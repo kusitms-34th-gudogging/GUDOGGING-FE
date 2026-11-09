@@ -54,23 +54,38 @@ export const ListItem = ({
   onCheckedChange,
   className,
 }: ListItemProps) => (
-  <View
-    className={cn(
-      'min-w-[280px] flex-row items-center gap-inline-md border-b-default border-border-default px-inline-xs py-inset-sm',
-      className,
-    )}
-  >
-    {showLogo && logo && (
-      <View className="size-logo-card">
-        {typeof logo === 'function' ? (
-          <SvgLogo Logo={logo} />
-        ) : (
-          <Image source={logo} className="size-full" />
+  <View className={cn('min-w-[280px] flex-row items-center gap-inset-xs py-inline-xs', className)}>
+    {(showCheckBox || (showLogo && logo) || (showIconLeft && IconLeft)) && (
+      <View className="flex-row items-center gap-stack-xs">
+        {(showCheckBox || (showLogo && logo)) && (
+          <View className="flex-row items-center gap-s2">
+            {showCheckBox && (
+              // Figma 인스턴스(34×44, 박스 왼쪽 정렬)에 맞춤: 44 체크박스를 왼쪽으로 10 당기고 34 틀로 잘라 터치 영역도 34×44
+              <View className="w-[34px] overflow-hidden">
+                <Checkbox
+                  checked={checked}
+                  onCheckedChange={(next) => onCheckedChange?.(next)}
+                  accessibilityLabel={title}
+                  className="-ml-[10px]"
+                />
+              </View>
+            )}
+            {showLogo && logo && (
+              // 흰 로고도 구분되게 border/subtle 1px
+              <View className="size-logo-card overflow-hidden rounded-full border-default border-border-subtle">
+                {typeof logo === 'function' ? (
+                  <SvgLogo Logo={logo} />
+                ) : (
+                  <Image source={logo} className="size-full" />
+                )}
+              </View>
+            )}
+          </View>
         )}
+        {showIconLeft && IconLeft && <IconLeft className={cn('size-[28px]', iconLeftColor)} />}
       </View>
     )}
-    {showIconLeft && IconLeft && <IconLeft className={cn('size-[28px]', iconLeftColor)} />}
-    <View className="flex-1 gap-s2">
+    <View className="flex-1">
       <Text numberOfLines={1} className="text-text-primary text-body3-semibold">
         {title}
       </Text>
@@ -80,31 +95,19 @@ export const ListItem = ({
         </Text>
       )}
     </View>
-    <View className="flex-row items-center gap-inline-xs">
-      {/* iconRightAction이 있으면 오른쪽 글씨와 아이콘을 함께 누름. 체크박스는 따로 눌려서 밖에 둠 */}
-      {((showCost && cost) || (showIconRight && IconRight)) && (
-        <Trailing action={iconRightAction}>
-          {showCost && cost && (
-            <Text numberOfLines={1} className={cn('max-w-[120px] text-body3-semibold', costColor)}>
-              {cost}
-            </Text>
-          )}
-          {showIconRight && IconRight && (
-            <IconRight className={cn('size-icon-list', iconRightColor)} />
-          )}
-        </Trailing>
-      )}
-      {showCheckBox && (
-        // Figma 인스턴스(34×44)에 맞춤: 44 체크박스를 34 틀로 잘라 레이아웃·터치 영역 모두 34×44
-        <View className="w-[34px] items-center overflow-hidden">
-          <Checkbox
-            checked={checked}
-            onCheckedChange={(next) => onCheckedChange?.(next)}
-            accessibilityLabel={title}
-          />
-        </View>
-      )}
-    </View>
+    {/* iconRightAction이 있으면 오른쪽 글씨와 아이콘을 함께 누름 */}
+    {((showCost && cost) || (showIconRight && IconRight)) && (
+      <Trailing action={iconRightAction}>
+        {showCost && cost && (
+          <Text numberOfLines={1} className={cn('max-w-[120px] text-body3-semibold', costColor)}>
+            {cost}
+          </Text>
+        )}
+        {showIconRight && IconRight && (
+          <IconRight className={cn('size-icon-list', iconRightColor)} />
+        )}
+      </Trailing>
+    )}
   </View>
 );
 
@@ -114,12 +117,12 @@ const Trailing = ({ action, children }: { action?: ListItemIconAction; children:
       accessibilityRole="button"
       accessibilityLabel={action.accessibilityLabel}
       onPress={action.onPress}
-      className="flex-row items-center gap-inline-xs active:opacity-pressed"
+      className="flex-row items-center gap-s2 active:opacity-pressed"
     >
       {children}
     </Pressable>
   ) : (
-    <View className="flex-row items-center gap-inline-xs">{children}</View>
+    <View className="flex-row items-center gap-s2">{children}</View>
   );
 
 const SvgLogo = ({ Logo }: { Logo: ComponentType<SvgProps> }) => (
