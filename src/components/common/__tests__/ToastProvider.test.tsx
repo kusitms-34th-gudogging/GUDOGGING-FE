@@ -1,7 +1,7 @@
 import { act, render, screen, userEvent } from '@testing-library/react-native';
 import { AccessibilityInfo, Pressable, Text } from 'react-native';
 
-import { ToastProvider } from '@/components/common/ToastProvider';
+import { ToastOutlet, ToastProvider } from '@/components/common/ToastProvider';
 import { useToast } from '@/hooks/useToast';
 
 const ShowButtons = () => {
@@ -22,6 +22,7 @@ const renderProvider = () =>
   render(
     <ToastProvider>
       <ShowButtons />
+      <ToastOutlet />
     </ToastProvider>,
   );
 

@@ -3,6 +3,7 @@ import {
   createContext,
   type ReactNode,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -11,12 +12,15 @@ import {
 import { AccessibilityInfo, View } from 'react-native';
 import Animated, { Easing, FadeIn, FadeOut } from 'react-native-reanimated';
 
+import { cn } from '@/utils/cn';
+
 import { Toast, type ToastProps } from './Toast';
 
 const VISIBLE_MS = 2500;
 
 interface ToastContextValue {
   show: (toast: ToastProps) => void;
+  toast: (ToastProps & { id: number }) | null;
 }
 
 export const ToastContext = createContext<ToastContextValue | null>(null);
@@ -38,27 +42,42 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  const value = useMemo(() => ({ show }), [show]);
+  const value = useMemo(() => ({ show, toast }), [show, toast]);
+
+  return <ToastContext.Provider value={value}>{children}</ToastContext.Provider>;
+};
+
+interface ToastOutletProps {
+  // 화면마다 위치가 달라서 쓰는 곳이 정함 (예: CTA 위 본문 영역 끝에 bottom-0 pb-stack-sm)
+  className?: string;
+}
+
+// 토스트가 그려지는 자리. 이걸 둔 화면에서만 토스트가 보임
+export const ToastOutlet = ({ className }: ToastOutletProps) => {
+  const toast = useContext(ToastContext)?.toast;
 
   return (
-    <ToastContext.Provider value={value}>
-      {children}
-      {/* shortcut: 탭바 없어 임시로 safe area 바로 위에 붙임, 탭바 생기면 하단 여백 safe area + 64 (탭바 52 + 12) */}
-      <View className="pointer-events-box-none pb-safe absolute inset-x-0 bottom-0 items-center px-screen-x">
-        {toast && (
-          <Animated.View
-            key={toast.id}
-            entering={FadeIn.duration(motion.transition).easing(
-              Easing.bezier(...motion['ease-enter']),
-            )}
-            exiting={FadeOut.duration(motion.transition).easing(
-              Easing.bezier(...motion['ease-exit']),
-            )}
-          >
-            <Toast type={toast.type} message={toast.message} />
-          </Animated.View>
-        )}
-      </View>
-    </ToastContext.Provider>
+    <View
+      className={cn(
+        'pointer-events-box-none absolute inset-x-0 items-center px-screen-x',
+        className,
+      )}
+    >
+      {toast && (
+        <Animated.View
+          key={toast.id}
+          entering={FadeIn.duration(motion.transition).easing(
+            Easing.bezier(...motion['ease-enter']),
+          )}
+          exiting={FadeOut.duration(motion.transition).easing(
+            Easing.bezier(...motion['ease-exit']),
+          )}
+          // Figma 인스턴스는 최대 폭 335까지 채움
+          className="w-full max-w-[335px]"
+        >
+          <Toast type={toast.type} message={toast.message} />
+        </Animated.View>
+      )}
+    </View>
   );
 };
