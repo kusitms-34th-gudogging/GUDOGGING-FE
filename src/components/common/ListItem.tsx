@@ -60,13 +60,12 @@ export const ListItem = ({
         {(showCheckBox || (showLogo && logo)) && (
           <View className="flex-row items-center gap-s2">
             {showCheckBox && (
-              // Figma 인스턴스(34×44, 박스 왼쪽 정렬)에 맞춤: 44 체크박스를 왼쪽으로 10 당기고 34 틀로 잘라 터치 영역도 34×44
-              <View className="w-[34px] overflow-hidden">
+              // Figma 인스턴스(34×44, 박스 왼쪽 정렬)에 맞춤: 44 체크박스를 34 틀 오른쪽 끝에 붙여 왼쪽 10을 잘라냄 → 박스가 틀 왼쪽에 오고 터치 영역도 34×44
+              <View className="w-[34px] flex-row justify-end overflow-hidden">
                 <Checkbox
                   checked={checked}
                   onCheckedChange={(next) => onCheckedChange?.(next)}
                   accessibilityLabel={title}
-                  className="-ml-[10px]"
                 />
               </View>
             )}
