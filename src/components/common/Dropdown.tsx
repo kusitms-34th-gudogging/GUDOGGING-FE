@@ -36,7 +36,8 @@ export const Dropdown = ({
 }: DropdownProps) => (
   <View className={cn('min-w-[120px] gap-stack-sm', open && 'z-10', className)}>
     {showLabel && (
-      <Text numberOfLines={1} className="px-s2 text-text-primary text-body3-semibold">
+      // 높이 20 고정: iOS가 글자 높이를 픽셀 올림해(20→20.33) 라벨마다 아래 요소가 0.33pt씩 밀림. 시스템 큰 글씨에선 잘릴 수 있음
+      <Text numberOfLines={1} className="h-[20px] px-s2 text-text-primary text-body3-semibold">
         {label}
       </Text>
     )}
