@@ -56,10 +56,10 @@ describe('RegisterSelectedServiceScreen', () => {
   });
 
   // 이어서 등록은 선택한 구독 화면으로 바로 들어와 앞 화면이 서비스 선택이 아님
-  it('서비스 더 선택하기를 누르면 서비스 선택으로 간다', async () => {
+  it('구독 추가하기를 누르면 서비스 선택으로 간다', async () => {
     const user = await renderSelected();
 
-    await user.press(screen.getByRole('button', { name: '서비스 더 선택하기' }));
+    await user.press(screen.getByRole('button', { name: '구독 추가하기' }));
 
     expect(screen).toHavePathname('/register/select');
   });
@@ -74,5 +74,18 @@ describe('RegisterSelectedServiceScreen', () => {
 
     expect(screen).toHavePathname('/register/found');
     expect(useRegisterDraft.getState().foundChecked).toEqual(['youtube', 'netflix']);
+  });
+
+  it('결제 정보가 없는 구독을 먼저 보여 주고, 입력 전엔 금액 대신 화살표로 입력을 안내한다', async () => {
+    useRegisterDraft.getState().setPayment('netflix', PAYMENT);
+    await renderSelected();
+
+    const rows = screen.getAllByRole('button', { name: /결제 정보/ });
+    expect(rows.map((r) => r.props.accessibilityLabel)).toEqual([
+      'YouTube Premium 결제 정보 입력하기',
+      'Netflix 결제 정보 수정하기',
+    ]);
+    expect(screen.getByText('13,500원')).toBeOnTheScreen();
+    expect(screen.queryByText('입력하기')).not.toBeOnTheScreen();
   });
 });
