@@ -81,6 +81,7 @@ export const RegisterFoundScreen = () => {
             <View className="gap-inline-xs">
               {ready.map(renderItem)}
               <AddServiceRow
+                label="서비스 더 선택하기"
                 onPress={() => router.push({ pathname: '/register/select', params: { more: '1' } })}
               />
             </View>

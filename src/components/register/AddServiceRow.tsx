@@ -3,17 +3,20 @@ import { Pressable, Text } from 'react-native';
 import { PlusIcon } from '@/assets/icons';
 
 interface AddServiceRowProps {
+  label: string;
   onPress: () => void;
 }
 
-// 구독 목록 끝의 "서비스 더 선택하기" 줄 (ListItem과 같은 높이·구분선)
-export const AddServiceRow = ({ onPress }: AddServiceRowProps) => (
+// 구독 목록 끝의 추가 줄 (구독 추가하기·직접 입력하기 등)
+export const AddServiceRow = ({ label, onPress }: AddServiceRowProps) => (
   <Pressable
     accessibilityRole="button"
+    // 행 높이는 36이라 위아래로 늘려 터치 영역 44
+    hitSlop={{ top: 4, bottom: 4 }}
     onPress={onPress}
-    className="h-[69px] flex-row items-center gap-inline-md border-b-default border-border-default px-inline-xs active:opacity-pressed"
+    className="flex-row items-center gap-inset-xs py-inline-xs active:opacity-pressed"
   >
     <PlusIcon className="size-[28px] text-icon-secondary" />
-    <Text className="text-text-secondary text-body2-semibold">서비스 더 선택하기</Text>
+    <Text className="text-text-secondary text-body3-semibold">{label}</Text>
   </Pressable>
 );

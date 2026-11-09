@@ -1,13 +1,14 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 
-import { CloseIcon, PlusIcon } from '@/assets/icons';
+import { CloseIcon } from '@/assets/icons';
 import { Chip } from '@/components/common/Chip';
 import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
 import { SearchBar } from '@/components/common/SearchBar';
 import { TopBar } from '@/components/common/TopBar';
+import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { SERVICES } from '@/constants/services';
 import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
@@ -82,7 +83,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
           <Text className="text-text-primary text-body3-semibold">
             {keyword ? '검색 결과' : '전체'}
           </Text>
-          <FadeScrollView contentContainerClassName="gap-inline-xs">
+          <FadeScrollView className="flex-1" contentContainerClassName="gap-inline-xs">
             {results.map((s) => (
               <ListItem
                 key={s.id}
@@ -97,18 +98,12 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
               />
             ))}
             {!!keyword && (
-              <Pressable
-                accessibilityRole="button"
-                // 행 높이는 36이라 위아래로 늘려 터치 영역 44
-                hitSlop={{ top: 4, bottom: 4 }}
+              <AddServiceRow
+                label="직접 입력하기"
                 onPress={() =>
                   router.push({ pathname: '/register/input', params: more ? { more: '1' } : {} })
                 }
-                className="flex-row items-center gap-inset-xs py-inline-xs active:opacity-pressed"
-              >
-                <PlusIcon className="size-[28px] text-icon-secondary" />
-                <Text className="text-text-secondary text-body3-semibold">직접 입력하기</Text>
-              </Pressable>
+              />
             )}
           </FadeScrollView>
         </View>
