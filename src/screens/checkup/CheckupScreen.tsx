@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Image, Text, View } from 'react-native';
 
 import { PlusIcon } from '@/assets/icons';
@@ -30,8 +30,9 @@ interface CheckupScreenProps {
 
 // 임시 저장을 다 읽은 뒤에 시작 문항을 정함
 export const CheckupScreen = ({ subscription }: CheckupScreenProps) => {
-  const [hydrated, setHydrated] = useState(useCheckupDraft.persist.hasHydrated);
-  useEffect(() => useCheckupDraft.persist.onFinishHydration(() => setHydrated(true)), []);
+  // useSyncExternalStore는 구독 직후 값을 다시 읽어서, 렌더~구독 사이에 복원이 끝나도 놓치지 않음
+  const { onFinishHydration, hasHydrated } = useCheckupDraft.persist;
+  const hydrated = useSyncExternalStore(onFinishHydration, hasHydrated);
   return hydrated ? <CheckupQuestions subscription={subscription} /> : null;
 };
 
