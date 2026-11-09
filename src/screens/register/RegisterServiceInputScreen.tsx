@@ -18,7 +18,7 @@ import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 const CATEGORIES = [
   '영상·OTT',
   '음악',
-  '쇼핑·배달 멤버십',
+  '쇼핑·멤버십',
   '교육·학습',
   '생산성·AI',
   '엔터테인먼트',
