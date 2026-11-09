@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { userEvent } from '@testing-library/react-native';
+import { fireEvent, userEvent } from '@testing-library/react-native';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
 import type { CheckupSubscription } from '@/constants/checkup';
@@ -79,6 +79,48 @@ describe('CheckupScreen', () => {
     useCheckupDraft.getState().setScore('netflix', NETFLIX.nextDate.toISOString(), 0, 2);
     await renderCheckup();
     expect(screen.getByText('넷플릭스에서 본 콘텐츠, 구독료만큼 가치 있었나요?')).toBeOnTheScreen();
+  });
+
+  it('3문항을 다 답했으면 4/4 메모부터, 칩은 입력란에 이어 붙고 건너뛰기가 보인다', async () => {
+    [3, 4, 2].forEach((score, step) =>
+      useCheckupDraft.getState().setScore('netflix', NETFLIX.nextDate.toISOString(), step, score),
+    );
+    const user = await renderCheckup();
+    expect(screen.getByText('넷플릭스에 대해\n남기고 싶은 말이 있나요?')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: '건너뛰기' })).toBeOnTheScreen();
+
+    const memo = screen.getByLabelText('메모');
+    await user.press(screen.getByRole('button', { name: '이번 달은 바빴어요' }));
+    expect(memo).toHaveDisplayValue('이번 달은 바빴어요');
+
+    await user.type(memo, ' 다음 달은 ');
+    await user.press(screen.getByRole('button', { name: '비싸지면 해지할래요' }));
+    expect(memo).toHaveDisplayValue('이번 달은 바빴어요 다음 달은 비싸지면 해지할래요');
+  });
+
+  it('칩을 붙여 100자를 넘으면 100자에서 자른다', async () => {
+    [3, 4, 2].forEach((score, step) =>
+      useCheckupDraft.getState().setScore('netflix', NETFLIX.nextDate.toISOString(), step, score),
+    );
+    const user = await renderCheckup();
+    const memo = screen.getByLabelText('메모');
+    fireEvent.changeText(memo, '가'.repeat(95));
+    await user.press(screen.getByRole('button', { name: '이번 달은 바빴어요' }));
+    expect(memo).toHaveDisplayValue(`${'가'.repeat(95)} 이번 달`);
+  });
+
+  it('메모에서 이전으로 3/4에 갔다 오면 메모가 유지된다', async () => {
+    [3, 4, 2].forEach((score, step) =>
+      useCheckupDraft.getState().setScore('netflix', NETFLIX.nextDate.toISOString(), step, score),
+    );
+    const user = await renderCheckup();
+    await user.press(screen.getByRole('button', { name: '이번 달은 바빴어요' }));
+    await user.press(screen.getByRole('button', { name: '이전' }));
+    expect(screen.queryByRole('button', { name: '건너뛰기' })).toBeNull();
+    expect(screen.getByRole('radio', { name: '거의 안 쓸 것 같아요' })).toBeSelected();
+
+    await user.press(screen.getByRole('button', NEXT));
+    expect(screen.getByLabelText('메모')).toHaveDisplayValue('이번 달은 바빴어요');
   });
 
   it('결제 주기가 바뀌었으면 1/4부터 다시 시작한다', async () => {
