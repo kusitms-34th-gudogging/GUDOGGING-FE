@@ -2,11 +2,12 @@ import * as Haptics from 'expo-haptics';
 import { type NativeStackNavigationProp, router, useNavigation } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, ScrollView, Text, View } from 'react-native';
+import { AccessibilityInfo, Text, View } from 'react-native';
 
 import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
 import { TopBar } from '@/components/common/TopBar';
+import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { getRegisteredServices, useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { formatPaymentSummary, formatWon } from '@/utils/formatPayment';
 
@@ -71,10 +72,11 @@ export const RegisterDoneScreen = ({ serviceIds }: RegisterDoneScreenProps) => {
         showAction1={false}
         showAction2={false}
       />
-      <View className="flex-1 gap-inset-lg px-screen-x pt-s20">
-        <View className="items-center gap-screen-x">
+      {/* 목록은 최대 434, CTA와 56 유지, 넘치면 내부 스크롤 + 하단 페이드 (Figma 주석) */}
+      <View className="flex-1 gap-section px-screen-x pb-[56px] pt-s20">
+        <View className="items-center gap-inset-md">
           <View className="size-[118px]" />
-          <View className="items-center gap-s4">
+          <View className="items-center gap-s2">
             <Text className="text-center text-text-primary text-head3-bold">
               구독을 등록했어요.
             </Text>
@@ -83,11 +85,11 @@ export const RegisterDoneScreen = ({ serviceIds }: RegisterDoneScreenProps) => {
             </Text>
           </View>
         </View>
-        <View className="shrink gap-inline-sm">
-          <Text className="text-text-primary text-body3-semibold">
-            등록된 구독 {services.length}
+        <View className="shrink gap-stack-md">
+          <Text className="px-s2 text-text-primary text-body3-semibold">
+            등록된 구독 <Text className="text-text-brand text-body3-bold">{services.length}</Text>
           </Text>
-          <ScrollView className="max-h-[316px] shrink" contentContainerClassName="gap-inline-xs">
+          <FadeScrollView className="max-h-[434px] shrink" contentContainerClassName="gap-stack-sm">
             {services.map((s) => {
               const payment = payments[s.id];
               return (
@@ -103,7 +105,7 @@ export const RegisterDoneScreen = ({ serviceIds }: RegisterDoneScreenProps) => {
                 />
               );
             })}
-          </ScrollView>
+          </FadeScrollView>
         </View>
       </View>
       <View className="pb-safe px-screen-x">
