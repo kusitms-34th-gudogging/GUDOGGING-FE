@@ -118,6 +118,43 @@ describe('ListItem', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
+  it('체크박스가 없으면 행 어디를 눌러도 onPress가 호출된다', async () => {
+    const onPress = jest.fn();
+    await render(
+      <ListItem
+        title="넷플릭스"
+        subtitle="결제 정보 입력 필요"
+        showSubtitle
+        iconRight={IconRight}
+        showIconRight
+        iconRightAction={{ accessibilityLabel: '넷플릭스 입력하기', onPress }}
+      />,
+    );
+
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await user.press(screen.getByText('결제 정보 입력 필요'));
+
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('체크박스가 있으면 행 가운데(제목)는 눌리지 않는다', async () => {
+    const onPress = jest.fn();
+    await render(
+      <ListItem
+        title="넷플릭스"
+        cost="17,000원"
+        showCost
+        iconRightAction={{ accessibilityLabel: '넷플릭스 수정하기', onPress }}
+        showCheckBox
+      />,
+    );
+
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await user.press(screen.getByText('넷플릭스'));
+
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
   it('체크박스는 오른쪽 글씨 버튼에 묶이지 않고 따로 눌린다', async () => {
     const onPress = jest.fn();
     const onCheckedChange = jest.fn();
