@@ -26,6 +26,8 @@ interface CheckupCategoryConfig {
   asset: ComponentType<SvgProps>;
   // 1/4 이용도 · 2/4 만족도 · 3/4 다음 달 계획
   questions: [CheckupQuestion, CheckupQuestion, CheckupQuestion];
+  // 4/4 메모(K-70) 입력란 예시와 칩 3개 (계속 쓸 이유 · 이번 달 사정 · 해지 조건 순)
+  memo: { placeholder: string; chips: [string, string, string] };
 }
 
 const USAGE = '최근 한 달 동안 {name}을 얼마나 자주 이용했나요?';
@@ -57,7 +59,7 @@ const value = (title: string): CheckupQuestion => ({
   options: VALUE_OPTIONS,
 });
 
-// Figma 06 구독 점검 화면 설계서(CHK-001~007) Description 문구 그대로. 선택지는 1점(부정)부터
+// Figma 06 구독 점검 화면 설계서(CHK-001~008) Description 문구 그대로. 선택지는 1점(부정)부터
 export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> = {
   ott: {
     asset: OttColorAsset,
@@ -70,6 +72,10 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       value('{name}에서 본 콘텐츠, 구독료만큼 가치 있었나요?'),
       PLAN,
     ],
+    memo: {
+      placeholder: '예: 시즌 3 공개돼서 이번 달은 유지할래요',
+      chips: ['보고 싶은 작품이 있어요', '이번 달은 바빴어요', '비싸지면 해지할래요'],
+    },
   },
   music: {
     asset: MusicColorAsset,
@@ -78,6 +84,10 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       value('{name}으로 들은 음악, 구독료만큼 가치 있었나요?'),
       PLAN,
     ],
+    memo: {
+      placeholder: '예: 출퇴근길에 매일 들어서 계속 쓸래요',
+      chips: ['매일 듣고 있어요', '다른 음악 앱이랑 겹쳐요', '가족 요금제로 바꿀래요'],
+    },
   },
   shopping: {
     asset: ShoppingColorAsset,
@@ -90,6 +100,10 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       value('{name} 혜택으로 아낀 돈, 구독료만큼 됐나요?'),
       PLAN,
     ],
+    memo: {
+      placeholder: '예: 이번 달 배달을 많이 시켜서 본전은 뽑았어요',
+      chips: ['배송비로 본전 뽑았어요', '이번 달은 주문이 적었어요', '할인 끝나면 해지할래요'],
+    },
   },
   education: {
     asset: EducationColorAsset,
@@ -98,6 +112,10 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       value('{name}으로 한 공부, 구독료만큼 가치 있었나요?'),
       PLAN,
     ],
+    memo: {
+      placeholder: '예: 자격증 시험 끝날 때까지만 쓸래요',
+      chips: ['목표 달성까지 계속할래요', '이번 달은 공부를 못 했어요', '시험 끝나면 해지할래요'],
+    },
   },
   productivity: {
     asset: ProductivityColorAsset,
@@ -106,6 +124,10 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       value('{name} 유료 기능, 구독료만큼 가치 있었나요?'),
       PLAN,
     ],
+    memo: {
+      placeholder: '예: 프로젝트 끝나는 다음 달까지만 쓸래요',
+      chips: ['업무에 꼭 필요해요', '무료 버전으로도 충분해요', '다른 AI 툴과 겹쳐요'],
+    },
   },
   entertainment: {
     asset: EntertainmentColorAsset,
@@ -114,6 +136,10 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       value('{name}에서 즐긴 콘텐츠, 구독료만큼 가치 있었나요?'),
       PLAN,
     ],
+    memo: {
+      placeholder: '예: 읽고 있는 책 다 읽으면 해지할래요',
+      chips: ['즐겨 보는 콘텐츠가 있어요', '이번 달은 거의 못 썼어요', '이벤트 끝나면 해지할래요'],
+    },
   },
   etc: {
     asset: EtcColorAsset,
@@ -122,6 +148,10 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       value('{name}, 구독료만큼 가치 있었나요?'),
       PLAN,
     ],
+    memo: {
+      placeholder: '예: 사진 백업용이라 계속 써야 해요',
+      chips: ['자동으로 쓰고 있어요', '이번 달은 안 썼어요', '비싸지면 해지할래요'],
+    },
   },
 };
 
