@@ -22,13 +22,13 @@ export const RegisterGmailGuideScreen = () => (
       showAction1={false}
       showAction2={false}
     />
-    <View className="flex-1 gap-inset-lg px-screen-x pt-stack-md">
+    <View className="flex-1 gap-section px-screen-x pt-stack-md">
       <ScreenTitle
         title={'결제 메일에서\n구독을 찾아드릴게요.'}
         description="Gmail 결제 메일에서 등록할 구독을 찾아드려요."
       />
       <View className="gap-stack-lg">
-        <View className="gap-stack-lg">
+        <View className="gap-stack-md">
           {GUIDES.map((text) => (
             <GuideStep key={text} icon={CheckIcon} iconClassName="text-icon-brand" label={text} />
           ))}
