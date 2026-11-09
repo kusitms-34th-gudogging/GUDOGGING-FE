@@ -23,13 +23,12 @@ export const Chip = ({ label, icon: Icon, selected, onSelect, className }: ChipP
       onPress={onSelect}
       hitSlop={{ top: 4, bottom: 4 }}
       className={cn(
-        'h-chip min-w-[56px] max-w-[160px] flex-row items-center justify-center gap-inline-xs rounded-button px-inset-sm transition-colors',
+        'h-chip min-w-[56px] flex-row items-center justify-center gap-inline-xs rounded-button px-inset-sm transition-colors',
         selected ? 'bg-action-inverse' : 'border-default border-border-default bg-surface-default',
         className,
       )}
     >
       <Text
-        numberOfLines={1}
         className={cn(
           'shrink transition-colors',
           selected ? 'text-body3-semibold' : 'text-body3-regular',
@@ -38,7 +37,12 @@ export const Chip = ({ label, icon: Icon, selected, onSelect, className }: ChipP
       >
         {label}
       </Text>
-      {Icon && <Icon className={cn('size-icon-xs', contentColor)} />}
+      {/* Figma: 아이콘은 글자보다 연한 icon/secondary, 선택 시 흰색 */}
+      {Icon && (
+        <Icon
+          className={cn('size-icon-xs', selected ? 'text-icon-inverse' : 'text-icon-secondary')}
+        />
+      )}
     </Pressable>
   );
 };
