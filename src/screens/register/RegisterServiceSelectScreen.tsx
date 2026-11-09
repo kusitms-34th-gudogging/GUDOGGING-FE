@@ -8,6 +8,7 @@ import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
 import { SearchBar } from '@/components/common/SearchBar';
 import { TopBar } from '@/components/common/TopBar';
+import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { SERVICES } from '@/constants/services';
 import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
 import { hasRegisterDraft, useRegisterDraft } from '@/hooks/useRegisterDraft';
@@ -48,20 +49,14 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
         showAction1={false}
         showAction2={false}
       />
-      <View className="flex-1 gap-screen-x px-screen-x pt-stack-md">
+      {/* 목록 영역은 CTA 위 56까지 채움 (Figma 목록 주석) */}
+      <View className="flex-1 gap-inset-lg px-screen-x pb-[56px] pt-stack-md">
         <View className="gap-stack-lg">
           <SearchBar value={query} onChangeText={setQuery} placeholder="검색" />
-          <View className="gap-stack-md">
-            <View className="gap-s2">
-              <Text className="text-text-primary text-head4-bold">
-                등록할 서비스를 모두 선택해 주세요.
-              </Text>
-              {count > 0 && (
-                <Text className="text-text-secondary text-caption1-regular">
-                  선택한 서비스 {count}
-                </Text>
-              )}
-            </View>
+          <View className="gap-stack-sm">
+            <Text className="px-s2 text-text-primary text-head4-bold">
+              등록할 서비스를 모두 선택해 주세요.
+            </Text>
             {count > 0 && (
               // 화면 끝까지 스크롤되게 좌우 여백을 상쇄하고 안쪽에서 다시 줌
               <ScrollView
@@ -83,37 +78,39 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
             )}
           </View>
         </View>
-        {/* 화면이 작으면 리스트가 줄어들도록 shrink */}
-        <View className="shrink gap-inline-sm">
-          {!!keyword && <Text className="text-text-primary text-body3-regular">검색 결과</Text>}
-          <View className="shrink gap-inline-xs">
-            {/* 뷰포트에 최대 5개, 이후 스크롤 */}
-            <ScrollView className="max-h-[361px] shrink" contentContainerClassName="gap-inline-xs">
-              {results.map((s) => (
-                <ListItem
-                  key={s.id}
-                  title={s.name}
-                  logo={require('@/assets/images/logo_placeholder.png')}
-                  showLogo
-                  showCheckBox
-                  checked={selectedIds.includes(s.id)}
-                  onCheckedChange={() => toggle(s.id)}
-                />
-              ))}
-            </ScrollView>
+        <View className="flex-1 gap-inline-xs">
+          <Text className="text-text-primary text-body3-semibold">
+            {keyword ? '검색 결과' : '전체'}
+          </Text>
+          <FadeScrollView contentContainerClassName="gap-inline-xs">
+            {results.map((s) => (
+              <ListItem
+                key={s.id}
+                title={s.name}
+                subtitle={s.category}
+                showSubtitle
+                logo={require('@/assets/images/logo_placeholder.png')}
+                showLogo
+                showCheckBox
+                checked={selectedIds.includes(s.id)}
+                onCheckedChange={() => toggle(s.id)}
+              />
+            ))}
             {!!keyword && (
               <Pressable
                 accessibilityRole="button"
+                // 행 높이는 36이라 위아래로 늘려 터치 영역 44
+                hitSlop={{ top: 4, bottom: 4 }}
                 onPress={() =>
                   router.push({ pathname: '/register/input', params: more ? { more: '1' } : {} })
                 }
-                className="h-[69px] flex-row items-center gap-inline-md border-b-default border-border-default px-inline-xs active:opacity-pressed"
+                className="flex-row items-center gap-inset-xs py-inline-xs active:opacity-pressed"
               >
                 <PlusIcon className="size-[28px] text-icon-secondary" />
-                <Text className="text-text-secondary text-body2-semibold">직접 입력하기</Text>
+                <Text className="text-text-secondary text-body3-semibold">직접 입력하기</Text>
               </Pressable>
             )}
-          </View>
+          </FadeScrollView>
         </View>
       </View>
       <View className="pb-safe px-screen-x">
