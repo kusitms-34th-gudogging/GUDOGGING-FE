@@ -9,15 +9,8 @@ import { PaymentListItem } from '@/components/register/PaymentListItem';
 import { ScreenTitle } from '@/components/register/ScreenTitle';
 import { useRegisterDraft, useRegisterServices } from '@/hooks/useRegisterDraft';
 
-interface RegisterSelectedServiceScreenProps {
-  // 불러온 구독 확인에서 서비스를 더 고른 경우: 등록 대신 그 화면 목록에 추가
-  more?: boolean;
-}
-
-export const RegisterSelectedServiceScreen = ({
-  more = false,
-}: RegisterSelectedServiceScreenProps) => {
-  // A-02에서 고른 목록은 저장소가 원본 (서비스 더 선택하기로 바꿔도 바로 반영)
+export const RegisterSelectedServiceScreen = () => {
+  // A-02에서 고른 목록은 저장소가 원본 (구독 추가하기로 바꿔도 바로 반영)
   const serviceIds = useRegisterDraft((s) => s.selectedIds);
   const payments = useRegisterDraft((s) => s.payments);
   // 결제 정보가 없는 구독부터 (Figma 주석)
@@ -26,12 +19,6 @@ export const RegisterSelectedServiceScreen = ({
   );
   const allEntered = services.length > 0 && services.every((s) => payments[s.id]);
   const ids = services.map((s) => s.id);
-
-  const addToFound = () => {
-    const { foundChecked, setFoundChecked } = useRegisterDraft.getState();
-    setFoundChecked([...new Set([...(foundChecked ?? []), ...ids])]);
-    router.dismissTo('/register/found');
-  };
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -73,12 +60,10 @@ export const RegisterSelectedServiceScreen = ({
       <View className="pb-safe px-screen-x">
         {/* 모든 서비스 결제 정보 입력이 완료되면 활성화. shortcut: 등록 API 없이 완료 화면으로만 이동, API 연동 시 저장 성공 후 이동 */}
         <Cta
-          label={`${services.length}개 구독 ${more ? '추가하기' : '등록하기'}`}
+          label={`${services.length}개 구독 등록하기`}
           disabled={!allEntered}
-          onPress={
-            more
-              ? addToFound
-              : () => router.push({ pathname: '/register/done', params: { ids: ids.join(',') } })
+          onPress={() =>
+            router.push({ pathname: '/register/done', params: { ids: ids.join(',') } })
           }
           className="mb-[14px]"
         />

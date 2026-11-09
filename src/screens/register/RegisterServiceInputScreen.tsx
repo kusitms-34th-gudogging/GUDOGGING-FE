@@ -39,9 +39,9 @@ const startOfToday = () => new Date(new Date().setHours(0, 0, 0, 0));
 interface RegisterServiceInputScreenProps {
   // 없으면 직접 입력으로 새 구독 추가 (A-02 직접 입력하기)
   serviceId?: string;
-  // 불러온 구독 수정 (A-15): 서비스명 잠금, 분석 값으로 채움
+  // 불러온 구독 수정 (A-15): 분석 값으로 채우고 서비스명도 수정 가능
   found?: FoundSubscription;
-  // 불러온 구독 확인의 서비스 더 선택하기에서 직접 입력으로 왔으면 추가 모드 목록으로 돌아감
+  // 불러온 구독 확인의 구독 추가하기에서 직접 입력으로 왔으면 그 화면으로 바로 돌아감
   more?: boolean;
 }
 
@@ -51,7 +51,7 @@ export const RegisterServiceInputScreen = ({
   more = false,
 }: RegisterServiceInputScreenProps) => {
   const service = SERVICES.find((s) => s.id === serviceId);
-  // 사전 등록 서비스만 서비스명 잠금, 직접 입력은 서비스명도 입력·수정
+  // 사전 등록 서비스(A-03)만 서비스명 잠금, 직접 입력·불러온 구독은 서비스명도 입력·수정
   const isCustom = !service;
   const payments = useRegisterDraft((s) => s.payments);
   const setPayment = useRegisterDraft((s) => s.setPayment);
@@ -63,11 +63,13 @@ export const RegisterServiceInputScreen = ({
     init?.category ?? (found ? undefined : isCustom ? '기타' : CATEGORIES[0]),
   );
   const [amount, setAmount] = useState(init?.amount ? String(init.amount) : '');
-  const [cycle, setCycle] = useState(init?.cycle ? String(init.cycle) : found ? '' : '1');
-  const [unit, setUnit] = useState<string | undefined>(init?.unit ?? (found ? undefined : '개월'));
-  const [nextDate, setNextDate] = useState(init?.nextDate);
+  // 값이 없으면(분석이 못 읽은 불러온 구독 포함) 기본값: 1개월 · 오늘 · 웹·직접 결제
+  const [cycle, setCycle] = useState(String(init?.cycle ?? 1));
+  const [unit, setUnit] = useState(init?.unit ?? '개월');
+  const [nextDate, setNextDate] = useState(init?.nextDate ?? startOfToday());
   const [paidAt, setPaidAt] = useState<PaidAt>(init?.paidAt ?? 'web');
-  const [amountChecked, setAmountChecked] = useState(!!saved || !found?.amountUncertain);
+  // 확인 필요(결제 정보 입력 필요)로 들어오면 금액 에러를 켜 두고, 금액을 고치면 끔 (Figma A-15)
+  const [amountChecked, setAmountChecked] = useState(!!saved || !found?.issue);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [unitSheet, setUnitSheet] = useState(false);
   const [draftUnit, setDraftUnit] = useState<string>();
@@ -86,9 +88,7 @@ export const RegisterServiceInputScreen = ({
     amountChecked &&
     Number(amount) > 0 &&
     cycleNum >= 1 &&
-    cycleNum <= 31 &&
-    !!unit &&
-    !!nextDate;
+    cycleNum <= 31;
   const closeMenu = () => setCategoryOpen(false);
 
   return (
@@ -109,22 +109,21 @@ export const RegisterServiceInputScreen = ({
         >
           {/* 드롭다운 메뉴 바깥(빈 곳)을 누르면 닫힘. 안쪽 버튼·입력칸은 각자 터치를 가져감 */}
           <Pressable accessible={false} onPress={closeMenu} className="grow gap-screen-x">
-            {(service || found) && (
+            {service && !found && (
               <View className="flex-row items-center gap-inline-sm">
                 <Image
                   source={require('@/assets/images/logo_placeholder.png')}
                   className="size-logo-card rounded-full"
                 />
-                <Text className="text-text-primary text-body2-semibold">
-                  {found?.name ?? service?.name}
-                </Text>
+                <Text className="text-text-primary text-body2-semibold">{service.name}</Text>
               </View>
             )}
             <View className="gap-stack-lg">
-              {isCustom && !found && (
+              {(isCustom || found) && (
                 <TextField
                   label="서비스명"
-                  placeholder="서비스명을 입력해 주세요"
+                  // 불러온 구독은 찾은 이름을 흐리게 보여 주고, 비워 두면 그 이름으로 저장 (Figma A-15)
+                  placeholder={found?.name ?? '서비스명을 입력해 주세요'}
                   maxLength={30}
                   value={name}
                   onChangeText={setName}
@@ -184,11 +183,11 @@ export const RegisterServiceInputScreen = ({
               <Dropdown
                 label="다음 결제일"
                 placeholder="다음 결제일을 선택해 주세요"
-                value={nextDate && formatDate(nextDate)}
+                value={formatDate(nextDate)}
                 showIcon={false}
                 onPress={() => {
                   closeMenu();
-                  setDraftDate(nextDate ?? startOfToday());
+                  setDraftDate(nextDate);
                   setDateSheet(true);
                 }}
               />
@@ -217,9 +216,10 @@ export const RegisterServiceInputScreen = ({
           label={found ? '수정 완료' : '저장하기'}
           disabled={!valid}
           onPress={() => {
-            if (!category || !unit || !nextDate) return;
-            setPayment(serviceId ?? `custom-${Date.now()}`, {
-              name: isCustom ? (found?.name ?? name.trim()) : undefined,
+            if (!category) return;
+            const id = serviceId ?? `custom-${Date.now()}`;
+            setPayment(id, {
+              name: found ? name.trim() || found.name : isCustom ? name.trim() : undefined,
               category,
               amount: Number(amount),
               cycle: cycleNum,
@@ -228,10 +228,13 @@ export const RegisterServiceInputScreen = ({
               paidAt,
             });
             allowLeave();
-            // 새 직접 입력은 A-02 자리를 A-04로 바꿔 목록에 합류, 기존 항목 수정은 A-04로 돌아감
+            // 기존 항목 수정은 앞 화면으로. 새 직접 입력은 A-02 자리를 A-04로 바꿔 목록에 합류,
+            // 불러온 구독 확인에서 왔으면 그 화면으로 돌아가 등록 가능에 체크된 채로 보임
             if (serviceId) router.back();
-            else
-              router.replace({ pathname: '/register/selected', params: more ? { more: '1' } : {} });
+            else if (more) {
+              useRegisterDraft.getState().addFoundChecked([id]);
+              router.dismissTo('/register/found');
+            } else router.replace('/register/selected');
           }}
           className="mb-[14px]"
         />

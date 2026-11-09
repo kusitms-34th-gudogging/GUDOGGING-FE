@@ -28,7 +28,6 @@ export interface FoundSubscription {
   name: string;
   payment: Partial<PaymentInfo>;
   issue?: string;
-  amountUncertain?: boolean;
   checked: boolean;
 }
 
@@ -46,7 +45,6 @@ export const FOUND_SAMPLE: FoundSubscription[] = [
       paidAt: 'appstore',
     },
     issue: '금액을 읽지 못했어요',
-    amountUncertain: true,
     checked: true,
   },
   {
@@ -61,7 +59,6 @@ export const FOUND_SAMPLE: FoundSubscription[] = [
     name: 'Netflix',
     payment: { category: '영상·OTT', amount: 13500, cycle: 1, unit: '개월', paidAt: 'web' },
     issue: '금액·결제일 확인 필요해요',
-    amountUncertain: true,
     checked: true,
   },
   {

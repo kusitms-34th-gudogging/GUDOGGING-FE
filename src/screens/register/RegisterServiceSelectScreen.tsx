@@ -15,7 +15,7 @@ import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
 import { hasRegisterDraft, useRegisterDraft } from '@/hooks/useRegisterDraft';
 
 interface RegisterServiceSelectScreenProps {
-  // 불러온 구독 확인(A-09)의 서비스 더 선택하기로 왔으면 흐름 안 이동이라 이탈 팝업 없음
+  // 불러온 구독 확인(A-09)의 구독 추가하기로 왔으면 흐름 안 이동이라 이탈 팝업 없음
   more?: boolean;
 }
 
@@ -24,6 +24,8 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
   // 불러오기 팝업으로 이어서 등록할 수 있게 저장소에 둠
   const selectedIds = useRegisterDraft((s) => s.selectedIds);
   const setSelectedIds = useRegisterDraft((s) => s.setSelectedIds);
+  // 이번에 새로 고른 것만 체크해서, 불러온 구독 확인에서 체크를 푼 구독이 다시 체크되지 않게
+  const [initialIds] = useState(selectedIds);
   const hasDraft = useRegisterDraft(hasRegisterDraft);
   // 직접 등록의 첫 화면: 등록 중이던 값이 있으면 나갈 때 이탈 팝업
   const { modal: leaveModal } = useLeaveConfirm(!more && hasDraft);
@@ -112,9 +114,14 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
         <Cta
           label={`${count}개 선택 완료`}
           disabled={count === 0}
-          onPress={() =>
-            router.push({ pathname: '/register/selected', params: more ? { more: '1' } : {} })
-          }
+          onPress={() => {
+            if (!more) return router.push('/register/selected');
+            // 결제 정보 입력 없이 불러온 구독 확인으로 돌아가 확인 필요에 보임
+            useRegisterDraft
+              .getState()
+              .addFoundChecked(selectedIds.filter((id) => !initialIds.includes(id)));
+            router.back();
+          }}
           className="mb-[14px]"
         />
       </View>

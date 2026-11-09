@@ -19,7 +19,7 @@ export const RegisterFoundScreen = () => {
   // 스크린샷·Gmail의 첫 저장 화면: 나갈 때 이탈 팝업
   const { modal: leaveModal } = useLeaveConfirm(!!foundChecked);
   const checked = new Set(foundChecked);
-  // 서비스 더 선택하기로 추가한 구독. 불러온 것과 같은 서비스는 불러온 쪽만 보여 줌
+  // 구독 추가하기로 추가한 구독. 결제 정보를 넣기 전엔 확인 필요에 보임. 불러온 것과 같은 서비스는 불러온 쪽만 보여 줌
   const added = useRegisterServices(useRegisterDraft((s) => s.selectedIds)).filter(
     (s) => !FOUND_SAMPLE.some((f) => f.id === s.id),
   );
@@ -27,11 +27,11 @@ export const RegisterFoundScreen = () => {
     // 수정 화면에서 저장한 값이 분석 값보다 우선. issue 없는 분석 값은 모든 칸이 채워져 있음
     ...FOUND_SAMPLE.map((f) => ({
       id: f.id,
-      name: f.name,
-      issue: f.issue,
+      // 수정 화면에서 바꾼 이름이 있으면 그 이름
+      name: payments[f.id]?.name ?? f.name,
       payment: payments[f.id] ?? (f.issue ? undefined : (f.payment as PaymentInfo)),
     })),
-    ...added.map((s) => ({ id: s.id, name: s.name, issue: undefined, payment: payments[s.id] })),
+    ...added.map((s) => ({ id: s.id, name: s.name, payment: payments[s.id] })),
   ];
   const needCheck = items.filter((f) => !f.payment);
   const ready = items.filter((f) => f.payment);
@@ -72,7 +72,7 @@ export const RegisterFoundScreen = () => {
                     <PaymentListItem
                       key={f.id}
                       name={f.name}
-                      emptySubtitle={f.issue ?? ''}
+                      emptySubtitle="결제 정보 입력 필요"
                       onEdit={() => edit(f.id)}
                       showChevron
                     />

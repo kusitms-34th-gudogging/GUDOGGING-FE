@@ -4,6 +4,7 @@ import { router, Stack } from 'expo-router';
 import { act, renderRouter, screen } from 'expo-router/testing-library';
 import { Pressable, Text } from 'react-native';
 
+import { FOUND_SAMPLE } from '@/constants/services';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { RegisterServiceInputScreen } from '@/screens/register/RegisterServiceInputScreen';
 import { RegisterServiceSelectScreen } from '@/screens/register/RegisterServiceSelectScreen';
@@ -75,4 +76,83 @@ describe('RegisterServiceInputScreen 이탈 팝업', () => {
     expect(screen.queryByText('등록을 그만할까요?')).not.toBeOnTheScreen();
     expect(useRegisterDraft.getState().selectedIds).toEqual([]);
   });
+});
+
+describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
+  const youtube = FOUND_SAMPLE.find((f) => f.id === 'youtube');
+
+  const renderFoundEdit = async (found = youtube) => {
+    await renderRouter(
+      {
+        'register/_layout': () => <Stack />,
+        'register/found': () => null,
+        'register/input': () => <RegisterServiceInputScreen serviceId={found?.id} found={found} />,
+      },
+      { initialUrl: '/register/found' },
+    );
+    await act(() => router.push('/register/input'));
+    return userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+  };
+
+  it('서비스명을 바꿔 저장하면 바꾼 이름이 저장된다', async () => {
+    const user = await renderFoundEdit();
+
+    await user.type(screen.getByLabelText('서비스명'), '유튜브');
+    await user.press(screen.getByRole('button', { name: '수정 완료' }));
+
+    expect(useRegisterDraft.getState().payments.youtube?.name).toBe('유튜브');
+  });
+
+  it('서비스명을 비워 두면 찾은 이름으로 저장된다', async () => {
+    const user = await renderFoundEdit();
+
+    await user.press(screen.getByRole('button', { name: '수정 완료' }));
+
+    expect(useRegisterDraft.getState().payments.youtube?.name).toBe('YouTube Premium');
+  });
+
+  it('분석이 결제일을 못 읽었으면 오늘 날짜로 채워 둔다', async () => {
+    jest.setSystemTime(new Date(2026, 10, 10, 15));
+    await renderFoundEdit(FOUND_SAMPLE.find((f) => f.id === 'netflix'));
+
+    expect(screen.getByText('2026.11.10')).toBeOnTheScreen();
+  });
+
+  // 밀리의 서재: 결제일만 빠진 확인 필요 항목
+  it('확인 필요 항목은 금액 에러를 켠 채로 열리고, 금액을 고치면 사라진다', async () => {
+    const user = await renderFoundEdit(FOUND_SAMPLE.find((f) => f.id === 'custom-found-millie'));
+    const helper = '금액을 정확히 읽지 못했어요. 실제 결제 금액을 확인해 주세요.';
+
+    expect(screen.getByText(helper)).toBeOnTheScreen();
+
+    await user.type(screen.getByLabelText('결제 금액'), '0');
+
+    expect(screen.queryByText(helper)).not.toBeOnTheScreen();
+  });
+});
+
+it('불러온 구독 확인에서 직접 입력으로 추가하면 그 화면으로 돌아가 체크해 둔다', async () => {
+  await renderRouter(
+    {
+      'register/_layout': () => <Stack />,
+      'register/found': () => null,
+      'register/select': () => null,
+      'register/input': () => <RegisterServiceInputScreen more />,
+    },
+    { initialUrl: '/register/found' },
+  );
+  await act(() => router.push('/register/select'));
+  await act(() => router.push('/register/input'));
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+  await user.type(screen.getByLabelText('서비스명'), '왓챠');
+  await user.type(screen.getByLabelText('결제 금액'), '7900');
+  await user.press(screen.getByLabelText('다음 결제일'));
+  // 시트 mock은 단위·결제일 시트를 둘 다 그려서 뒤의 결제일 시트 확인을 누름
+  await user.press(screen.getAllByRole('button', { name: '확인' })[1]);
+  await user.press(screen.getByRole('button', { name: '저장하기' }));
+
+  expect(screen).toHavePathname('/register/found');
+  const [id] = useRegisterDraft.getState().foundChecked ?? [];
+  expect(useRegisterDraft.getState().payments[id]?.name).toBe('왓챠');
 });

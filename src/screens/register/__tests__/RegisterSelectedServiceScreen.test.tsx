@@ -15,11 +15,10 @@ const PAYMENT: PaymentInfo = {
   paidAt: 'web',
 };
 
-const renderSelected = async ({ more = false } = {}) => {
+const renderSelected = async () => {
   await renderRouter(
     {
-      'register/found': () => null,
-      'register/selected': () => <RegisterSelectedServiceScreen more={more} />,
+      'register/selected': () => <RegisterSelectedServiceScreen />,
       'register/done': () => null,
       'register/select': () => null,
     },
@@ -62,18 +61,6 @@ describe('RegisterSelectedServiceScreen', () => {
     await user.press(screen.getByRole('button', { name: '구독 추가하기' }));
 
     expect(screen).toHavePathname('/register/select');
-  });
-
-  it('불러온 구독에서 더 고른 경우 등록 대신 불러온 구독 확인으로 돌아가 체크해 둔다', async () => {
-    useRegisterDraft.getState().setFoundChecked(['youtube']);
-    useRegisterDraft.getState().setPayment('netflix', PAYMENT);
-    useRegisterDraft.getState().setPayment('youtube', PAYMENT);
-    const user = await renderSelected({ more: true });
-
-    await user.press(screen.getByRole('button', { name: '2개 구독 추가하기' }));
-
-    expect(screen).toHavePathname('/register/found');
-    expect(useRegisterDraft.getState().foundChecked).toEqual(['youtube', 'netflix']);
   });
 
   it('결제 정보가 없는 구독을 먼저 보여 주고, 입력 전엔 금액 대신 화살표로 입력을 안내한다', async () => {

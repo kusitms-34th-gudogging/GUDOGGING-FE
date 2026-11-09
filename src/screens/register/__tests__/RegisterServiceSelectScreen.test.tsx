@@ -69,7 +69,7 @@ describe('RegisterServiceSelectScreen 이탈 팝업', () => {
 it('불러온 구독 확인에서 추가 선택으로 들어왔으면 뒤로 가기에 그 화면으로 돌아간다', async () => {
   const Found = () => (
     <Pressable accessibilityRole="button" onPress={() => router.push('/register/select')}>
-      <Text>서비스 더 선택하기</Text>
+      <Text>구독 추가하기</Text>
     </Pressable>
   );
   await renderRouter(
@@ -82,9 +82,36 @@ it('불러온 구독 확인에서 추가 선택으로 들어왔으면 뒤로 가
     { initialUrl: '/register/found' },
   );
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
-  await user.press(screen.getByRole('button', { name: '서비스 더 선택하기' }));
+  await user.press(screen.getByRole('button', { name: '구독 추가하기' }));
 
   await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
 
   expect(screen).toHavePathname('/register/found');
+});
+
+it('불러온 구독 확인에서 추가로 고르면 결제 정보 입력 없이 그 화면으로 돌아가고 새로 고른 것만 체크해 둔다', async () => {
+  useRegisterDraft.getState().setSelectedIds(['spotify']);
+  useRegisterDraft.getState().setFoundChecked(['youtube']);
+  const Found = () => (
+    <Pressable accessibilityRole="button" onPress={() => router.push('/register/select')}>
+      <Text>구독 추가하기</Text>
+    </Pressable>
+  );
+  await renderRouter(
+    {
+      'register/_layout': () => <Stack />,
+      'register/found': Found,
+      'register/select': () => <RegisterServiceSelectScreen more />,
+      'register/selected': () => null,
+    },
+    { initialUrl: '/register/found' },
+  );
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+  await user.press(screen.getByRole('button', { name: '구독 추가하기' }));
+
+  await user.press(screen.getByRole('checkbox', { name: 'Netflix' }));
+  await user.press(screen.getByRole('button', { name: '2개 선택 완료' }));
+
+  expect(screen).toHavePathname('/register/found');
+  expect(useRegisterDraft.getState().foundChecked).toEqual(['youtube', 'netflix']);
 });
