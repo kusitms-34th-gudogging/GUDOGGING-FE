@@ -15,6 +15,8 @@ interface OptionCardProps {
   showAsset?: boolean;
   selected: boolean;
   onSelect: () => void;
+  // 여러 개 고르는 목록이면 true (스크린리더가 체크박스로 읽음)
+  multiple?: boolean;
   className?: string;
 }
 
@@ -27,11 +29,12 @@ export const OptionCard = ({
   showAsset = true,
   selected,
   onSelect,
+  multiple,
   className,
 }: OptionCardProps) => (
   <Pressable
-    accessibilityRole="radio"
-    accessibilityState={{ selected }}
+    accessibilityRole={multiple ? 'checkbox' : 'radio'}
+    accessibilityState={multiple ? { checked: selected } : { selected }}
     onPress={onSelect}
     className={cn(
       'w-full flex-row items-center gap-inline-md rounded-input border-default bg-bg-default px-inset-md py-inset-sm transition-colors',

@@ -28,6 +28,8 @@ interface CheckupCategoryConfig {
   questions: [CheckupQuestion, CheckupQuestion, CheckupQuestion];
   // 4/4 메모(K-70) 입력란 예시와 칩 3개 (계속 쓸 이유 · 이번 달 사정 · 해지 조건 순)
   memo: { placeholder: string; chips: [string, string, string] };
+  // 해지 이유(K-90): 잘 안 씀 · 구독료 부담 · [카테고리별 부족한 점] · 다른 서비스로 옮김 · [목적 달성]
+  cancelReasons: string[];
 }
 
 const USAGE = '최근 한 달 동안 {name}을 얼마나 자주 이용했나요?';
@@ -53,6 +55,13 @@ const PLAN: CheckupQuestion = {
     '꼭 계속 쓸 거예요',
   ],
 };
+const cancel = ([unused, lacking, done]: string[]) => [
+  unused,
+  '구독료가 부담돼요',
+  lacking,
+  '다른 서비스로 옮겨요',
+  done,
+];
 const value = (title: string): CheckupQuestion => ({
   title,
   hint: VALUE_HINT,
@@ -76,6 +85,11 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       placeholder: '예: 시즌 3 공개돼서 이번 달은 유지할래요',
       chips: ['보고 싶은 작품이 있어요', '이번 달은 바빴어요', '비싸지면 해지할래요'],
     },
+    cancelReasons: cancel([
+      '요즘 잘 안 봐요',
+      '볼 만한 콘텐츠가 없어요',
+      '보고 싶던 작품을 다 봤어요',
+    ]),
   },
   music: {
     asset: MusicColorAsset,
@@ -88,6 +102,7 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       placeholder: '예: 출퇴근길에 매일 들어서 계속 쓸래요',
       chips: ['매일 듣고 있어요', '다른 음악 앱이랑 겹쳐요', '가족 요금제로 바꿀래요'],
     },
+    cancelReasons: cancel(['요즘 잘 안 들어요', '듣고 싶은 곡이 없어요', '무료로도 충분해요']),
   },
   shopping: {
     asset: ShoppingColorAsset,
@@ -104,6 +119,11 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       placeholder: '예: 이번 달 배달을 많이 시켜서 본전은 뽑았어요',
       chips: ['배송비로 본전 뽑았어요', '이번 달은 주문이 적었어요', '할인 끝나면 해지할래요'],
     },
+    cancelReasons: cancel([
+      '주문을 잘 안 해요',
+      '혜택이 기대보다 적어요',
+      '필요한 쇼핑을 다 했어요',
+    ]),
   },
   education: {
     asset: EducationColorAsset,
@@ -116,6 +136,11 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       placeholder: '예: 자격증 시험 끝날 때까지만 쓸래요',
       chips: ['목표 달성까지 계속할래요', '이번 달은 공부를 못 했어요', '시험 끝나면 해지할래요'],
     },
+    cancelReasons: cancel([
+      '요즘 공부를 못 해요',
+      '원하는 강의·콘텐츠가 없어요',
+      '목표를 달성했어요',
+    ]),
   },
   productivity: {
     asset: ProductivityColorAsset,
@@ -128,6 +153,7 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       placeholder: '예: 프로젝트 끝나는 다음 달까지만 쓸래요',
       chips: ['업무에 꼭 필요해요', '무료 버전으로도 충분해요', '다른 AI 툴과 겹쳐요'],
     },
+    cancelReasons: cancel(['요즘 잘 안 써요', '무료 버전으로도 충분해요', '하던 작업이 끝났어요']),
   },
   entertainment: {
     asset: EntertainmentColorAsset,
@@ -140,6 +166,7 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       placeholder: '예: 읽고 있는 책 다 읽으면 해지할래요',
       chips: ['즐겨 보는 콘텐츠가 있어요', '이번 달은 거의 못 썼어요', '이벤트 끝나면 해지할래요'],
     },
+    cancelReasons: cancel(['요즘 잘 안 써요', '즐길 콘텐츠가 없어요', '보고 싶던 걸 다 봤어요']),
   },
   etc: {
     asset: EtcColorAsset,
@@ -152,6 +179,7 @@ export const CHECKUP_CATEGORIES: Record<CheckupCategory, CheckupCategoryConfig> 
       placeholder: '예: 사진 백업용이라 계속 써야 해요',
       chips: ['자동으로 쓰고 있어요', '이번 달은 안 썼어요', '비싸지면 해지할래요'],
     },
+    cancelReasons: cancel(['요즘 잘 안 써요', '기대한 기능이 없어요', '더 이상 필요 없어요']),
   },
 };
 
