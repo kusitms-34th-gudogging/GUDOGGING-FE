@@ -18,7 +18,10 @@ const NEXT = { name: '다음' };
 
 const renderCheckup = async (subscription = NETFLIX) => {
   await renderRouter(
-    { checkup: () => <CheckupScreen subscription={subscription} /> },
+    {
+      checkup: () => <CheckupScreen subscription={subscription} />,
+      'checkup/[id]/result': () => null,
+    },
     {
       initialUrl: '/checkup',
     },
@@ -121,6 +124,15 @@ describe('CheckupScreen', () => {
 
     await user.press(screen.getByRole('button', NEXT));
     expect(screen.getByLabelText('메모')).toHaveDisplayValue('이번 달은 바빴어요');
+  });
+
+  it.each(['결과 보기', '건너뛰기'])('메모에서 %s를 누르면 점검 결과로 이동한다', async (name) => {
+    [3, 4, 2].forEach((score, step) =>
+      useCheckupDraft.getState().setScore('netflix', NETFLIX.nextDate.toISOString(), step, score),
+    );
+    const user = await renderCheckup();
+    await user.press(screen.getByRole('button', { name }));
+    expect(screen).toHavePathname('/checkup/netflix/result');
   });
 
   it('결제 주기가 바뀌었으면 1/4부터 다시 시작한다', async () => {
