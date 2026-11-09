@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 
 import { ImageColorAsset, ImageMonoAsset } from '@/assets/graphics';
 import { BottomSheet } from '@/components/common/BottomSheet';
@@ -11,6 +11,7 @@ import { OptionCard } from '@/components/common/OptionCard';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { TextField } from '@/components/common/TextField';
 import { TopBar } from '@/components/common/TopBar';
+import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { type FoundSubscription, PAID_AT, type PaidAt, SERVICES } from '@/constants/services';
 import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
@@ -99,115 +100,119 @@ export const RegisterServiceInputScreen = ({
         showAction1={false}
         showAction2={false}
       />
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="grow px-screen-x pt-stack-md pb-stack-lg"
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* 드롭다운 메뉴 바깥(빈 곳)을 누르면 닫힘. 안쪽 버튼·입력칸은 각자 터치를 가져감 */}
-        <Pressable accessible={false} onPress={closeMenu} className="grow gap-stack-lg">
-          {(service || found) && (
-            <View className="flex-row items-center gap-inline-md">
-              <Image
-                source={require('@/assets/images/logo_placeholder.png')}
-                className="size-logo-card"
-              />
-              <Text className="text-text-primary text-body2-semibold">
-                {found?.name ?? service?.name}
-              </Text>
-            </View>
-          )}
-          <View className="gap-inline-md">
-            {isCustom && !found && (
-              <TextField
-                label="서비스명"
-                placeholder="서비스명을 입력해 주세요"
-                maxLength={30}
-                value={name}
-                onChangeText={setName}
-                onFocus={closeMenu}
-              />
+      {/* 입력 영역은 CTA 위 56까지, 넘치면 내부 스크롤 + 하단 페이드 (Figma 주석) */}
+      <View className="flex-1 px-screen-x pb-[56px] pt-stack-md">
+        <FadeScrollView
+          className="flex-1"
+          contentContainerClassName="grow"
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* 드롭다운 메뉴 바깥(빈 곳)을 누르면 닫힘. 안쪽 버튼·입력칸은 각자 터치를 가져감 */}
+          <Pressable accessible={false} onPress={closeMenu} className="grow gap-screen-x">
+            {(service || found) && (
+              <View className="flex-row items-center gap-inline-sm">
+                <Image
+                  source={require('@/assets/images/logo_placeholder.png')}
+                  className="size-logo-card rounded-full"
+                />
+                <Text className="text-text-primary text-body2-semibold">
+                  {found?.name ?? service?.name}
+                </Text>
+              </View>
             )}
-            <Dropdown
-              label="카테고리"
-              placeholder="카테고리를 선택해 주세요"
-              value={category}
-              open={categoryOpen}
-              onPress={() => setCategoryOpen((o) => !o)}
-              options={CATEGORIES}
-              onSelect={(v) => {
-                setCategory(v);
-                closeMenu();
-              }}
-            />
-            <TextField
-              label="결제 금액"
-              placeholder="결제 금액을 입력해 주세요"
-              keyboardType="number-pad"
-              value={amount.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              onChangeText={(t) => {
-                setAmount(t.replace(/\D/g, ''));
-                setAmountChecked(true);
-              }}
-              error={!amountChecked}
-              helper="금액을 정확히 읽지 못했어요. 실제 결제 금액을 확인해 주세요."
-              showHelper={!amountChecked}
-              onFocus={closeMenu}
-            />
-            <View className="flex-row items-end gap-inset-xs">
-              <TextField
-                label="결제 주기"
-                keyboardType="number-pad"
-                maxLength={2}
-                value={cycle}
-                onChangeText={(t) => setCycle(t.replace(/\D/g, ''))}
-                error={cycle !== '' && (cycleNum < 1 || cycleNum > 31)}
-                onFocus={closeMenu}
-                className="flex-1"
-              />
+            <View className="gap-stack-lg">
+              {isCustom && !found && (
+                <TextField
+                  label="서비스명"
+                  placeholder="서비스명을 입력해 주세요"
+                  maxLength={30}
+                  value={name}
+                  onChangeText={setName}
+                  onFocus={closeMenu}
+                />
+              )}
               <Dropdown
-                label="결제 주기 단위"
-                showLabel={false}
-                placeholder="단위"
-                value={unit}
+                label="카테고리"
+                placeholder="카테고리를 선택해 주세요"
+                value={category}
+                open={categoryOpen}
+                onPress={() => setCategoryOpen((o) => !o)}
+                options={CATEGORIES}
+                onSelect={(v) => {
+                  setCategory(v);
+                  closeMenu();
+                }}
+              />
+              <TextField
+                label="결제 금액"
+                placeholder="결제 금액을 입력해 주세요"
+                keyboardType="number-pad"
+                value={amount.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                onChangeText={(t) => {
+                  setAmount(t.replace(/\D/g, ''));
+                  setAmountChecked(true);
+                }}
+                error={!amountChecked}
+                helper="금액을 정확히 읽지 못했어요. 실제 결제 금액을 확인해 주세요."
+                showHelper={!amountChecked}
+                onFocus={closeMenu}
+              />
+              <View className="flex-row items-end gap-inset-xs">
+                <TextField
+                  label="결제 주기"
+                  keyboardType="number-pad"
+                  maxLength={2}
+                  value={cycle}
+                  onChangeText={(t) => setCycle(t.replace(/\D/g, ''))}
+                  error={cycle !== '' && (cycleNum < 1 || cycleNum > 31)}
+                  onFocus={closeMenu}
+                  className="flex-1"
+                />
+                <Dropdown
+                  label="결제 주기 단위"
+                  showLabel={false}
+                  placeholder="단위"
+                  value={unit}
+                  onPress={() => {
+                    closeMenu();
+                    setDraftUnit(undefined);
+                    setUnitSheet(true);
+                  }}
+                  className="w-[127px]"
+                />
+              </View>
+              <Dropdown
+                label="다음 결제일"
+                placeholder="다음 결제일을 선택해 주세요"
+                value={nextDate && formatDate(nextDate)}
+                showIcon={false}
                 onPress={() => {
                   closeMenu();
-                  setDraftUnit(undefined);
-                  setUnitSheet(true);
-                }}
-                className="w-[127px]"
-              />
-            </View>
-            <Dropdown
-              label="다음 결제일"
-              placeholder="다음 결제일을 선택해 주세요"
-              value={nextDate && formatDate(nextDate)}
-              showIcon={false}
-              onPress={() => {
-                closeMenu();
-                setDraftDate(nextDate ?? startOfToday());
-                setDateSheet(true);
-              }}
-            />
-            <View className="gap-inset-xs">
-              <Text className="text-text-primary text-body3-regular">결제한 곳</Text>
-              <SegmentedControl
-                options={PAID_AT}
-                selected={paidAt}
-                onSelect={(v) => {
-                  setPaidAt(v);
-                  closeMenu();
+                  setDraftDate(nextDate ?? startOfToday());
+                  setDateSheet(true);
                 }}
               />
-              <Text className="text-text-tertiary text-caption1-regular">
-                {
-                  "서비스 홈페이지나 앱에서 카드로 직접 결제했다면\n'웹·직접 결제'를 골라 주세요. 해지 방법 안내에 쓰여요."
-                }
-              </Text>
+              <View className="gap-inset-xs">
+                {/* 높이 20 고정: 글자 높이 픽셀 올림(20→20.33) 방지. 시스템 큰 글씨에선 잘릴 수 있음 */}
+                <Text className="h-[20px] text-text-primary text-body3-regular">결제한 곳</Text>
+                <SegmentedControl
+                  options={PAID_AT}
+                  selected={paidAt}
+                  onSelect={(v) => {
+                    setPaidAt(v);
+                    closeMenu();
+                  }}
+                />
+                <Text className="text-text-tertiary text-caption1-regular">
+                  {
+                    "서비스 홈페이지나 앱에서 카드로 직접 결제했다면\n'웹·직접 결제'를 골라 주세요. 해지 방법 안내에 쓰여요."
+                  }
+                </Text>
+              </View>
             </View>
-          </View>
-        </Pressable>
-      </ScrollView>
+          </Pressable>
+        </FadeScrollView>
+      </View>
       <View className="pb-safe px-screen-x">
         <Cta
           label={found ? '수정 완료' : '저장하기'}
