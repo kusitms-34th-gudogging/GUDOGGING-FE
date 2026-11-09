@@ -74,7 +74,7 @@ export const RegisterSubscriptionScreen = () => {
         showAction1={false}
         showAction2={false}
       />
-      <View className="gap-inset-lg px-screen-x pt-stack-md">
+      <View className="gap-section px-screen-x pt-stack-md">
         <ScreenTitle
           title={'어떤 방법으로\n구독을 등록할까요?'}
           description="편한 방법을 선택해 주세요."
