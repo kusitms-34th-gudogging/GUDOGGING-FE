@@ -193,8 +193,7 @@ export const RegisterServiceInputScreen = ({
                 }}
               />
               <View className="gap-inset-xs">
-                {/* 높이 20 고정: 글자 높이 픽셀 올림(20→20.33) 방지. 시스템 큰 글씨에선 잘릴 수 있음 */}
-                <Text className="h-[20px] text-text-primary text-body3-regular">결제한 곳</Text>
+                <Text className="text-text-primary text-body3-regular">결제한 곳</Text>
                 <SegmentedControl
                   options={PAID_AT}
                   selected={paidAt}
