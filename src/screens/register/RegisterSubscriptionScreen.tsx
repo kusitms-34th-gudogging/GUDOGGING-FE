@@ -75,10 +75,13 @@ export const RegisterSubscriptionScreen = () => {
         showAction2={false}
       />
       <View className="gap-section px-screen-x pt-stack-md">
-        <ScreenTitle
-          title={'어떤 방법으로\n구독을 등록할까요?'}
-          description="편한 방법을 선택해 주세요."
-        />
+        {/* A-01 head 프레임만 좌우 2, 높이 108(내용 106)이라 설명 아래 2 */}
+        <View className="px-s2 pb-s2">
+          <ScreenTitle
+            title={'어떤 방법으로\n구독을 등록할까요?'}
+            description="편한 방법을 선택해 주세요."
+          />
+        </View>
         <View className="gap-stack-md">
           {METHODS.map(({ method, ...card }) => (
             <OptionCard

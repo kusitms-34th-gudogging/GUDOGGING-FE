@@ -13,7 +13,7 @@ interface GuideStepProps {
 
 // 가이드 화면의 아이콘 + 안내 문구 한 줄
 export const GuideStep = ({ icon: Icon, iconClassName, label }: GuideStepProps) => (
-  <View className="flex-row items-start gap-inset-sm">
+  <View className="flex-row items-start gap-inline-sm">
     <View className="py-px">
       <Icon className={cn('size-icon-list', iconClassName)} />
     </View>
