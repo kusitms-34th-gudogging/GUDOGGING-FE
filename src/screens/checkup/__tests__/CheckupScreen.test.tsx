@@ -126,6 +126,19 @@ describe('CheckupScreen', () => {
     expect(screen.getByLabelText('메모')).toHaveDisplayValue('이번 달은 바빴어요');
   });
 
+  it('이전으로 두 번 갔다가 다음으로 돌아와도 3/4 선택이 유지된다', async () => {
+    [3, 4, 2].forEach((score, step) =>
+      useCheckupDraft.getState().setScore('netflix', NETFLIX.nextDate.toISOString(), step, score),
+    );
+    const user = await renderCheckup();
+    await user.press(screen.getByRole('button', { name: '이전' }));
+    await user.press(screen.getByRole('button', { name: '이전' }));
+    await user.press(screen.getByRole('button', NEXT));
+
+    expect(screen.getByRole('radio', { name: '거의 안 쓸 것 같아요' })).toBeSelected();
+    expect(screen.getByRole('button', NEXT)).toBeEnabled();
+  });
+
   it.each(['결과 보기', '건너뛰기'])('메모에서 %s를 누르면 점검 결과로 이동한다', async (name) => {
     [3, 4, 2].forEach((score, step) =>
       useCheckupDraft.getState().setScore('netflix', NETFLIX.nextDate.toISOString(), step, score),

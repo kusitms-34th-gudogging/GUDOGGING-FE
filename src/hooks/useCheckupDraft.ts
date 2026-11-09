@@ -22,7 +22,8 @@ export const useCheckupDraft = create<CheckupDraft>()(
         set((s) => {
           // 결제 주기가 바뀌었으면 이전 답은 버림
           const prev = s.drafts[id]?.cycle === cycle ? s.drafts[id].scores : [];
-          const scores = [...prev.slice(0, step), score];
+          // 해당 문항만 교체. 이전으로 갔다 와도 뒤 문항 답은 유지
+          const scores = [...prev.slice(0, step), score, ...prev.slice(step + 1)];
           return { drafts: { ...s.drafts, [id]: { cycle, scores } } };
         }),
       reset: () => set({ drafts: {} }),
