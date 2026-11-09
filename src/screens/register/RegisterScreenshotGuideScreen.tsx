@@ -8,7 +8,6 @@ import { Cta } from '@/components/common/Cta';
 import { TopBar } from '@/components/common/TopBar';
 import { GuideStep } from '@/components/register/GuideStep';
 import { ScreenTitle } from '@/components/register/ScreenTitle';
-import { useToast } from '@/hooks/useToast';
 
 // Apple 계정의 전체 구독 목록 (App Store 구독 관리)
 const SUBSCRIPTIONS_URL = 'https://apps.apple.com/account/subscriptions';
@@ -20,14 +19,13 @@ const STEPS = [
 ];
 
 export const RegisterScreenshotGuideScreen = () => {
-  const { show } = useToast();
   // 구독 관리 화면을 열고 돌아오면 뒤로가기 + 버튼 2개 상태
   const [opened, setOpened] = useState(false);
 
   const openSubscriptions = () =>
     Linking.openURL(SUBSCRIPTIONS_URL)
       .then(() => setOpened(true))
-      .catch(() => show({ type: 'error', message: '구독 관리 화면을 열 수 없어요.' }));
+      .catch(() => {});
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
