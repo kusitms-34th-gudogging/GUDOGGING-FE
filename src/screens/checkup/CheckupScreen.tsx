@@ -79,8 +79,9 @@ const CheckupQuestions = ({ subscription }: CheckupScreenProps) => {
     setMemo((m) => (m.trim() ? `${m.trimEnd()} ${text}` : text).slice(0, MEMO_MAX));
 
   // 공백만 입력했으면 빈 메모. 메모는 점수에 반영하지 않음
-  // ponytail: 점검 기록 저장 API·결과 화면(K-80)이 생기면 점수 + 메모 저장 후 이동하고 임시 저장 삭제
-  const finish = (_memo: string) => {};
+  // 결과로 넘어가면 뒤로 가기로 메모에 돌아오지 않게 replace
+  // ponytail: 점검 기록 저장 API가 생기면 점수 + 메모 저장 후 이동하고 임시 저장 삭제
+  const finish = (_memo: string) => router.replace(`/checkup/${id}/result`);
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
