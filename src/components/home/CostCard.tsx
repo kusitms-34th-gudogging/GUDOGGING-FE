@@ -1,18 +1,22 @@
 import { colors } from '@tokens';
 import { Text, View } from 'react-native';
-import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { SaveColorAsset } from '@/assets/graphics';
 import { cn } from '@/utils/cn';
 
 interface CostCardProps {
+  label: string;
   amount: string;
   yearAmount?: string;
   className?: string;
 }
 
+// Figma 안쪽 그림자 (inset 0 3 3, red/400 8%). NativeWind shadow 클래스는 inset을 버려서 RN boxShadow로 (토큰 없음)
+const INNER_SHADOW = { boxShadow: `0px 3px 3px 0px ${colors.red[400]}14 inset` };
+
 // Figma cost card: 정사각(375 기준 160), 폭은 사용처가 정함. 배경은 두 겹 원형 그라데이션 (변수 없는 값이라 팔레트 색으로), 카드 크기에 맞춰 늘어남
-export const CostCard = ({ amount, yearAmount, className }: CostCardProps) => (
+export const CostCard = ({ label, amount, yearAmount, className }: CostCardProps) => (
   <View className={cn('aspect-square overflow-hidden rounded-card p-inset-md', className)}>
     <View className="absolute inset-0">
       <Svg width="100%" height="100%" viewBox="0 0 160 160" preserveAspectRatio="none">
@@ -40,27 +44,16 @@ export const CostCard = ({ amount, yearAmount, className }: CostCardProps) => (
             <Stop offset={0.30288} stopColor={colors.gray[100]} stopOpacity={0.39} />
             <Stop offset={1} stopColor={colors.red[500]} stopOpacity={0.72} />
           </RadialGradient>
-          {/* Figma 안쪽 그림자(inset 0 3 3, red/400 8%)를 위쪽 띠로 대신 그림. NativeWind가 inset 그림자를 적용 못 함 */}
-          <LinearGradient
-            id="cost-inner-shadow"
-            x1={0}
-            y1={0}
-            x2={0}
-            y2={6}
-            gradientUnits="userSpaceOnUse"
-          >
-            <Stop offset={0} stopColor={colors.red[400]} stopOpacity={0.08} />
-            <Stop offset={1} stopColor={colors.red[400]} stopOpacity={0} />
-          </LinearGradient>
         </Defs>
         <Rect width={160} height={160} fill="url(#cost-bottom)" />
         <Rect width={160} height={160} fill="url(#cost-top)" />
-        <Rect width={160} height={6} fill="url(#cost-inner-shadow)" />
       </Svg>
     </View>
+    {/* 배경 SVG 위에 Figma 안쪽 그림자. 카드 자체에 주면 SVG에 가려서 위 층으로 */}
+    <View pointerEvents="none" style={INNER_SHADOW} className="absolute inset-0 rounded-card" />
     <View className="gap-s2">
       <View>
-        <Text className="text-text-primary text-label-semibold">결제 예정</Text>
+        <Text className="text-text-primary text-label-semibold">{label}</Text>
         <Text numberOfLines={1} className="text-text-primary text-head2-bold">
           {amount}
         </Text>
