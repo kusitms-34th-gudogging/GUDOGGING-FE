@@ -7,21 +7,22 @@ import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { PaymentListItem } from '@/components/register/PaymentListItem';
 import { ScreenTitle } from '@/components/register/ScreenTitle';
-import { FOUND_SAMPLE, type PaymentInfo } from '@/constants/services';
-import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
-import { useRegisterDraft, useRegisterServices } from '@/hooks/useRegisterDraft';
+import { FOUND_SAMPLE, type PaymentInfo, SERVICES } from '@/constants/services';
+import {
+  getFoundServiceIds,
+  useRegisterDraft,
+  useRegisterServices,
+} from '@/hooks/useRegisterDraft';
 
 export const RegisterFoundScreen = () => {
   const payments = useRegisterDraft((s) => s.payments);
   const setPayment = useRegisterDraft((s) => s.setPayment);
   const foundChecked = useRegisterDraft((s) => s.foundChecked);
   const setFoundChecked = useRegisterDraft((s) => s.setFoundChecked);
-  // 스크린샷·Gmail의 첫 저장 화면: 나갈 때 이탈 팝업
-  const { modal: leaveModal } = useLeaveConfirm(!!foundChecked);
   const checked = new Set(foundChecked);
-  // 구독 추가하기로 추가한 구독. 결제 정보를 넣기 전엔 확인 필요에 보임. 불러온 것과 같은 서비스는 불러온 쪽만 보여 줌
+  // 구독 추가하기로 추가한 구독. 결제 정보를 넣기 전엔 확인 필요에 보임. 불러온 것과 같은 서비스는 불러온 쪽만 보여 줌 (이름을 바꾼 불러온 구독은 다른 서비스로 봄)
   const added = useRegisterServices(useRegisterDraft((s) => s.selectedIds)).filter(
-    (s) => !FOUND_SAMPLE.some((f) => f.id === s.id),
+    (s) => !getFoundServiceIds(payments).includes(s.id),
   );
   const items = [
     // 수정 화면에서 저장한 값이 분석 값보다 우선. issue 없는 분석 값은 모든 칸이 채워져 있음
@@ -114,14 +115,14 @@ export const RegisterFoundScreen = () => {
           disabled={selected.length === 0}
           onPress={() => {
             // 완료 화면은 draft의 결제 정보를 읽고, 체크한 항목만 받음
-            // 직접 입력(custom-)은 완료 화면이 저장한 이름을 쓰므로 찾은 이름을 같이 저장
+            // 사전 등록 서비스가 아닌 항목(불러온 구독·직접 입력)은 완료 화면이 저장한 이름을 쓰므로 찾은 이름을 같이 저장
             selected.forEach(
               (f) =>
                 f.payment &&
                 !payments[f.id] &&
                 setPayment(f.id, {
                   ...f.payment,
-                  name: f.id.startsWith('custom-') ? f.name : undefined,
+                  name: SERVICES.some((s) => s.id === f.id) ? undefined : f.name,
                 }),
             );
             router.push({
@@ -132,7 +133,6 @@ export const RegisterFoundScreen = () => {
           className="mb-[14px]"
         />
       </View>
-      {leaveModal}
     </View>
   );
 };

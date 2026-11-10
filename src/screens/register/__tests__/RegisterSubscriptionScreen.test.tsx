@@ -36,7 +36,7 @@ describe('RegisterSubscriptionScreen 불러오기 팝업', () => {
   });
 
   it('분석 결과를 보던 중이면 불러오기로 불러온 구독 확인 화면으로 간다', async () => {
-    useRegisterDraft.getState().setFoundChecked(['youtube']);
+    useRegisterDraft.getState().setFoundChecked(['found-youtube']);
     const user = await renderScreen();
 
     expect(screen.getByText('등록 중이던 구독을 불러올까요?')).toBeOnTheScreen();

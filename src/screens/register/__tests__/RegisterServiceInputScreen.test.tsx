@@ -79,7 +79,7 @@ describe('RegisterServiceInputScreen 이탈 팝업', () => {
 });
 
 describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
-  const youtube = FOUND_SAMPLE.find((f) => f.id === 'youtube');
+  const youtube = FOUND_SAMPLE.find((f) => f.id === 'found-youtube');
 
   const renderFoundEdit = async (found = youtube) => {
     await renderRouter(
@@ -100,7 +100,7 @@ describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
     await user.type(screen.getByLabelText('서비스명'), '유튜브');
     await user.press(screen.getByRole('button', { name: '수정 완료' }));
 
-    expect(useRegisterDraft.getState().payments.youtube?.name).toBe('유튜브');
+    expect(useRegisterDraft.getState().payments['found-youtube']?.name).toBe('유튜브');
   });
 
   it('서비스명을 비워 두면 찾은 이름으로 저장된다', async () => {
@@ -108,12 +108,12 @@ describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
 
     await user.press(screen.getByRole('button', { name: '수정 완료' }));
 
-    expect(useRegisterDraft.getState().payments.youtube?.name).toBe('YouTube Premium');
+    expect(useRegisterDraft.getState().payments['found-youtube']?.name).toBe('YouTube Premium');
   });
 
   it('분석이 결제일을 못 읽었으면 오늘 날짜로 채워 둔다', async () => {
     jest.setSystemTime(new Date(2026, 10, 10, 15));
-    await renderFoundEdit(FOUND_SAMPLE.find((f) => f.id === 'netflix'));
+    await renderFoundEdit(FOUND_SAMPLE.find((f) => f.id === 'found-netflix'));
 
     expect(screen.getByText('2026.11.10')).toBeOnTheScreen();
   });
