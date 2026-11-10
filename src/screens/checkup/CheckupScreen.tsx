@@ -26,25 +26,27 @@ const MEMO_MAX = 100;
 
 interface CheckupScreenProps {
   subscription: CheckupSubscription;
+  // 홈에서 들어오면 저장된 답과 상관없이 1/4부터 (화면설계서 HOM-001)
+  restart?: boolean;
 }
 
 // 임시 저장을 다 읽은 뒤에 시작 문항을 정함
-export const CheckupScreen = ({ subscription }: CheckupScreenProps) => {
+export const CheckupScreen = ({ subscription, restart }: CheckupScreenProps) => {
   // useSyncExternalStore는 구독 직후 값을 다시 읽어서, 렌더~구독 사이에 복원이 끝나도 놓치지 않음
   const { onFinishHydration, hasHydrated } = useCheckupDraft.persist;
   const hydrated = useSyncExternalStore(onFinishHydration, hasHydrated);
-  return hydrated ? <CheckupQuestions subscription={subscription} /> : null;
+  return hydrated ? <CheckupQuestions subscription={subscription} restart={restart} /> : null;
 };
 
 // K-11~K-66: 카테고리마다 문항·선택지·에셋만 다르고 레이아웃은 같음
-const CheckupQuestions = ({ subscription }: CheckupScreenProps) => {
+const CheckupQuestions = ({ subscription, restart }: CheckupScreenProps) => {
   const { id, name, nameKo = name, amount, nextDate } = subscription;
   const category = toCheckupCategory(subscription.category);
   // 같은 결제 주기 안에서만 이어 하기. 주기가 바뀌면 1/4부터
   const cycle = nextDate.toISOString();
   const setScore = useCheckupDraft((s) => s.setScore);
   // 임시 저장된 다음 문항부터 (3문항 다 답했으면 4/4 메모)
-  const [step, setStep] = useState(() => getCheckupScores(id, cycle).length);
+  const [step, setStep] = useState(() => (restart ? 0 : getCheckupScores(id, cycle).length));
   const [selected, setSelected] = useState(() => getCheckupScores(id, cycle).at(step));
   // 이전으로 3/4에 갔다 와도 유지. 앱 종료 시엔 임시 저장 안 함 (설계서: 답한 문항까지만)
   const [memo, setMemo] = useState('');

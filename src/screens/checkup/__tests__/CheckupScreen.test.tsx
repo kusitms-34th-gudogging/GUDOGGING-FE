@@ -84,6 +84,21 @@ describe('CheckupScreen', () => {
     expect(screen.getByText('넷플릭스에서 본 콘텐츠, 구독료만큼 가치 있었나요?')).toBeOnTheScreen();
   });
 
+  it('홈에서 들어오면(restart) 저장된 답이 있어도 1/4부터 시작한다', async () => {
+    [3, 4, 2].forEach((score, step) =>
+      useCheckupDraft.getState().setScore('netflix', NETFLIX.nextDate.toISOString(), step, score),
+    );
+    await renderRouter(
+      { checkup: () => <CheckupScreen subscription={NETFLIX} restart /> },
+      { initialUrl: '/checkup' },
+    );
+
+    expect(screen.queryByText('넷플릭스에 대해\n남기고 싶은 말이 있나요?')).not.toBeOnTheScreen();
+    expect(
+      screen.getByText('최근 한 달 동안 넷플릭스를 얼마나 자주 이용했나요?'),
+    ).toBeOnTheScreen();
+  });
+
   it('3문항을 다 답했으면 4/4 메모부터, 칩은 입력란에 이어 붙고 건너뛰기가 보인다', async () => {
     [3, 4, 2].forEach((score, step) =>
       useCheckupDraft.getState().setScore('netflix', NETFLIX.nextDate.toISOString(), step, score),
