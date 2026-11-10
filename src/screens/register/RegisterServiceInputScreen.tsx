@@ -249,7 +249,6 @@ export const RegisterServiceInputScreen = ({
               key={c.unit}
               title={c.unit}
               description={c.example}
-              // shortcut: 단위별 지정 아이콘이 아직 없어 예시 이미지, 디자인 나오면 단위별 에셋으로
               asset={ImageColorAsset}
               monoAsset={ImageMonoAsset}
               selected={draftUnit === c.unit}

@@ -92,6 +92,7 @@ export const RegisterDoneScreen = ({ serviceIds }: RegisterDoneScreenProps) => {
           <FadeScrollView className="max-h-[434px] shrink" contentContainerClassName="gap-stack-sm">
             {services.map((s) => {
               const payment = payments[s.id];
+              // shortcut: 항목을 눌러도 이동 없음 (화면설계서 '상세 화면 이동 여부 확인 필요'), 구독 상세 화면이 생기면 onPress로 연결
               return (
                 <ListItem
                   key={s.id}
