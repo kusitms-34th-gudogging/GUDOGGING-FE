@@ -7,6 +7,7 @@ import { Button } from '@/components/common/Button';
 import { FloatingButton } from '@/components/common/FloatingButton';
 import { ListItem } from '@/components/common/ListItem';
 import { TopBar } from '@/components/common/TopBar';
+import { CheckupPromptCard } from '@/components/home/CheckupPromptCard';
 import { CostCard } from '@/components/home/CostCard';
 import { SectionHeader } from '@/components/home/SectionHeader';
 import { ServiceCard, type ServiceCardSubscription } from '@/components/home/ServiceCard';
@@ -52,10 +53,12 @@ const Rows = ({ items }: { items: typeof UPCOMING }) => (
 interface HomeScreenProps {
   // 비어 있으면 H-01(등록된 구독 없음)
   subscriptions?: ServiceCardSubscription[];
+  // 비어 있으면 H-03(점검 기록 없음): 사용 현황 대신 점검 유도 카드
+  usage?: typeof USAGE;
 }
 
-// H-01 홈 (등록된 구독 없음) · H-02 홈 (구독 있음)
-export const HomeScreen = ({ subscriptions = SUBSCRIPTIONS }: HomeScreenProps) => {
+// H-01 홈 (등록된 구독 없음) · H-02 홈 (구독 있음) · H-03 홈 (점검 유도)
+export const HomeScreen = ({ subscriptions = SUBSCRIPTIONS, usage = USAGE }: HomeScreenProps) => {
   const isEmpty = subscriptions.length === 0;
 
   return (
@@ -123,11 +126,21 @@ export const HomeScreen = ({ subscriptions = SUBSCRIPTIONS }: HomeScreenProps) =
             </View>
             <View className="h-[2px] bg-bg-subtle" />
             <View className="gap-stack-md px-screen-x">
-              <View className="flex-row items-center justify-between">
-                <SectionHeader title="내 구독 사용 현황" showChevron />
-                <Badge variant="tonal" label="월 17,800원 결제" />
-              </View>
-              <Rows items={USAGE} />
+              {usage.length > 0 ? (
+                <>
+                  <View className="flex-row items-center justify-between">
+                    <SectionHeader title="내 구독 사용 현황" showChevron />
+                    <Badge variant="tonal" label="월 17,800원 결제" />
+                  </View>
+                  <Rows items={usage} />
+                </>
+              ) : (
+                <>
+                  <SectionHeader title="내 구독 사용 현황" />
+                  {/* shortcut: 점검 진입이 임시 목록(/checkup), 점검 진입 화면이 정해지면 그 경로로 */}
+                  <CheckupPromptCard onPress={() => router.push('/checkup')} />
+                </>
+              )}
             </View>
           </View>
         )}

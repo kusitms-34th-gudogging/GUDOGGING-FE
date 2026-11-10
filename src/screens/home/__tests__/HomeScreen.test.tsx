@@ -35,4 +35,18 @@ describe('HomeScreen', () => {
     expect(screen.getByRole('button', { name: '구독 추가' })).toBeOnTheScreen();
     expect(screen.queryByText('아직 등록된 구독이 없어요')).not.toBeOnTheScreen();
   });
+
+  it('점검 기록이 없으면 사용 현황 대신 점검 유도 카드를 보여 주고, 점검하러 가기로 점검에 간다', async () => {
+    await renderRouter(
+      { index: () => <HomeScreen usage={[]} />, 'checkup/index': () => null },
+      { initialUrl: '/' },
+    );
+
+    expect(screen.queryByText('월 17,800원 결제')).not.toBeOnTheScreen();
+
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await user.press(screen.getByRole('button', { name: '점검하러 가기' }));
+
+    expect(screen).toHavePathname('/checkup');
+  });
 });
