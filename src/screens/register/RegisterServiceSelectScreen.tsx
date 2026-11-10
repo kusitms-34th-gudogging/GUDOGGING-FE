@@ -13,6 +13,7 @@ import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { SERVICES } from '@/constants/services';
 import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
 import { hasRegisterDraft, useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { matchesKeyword } from '@/utils/search';
 
 interface RegisterServiceSelectScreenProps {
   // 불러온 구독 확인(A-09)의 구독 추가하기로 왔으면 흐름 안 이동이라 이탈 팝업 없음
@@ -34,12 +35,13 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
     setSelectedIds(
       selectedIds.includes(id) ? selectedIds.filter((v) => v !== id) : [...selectedIds, id],
     );
-  const selected = SERVICES.filter((s) => selectedIds.includes(s.id));
+  // 칩은 선택한 순서대로
+  const selected = selectedIds.flatMap((id) => SERVICES.filter((s) => s.id === id));
   const count = selected.length;
-  // shortcut: 영문·한글 이름 부분 일치만
-  const keyword = query.trim().toLowerCase();
+  const keyword = query.trim();
+  // shortcut: 이미 등록한 서비스 제외·여러 결과의 정렬 기준 없음, 구독 목록 API 연동·정렬 기준 확정 시 추가
   const results = keyword
-    ? SERVICES.filter((s) => `${s.name} ${s.nameKo}`.toLowerCase().includes(keyword))
+    ? SERVICES.filter((s) => matchesKeyword(`${s.name} ${s.nameKo} ${s.category}`, keyword))
     : SERVICES;
 
   return (

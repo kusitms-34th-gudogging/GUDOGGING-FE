@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { userEvent } from '@testing-library/react-native';
+import { userEvent, within } from '@testing-library/react-native';
 import { router, Stack } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
 import { Pressable, Text } from 'react-native';
@@ -114,4 +114,17 @@ it('불러온 구독 확인에서 추가로 고르면 결제 정보 입력 없�
 
   expect(screen).toHavePathname('/register/found');
   expect(useRegisterDraft.getState().foundChecked).toEqual(['youtube', 'netflix']);
+});
+
+it('선택한 서비스 칩은 고른 순서대로 나열한다', async () => {
+  const user = await renderSelect();
+
+  await user.press(screen.getByRole('checkbox', { name: 'Spotify' }));
+  await user.press(screen.getByRole('checkbox', { name: 'Netflix' }));
+
+  const chips = screen.getAllByRole('button', { name: /^(Spotify|Netflix)$/ });
+  expect(chips.map((c) => (within(c).queryByText('Spotify') ? 'Spotify' : 'Netflix'))).toEqual([
+    'Spotify',
+    'Netflix',
+  ]);
 });
