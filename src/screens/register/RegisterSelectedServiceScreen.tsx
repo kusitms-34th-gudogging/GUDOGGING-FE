@@ -25,7 +25,8 @@ export const RegisterSelectedServiceScreen = () => {
       <TopBar
         variant="detail"
         title="선택한 구독"
-        onBack={() => router.back()}
+        // 불러오기로 바로 들어와도 서비스 선택(A-02)으로 (기획 답변)
+        onBack={() => router.dismissTo('/register/select')}
         showAction1={false}
         showAction2={false}
       />
