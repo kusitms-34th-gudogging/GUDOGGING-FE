@@ -40,7 +40,7 @@ export const RegisterFailedScreen = ({ source }: RegisterFailedScreenProps) => {
       <TopBar
         variant="detail"
         title={header}
-        // 스크린샷은 바로 앞이 스크린샷 확인(A-07)이라 안내 화면(A-06·A-11)으로 한 번에 (화면설계서)
+        // 안내 화면(A-06·A-11)으로. 분석 화면이 사이 화면을 걷어 내서 스와이프도 같은 곳으로 감
         onBack={() => router.dismissTo(guide)}
         showAction1={false}
         showAction2={false}
