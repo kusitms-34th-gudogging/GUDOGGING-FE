@@ -60,8 +60,9 @@ export const RegisterServiceInputScreen = ({
   const init = saved ?? found?.payment;
   const [name, setName] = useState(saved?.name ?? '');
   const [category, setCategory] = useState<string | undefined>(
-    init?.category ?? (found ? undefined : isCustom ? '기타' : CATEGORIES[0]),
+    init?.category ?? (found ? undefined : (service?.category ?? '기타')),
   );
+  // shortcut: 사전 등록 요금제 가격을 기본값으로 못 넣음, 서비스 목록 API에 가격이 생기면 기본값으로
   const [amount, setAmount] = useState(init?.amount ? String(init.amount) : '');
   // 값이 없으면(분석이 못 읽은 불러온 구독 포함) 기본값: 1개월 · 오늘 · 웹·직접 결제
   const [cycle, setCycle] = useState(String(init?.cycle ?? 1));
@@ -82,13 +83,8 @@ export const RegisterServiceInputScreen = ({
 
   const cycleNum = Number(cycle);
   const nameValid = !isCustom || !!found || (name.trim().length >= 1 && name.trim().length <= 30);
-  const valid =
-    nameValid &&
-    !!category &&
-    amountChecked &&
-    Number(amount) > 0 &&
-    cycleNum >= 1 &&
-    cycleNum <= 31;
+  // 금액 에러 표시는 안내일 뿐, 금액이 있으면 그대로 저장 가능 (화면설계서 A-15)
+  const valid = nameValid && !!category && Number(amount) > 0 && cycleNum >= 1 && cycleNum <= 31;
   const closeMenu = () => setCategoryOpen(false);
 
   return (
@@ -253,6 +249,7 @@ export const RegisterServiceInputScreen = ({
               key={c.unit}
               title={c.unit}
               description={c.example}
+              // shortcut: 단위별 지정 아이콘이 아직 없어 예시 이미지, 디자인 나오면 단위별 에셋으로
               asset={ImageColorAsset}
               monoAsset={ImageMonoAsset}
               selected={draftUnit === c.unit}

@@ -129,6 +129,15 @@ describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
 
     expect(screen.queryByText(helper)).not.toBeOnTheScreen();
   });
+
+  it('금액 에러가 떠 있어도 금액이 있으면 수정 완료를 누를 수 있다', async () => {
+    await renderFoundEdit(FOUND_SAMPLE.find((f) => f.id === 'custom-found-millie'));
+
+    expect(
+      screen.getByText('금액을 정확히 읽지 못했어요. 실제 결제 금액을 확인해 주세요.'),
+    ).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: '수정 완료' })).toBeEnabled();
+  });
 });
 
 it('불러온 구독 확인에서 직접 입력으로 추가하면 그 화면으로 돌아가 체크해 둔다', async () => {
@@ -155,4 +164,13 @@ it('불러온 구독 확인에서 직접 입력으로 추가하면 그 화면으
   expect(screen).toHavePathname('/register/found');
   const [id] = useRegisterDraft.getState().foundChecked ?? [];
   expect(useRegisterDraft.getState().payments[id]?.name).toBe('왓챠');
+});
+
+it('사전 등록 서비스는 그 서비스의 카테고리를 기본값으로 채운다', async () => {
+  await renderRouter(
+    { 'register/input': () => <RegisterServiceInputScreen serviceId="spotify" /> },
+    { initialUrl: '/register/input' },
+  );
+
+  expect(screen.getByText('음악')).toBeOnTheScreen();
 });
