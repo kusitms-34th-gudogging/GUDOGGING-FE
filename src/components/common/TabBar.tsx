@@ -10,7 +10,7 @@ import { TabItem } from './TabItem';
 const TABS = [
   { menu: 'home', label: '홈', icon: HomeIcon },
   { menu: 'calendar', label: '캘린더', icon: CalendarIcon },
-  { menu: 'subscription', label: '구독 관리', icon: WalletIcon },
+  { menu: 'manage', label: '구독 관리', icon: WalletIcon },
   { menu: 'mypage', label: '마이페이지', icon: UserIcon },
 ] as const;
 
@@ -22,7 +22,7 @@ interface TabBarProps {
   className?: string;
 }
 
-// 화면 배치(좌우 20, 하단 Safe Area + 16)는 사용처가 정함
+// 화면 배치(좌우 20, 하단 Safe Area + 4)는 사용처가 정함
 export const TabBar = ({ selected, onSelect, className }: TabBarProps) => {
   const { indicatorStyle, onItemLayout, ready } = useSlidingIndicator(
     TABS.findIndex(({ menu }) => menu === selected),
