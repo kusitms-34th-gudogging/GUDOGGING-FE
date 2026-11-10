@@ -16,7 +16,8 @@ import { cn } from '@/utils/cn';
 
 import { Toast, type ToastProps } from './Toast';
 
-const VISIBLE_MS = 2500;
+// 화면설계서: 오류 토스트 1초 노출
+const VISIBLE_MS = 1000;
 
 interface ToastContextValue {
   show: (toast: ToastProps) => void;
