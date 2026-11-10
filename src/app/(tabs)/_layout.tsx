@@ -17,7 +17,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{ headerShown: false }}
       tabBar={({ state }) => (
-        // 화면 위에 떠 있는 탭바 (좌우 20, 하단 Safe Area + 16)
+        // 화면 위에 떠 있는 탭바 (좌우 20, 하단 Safe Area + 4)
         <View
           pointerEvents="box-none"
           className="pb-safe absolute inset-x-0 bottom-0 items-center px-screen-x"
@@ -25,7 +25,7 @@ export default function TabsLayout() {
           <TabBar
             selected={TAB_ROUTES[state.index].menu}
             onSelect={(menu) => router.navigate(TAB_ROUTES.find((tab) => tab.menu === menu)!.href)}
-            className="mb-s16"
+            className="mb-s4"
           />
         </View>
       )}

@@ -22,7 +22,7 @@ interface TabBarProps {
   className?: string;
 }
 
-// 화면 배치(좌우 20, 하단 Safe Area + 16)는 사용처가 정함
+// 화면 배치(좌우 20, 하단 Safe Area + 4)는 사용처가 정함
 export const TabBar = ({ selected, onSelect, className }: TabBarProps) => {
   const { indicatorStyle, onItemLayout, ready } = useSlidingIndicator(
     TABS.findIndex(({ menu }) => menu === selected),
