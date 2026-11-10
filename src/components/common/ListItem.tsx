@@ -31,6 +31,7 @@ interface ListItemProps {
   showCheckBox?: boolean;
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
+  checkBoxLocked?: boolean;
   className?: string;
 }
 
@@ -53,6 +54,7 @@ export const ListItem = ({
   showCheckBox,
   checked = false,
   onCheckedChange,
+  checkBoxLocked,
   className,
 }: ListItemProps) => {
   // 누르는 영역: 체크박스가 없으면 행 전체, 있으면 체크박스와 오른쪽(금액·아이콘)을 따로
@@ -71,6 +73,7 @@ export const ListItem = ({
                   <Checkbox
                     checked={checked}
                     onCheckedChange={(next) => onCheckedChange?.(next)}
+                    locked={checkBoxLocked}
                     accessibilityLabel={title}
                   />
                 </View>
