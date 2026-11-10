@@ -8,7 +8,7 @@ import { TabBar, type TabBarMenu } from '@/components/common/TabBar';
 const TAB_ROUTES = [
   { menu: 'home', name: 'index', href: '/' },
   { menu: 'calendar', name: 'calendar', href: '/calendar' },
-  { menu: 'subscription', name: 'subscription', href: '/subscription' },
+  { menu: 'manage', name: 'manage', href: '/manage' },
   { menu: 'mypage', name: 'mypage', href: '/mypage' },
 ] as const satisfies { menu: TabBarMenu; name: string; href: string }[];
 

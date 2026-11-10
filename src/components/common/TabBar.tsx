@@ -10,7 +10,7 @@ import { TabItem } from './TabItem';
 const TABS = [
   { menu: 'home', label: '홈', icon: HomeIcon },
   { menu: 'calendar', label: '캘린더', icon: CalendarIcon },
-  { menu: 'subscription', label: '구독 관리', icon: WalletIcon },
+  { menu: 'manage', label: '구독 관리', icon: WalletIcon },
   { menu: 'mypage', label: '마이페이지', icon: UserIcon },
 ] as const;
 
