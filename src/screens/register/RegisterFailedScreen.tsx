@@ -11,22 +11,24 @@ import { ShakingAlertIcon } from '@/components/register/ShakingAlertIcon';
 const COPY = {
   screenshot: {
     header: '스크린샷으로 등록',
+    guide: '/register/screenshot',
     title: '구독 정보를 찾지 못했어요.',
     description: '구독 목록이 잘 보이지 않거나\n지원하지 않는 화면일 수 있어요.',
   },
   gmail: {
     header: 'Gmail에서 불러오기',
+    guide: '/register/gmail',
     title: '결제 메일을 읽지 못했어요.',
     description: '결제 메일 형식이 달라\n구독 정보를 가져오지 못했어요.',
   },
-};
+} as const;
 
 interface RegisterFailedScreenProps {
   source: keyof typeof COPY;
 }
 
 export const RegisterFailedScreen = ({ source }: RegisterFailedScreenProps) => {
-  const { header, title, description } = COPY[source];
+  const { header, guide, title, description } = COPY[source];
 
   useEffect(() => {
     AccessibilityInfo.announceForAccessibility(`${title} ${description}`);
@@ -38,7 +40,8 @@ export const RegisterFailedScreen = ({ source }: RegisterFailedScreenProps) => {
       <TopBar
         variant="detail"
         title={header}
-        onBack={() => router.back()}
+        // 스크린샷은 바로 앞이 스크린샷 확인(A-07)이라 안내 화면(A-06·A-11)으로 한 번에 (화면설계서)
+        onBack={() => router.dismissTo(guide)}
         showAction1={false}
         showAction2={false}
       />
