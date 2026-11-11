@@ -1,11 +1,18 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import Animated, {
+  type EntryExitAnimationFunction,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
-import { ChevronDownIcon, MoreIcon } from '@/assets/icons';
+import { ChevronDownIcon, MoreIcon, TrashIcon } from '@/assets/icons';
 import { Button } from '@/components/common/Button';
+import { DropdownOption } from '@/components/common/DropdownOption';
 import { FloatingButton } from '@/components/common/FloatingButton';
 import { ListItem } from '@/components/common/ListItem';
+import { Modal } from '@/components/common/Modal';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { TopBar } from '@/components/common/TopBar';
 import { cn } from '@/utils/cn';
@@ -76,6 +83,18 @@ const activeSubtitle = (s: HomeSubscription, today: Date) => {
     s.unit === '개월' && s.cycle === 1 ? `매월 ${s.nextDate.getDate()}일` : monthDay(s.nextDate);
   return `${when} · D-${daysUntil(s.nextDate, today)}`;
 };
+// iOS 풀다운 메뉴처럼 scale 0.9 → 1 + 페이드 (0.25s spring)
+const popIn: EntryExitAnimationFunction = () => {
+  'worklet';
+  return {
+    initialValues: { opacity: 0, transform: [{ scale: 0.9 }] },
+    animations: {
+      opacity: withTiming(1, { duration: 250 }),
+      transform: [{ scale: withSpring(1, { duration: 250 }) }],
+    },
+  };
+};
+
 const sumMonthly = (subs: HomeSubscription[]) => subs.reduce((sum, s) => sum + monthly(s), 0);
 
 interface ManageScreenProps {
@@ -84,23 +103,43 @@ interface ManageScreenProps {
   ended?: EndedSubscription[];
 }
 
-// M-01 등록된 구독 없음 · M-02 구독 중 탭 · M-04 구독 종료 탭
+// M-01 등록된 구독 없음 · M-02 구독 중 탭(.1 더보기 · .2 삭제 선택 · .3 삭제 모달) · M-04 구독 종료 탭
 export const ManageScreen = ({
   active = ACTIVE_SAMPLE,
   ended = ENDED_SAMPLE,
 }: ManageScreenProps) => {
+  // shortcut: 삭제는 화면 안 목록에서만 빠짐, 구독 삭제 API 연동 시 호출 후 목록 다시 불러오기
+  const [lists, setLists] = useState({ active, ended });
   const [tab, setTab] = useState<Tab>('active');
-  const isEmpty = active.length === 0 && ended.length === 0;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [selecting, setSelecting] = useState(false);
+  const [picked, setPicked] = useState<string[]>([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const isEmpty = lists.active.length === 0 && lists.ended.length === 0;
   const today = new Date();
+
+  const stopSelecting = () => {
+    setSelecting(false);
+    setPicked([]);
+  };
+  const toggle = (id: string) =>
+    setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const deletePicked = () => {
+    setLists((l) => ({
+      active: tab === 'active' ? l.active.filter((s) => !picked.includes(s.id)) : l.active,
+      ended: tab === 'ended' ? l.ended.filter((s) => !picked.includes(s.id)) : l.ended,
+    }));
+    stopSelecting();
+  };
 
   // 결제일 순 · 해지일 순(최근 해지가 위)
   // shortcut: 정렬 기준 바꾸는 메뉴는 옵션이 정해지지 않아 고정
   const items =
     tab === 'active'
-      ? [...active]
+      ? [...lists.active]
           .sort((a, b) => (a.nextDate?.getTime() ?? Infinity) - (b.nextDate?.getTime() ?? Infinity))
           .map((s) => ({ ...s, subtitle: activeSubtitle(s, today) }))
-      : [...ended]
+      : [...lists.ended]
           .sort((a, b) => b.cancelledAt.getTime() - a.cancelledAt.getTime())
           .map((s) => ({
             ...s,
@@ -109,13 +148,39 @@ export const ManageScreen = ({
 
   return (
     <View className="pt-safe pb-safe flex-1 bg-bg-default">
-      <TopBar
-        title="구독 관리"
-        showAction2={false}
-        showAction1={!isEmpty}
-        // shortcut: 더보기 메뉴(M-02.1 → 삭제 M-02.2)는 다음 작업에서 연결
-        action1={{ icon: MoreIcon, accessibilityLabel: '더보기', onPress: () => {} }}
-      />
+      {/* 더보기 메뉴가 목록·바깥 닫기 영역 위에 오게 */}
+      <View className="z-20">
+        <TopBar
+          title="구독 관리"
+          showAction2={false}
+          showAction1={!isEmpty}
+          action1={{
+            icon: MoreIcon,
+            accessibilityLabel: '더보기',
+            onPress: () => setMenuOpen((o) => !o),
+          }}
+        />
+        {menuOpen && (
+          // ⋯ 버튼 자리에서 아래로 펼침, 배경 dim 없음
+          <Animated.View
+            entering={popIn}
+            accessibilityRole="menu"
+            className="absolute right-inset-md top-[36px] w-[160px] rounded-md bg-surface-raised p-inset-2xs shadow-elevation-2"
+          >
+            {/* 삭제 선택 중 빠져나가는 동작은 디자인에 없어 같은 메뉴에서 '선택 취소'로 */}
+            <DropdownOption
+              label={selecting ? '선택 취소' : '삭제'}
+              destructive={!selecting}
+              selected={false}
+              onSelect={() => {
+                setMenuOpen(false);
+                if (selecting) stopSelecting();
+                else setSelecting(true);
+              }}
+            />
+          </Animated.View>
+        )}
+      </View>
       {isEmpty ? (
         // 떠 있는 탭바(52 + 하단 4)를 빼고 남은 영역에서 세로 중앙
         <View className="flex-1 items-center justify-center gap-stack-md px-screen-x pb-[56px]">
@@ -136,46 +201,96 @@ export const ManageScreen = ({
             <View className="w-[164px]">
               <SegmentedControl
                 options={[
-                  { value: 'active', label: '구독 중', count: active.length },
-                  { value: 'ended', label: '구독 종료', count: ended.length },
+                  { value: 'active', label: '구독 중', count: lists.active.length },
+                  { value: 'ended', label: '구독 종료', count: lists.ended.length },
                 ]}
                 selected={tab}
-                onSelect={setTab}
+                onSelect={(next) => {
+                  setTab(next);
+                  stopSelecting();
+                }}
               />
             </View>
             <View className="gap-stack-md">
               <View className="flex-row items-center justify-between pl-s2">
-                <Text
-                  className={cn(
-                    'text-text-primary',
-                    tab === 'active' ? 'text-body2-semibold' : 'text-body1-semibold',
-                  )}
-                >
-                  {tab === 'active'
-                    ? `월 ${formatWon(sumMonthly(active))}`
-                    : `월 ${formatWon(sumMonthly(ended))} 절약`}
-                </Text>
-                <View className="flex-row items-center gap-s2 py-inline-xs">
-                  <Text className="text-text-secondary text-caption1-regular">
-                    {tab === 'active' ? '결제일 순' : '해지일 순'}
-                  </Text>
-                  <ChevronDownIcon className="size-icon-xs text-icon-secondary" />
-                </View>
+                {selecting ? (
+                  <>
+                    <Text className="text-text-primary text-body2-semibold">
+                      {`${picked.length}개 선택`}
+                    </Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="선택한 구독 삭제"
+                      disabled={picked.length === 0}
+                      onPress={() => setConfirmOpen(true)}
+                      className={cn(
+                        'flex-row items-center gap-s2 py-inline-xs active:opacity-pressed',
+                        picked.length === 0 && 'opacity-disabled',
+                      )}
+                    >
+                      <Text className="text-text-error text-caption1-regular">삭제</Text>
+                      <TrashIcon className="size-icon-xs text-icon-error" />
+                    </Pressable>
+                  </>
+                ) : (
+                  <>
+                    <Text
+                      className={cn(
+                        'text-text-primary',
+                        tab === 'active' ? 'text-body2-semibold' : 'text-body1-semibold',
+                      )}
+                    >
+                      {tab === 'active'
+                        ? `월 ${formatWon(sumMonthly(lists.active))}`
+                        : `월 ${formatWon(sumMonthly(lists.ended))} 절약`}
+                    </Text>
+                    <View className="flex-row items-center gap-s2 py-inline-xs">
+                      <Text className="text-text-secondary text-caption1-regular">
+                        {tab === 'active' ? '결제일 순' : '해지일 순'}
+                      </Text>
+                      <ChevronDownIcon className="size-icon-xs text-icon-secondary" />
+                    </View>
+                  </>
+                )}
               </View>
-              {/* shortcut: 행을 누르면 구독 상세(M-03·M-05)로 가야 하는데 화면이 없어 이동 없음 */}
               <View className="gap-stack-sm">
-                {items.map((s) => (
-                  <ListItem
-                    key={s.id}
-                    title={s.name}
-                    subtitle={s.subtitle}
-                    showSubtitle
-                    logo={LOGO}
-                    showLogo
-                    cost={formatWon(s.amount)}
-                    showCost
-                  />
-                ))}
+                {items.map((s) =>
+                  selecting ? (
+                    // 삭제 선택 중엔 행 어디를 눌러도 체크 (상세 이동 없음)
+                    <Pressable
+                      key={s.id}
+                      accessibilityRole="checkbox"
+                      accessibilityLabel={s.name}
+                      accessibilityState={{ checked: picked.includes(s.id) }}
+                      onPress={() => toggle(s.id)}
+                    >
+                      <ListItem
+                        title={s.name}
+                        subtitle={s.subtitle}
+                        showSubtitle
+                        logo={LOGO}
+                        showLogo
+                        cost={formatWon(s.amount)}
+                        showCost
+                        showCheckBox
+                        checked={picked.includes(s.id)}
+                        onCheckedChange={() => toggle(s.id)}
+                      />
+                    </Pressable>
+                  ) : (
+                    // shortcut: 행을 누르면 구독 상세(M-03·M-05)로 가야 하는데 화면이 없어 이동 없음
+                    <ListItem
+                      key={s.id}
+                      title={s.name}
+                      subtitle={s.subtitle}
+                      showSubtitle
+                      logo={LOGO}
+                      showLogo
+                      cost={formatWon(s.amount)}
+                      showCost
+                    />
+                  ),
+                )}
               </View>
             </View>
           </ScrollView>
@@ -192,6 +307,25 @@ export const ManageScreen = ({
           </View>
         </>
       )}
+      {menuOpen && (
+        // 메뉴 바깥을 누르면 닫힘
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="메뉴 닫기"
+          onPress={() => setMenuOpen(false)}
+          className="absolute inset-0 z-10"
+        />
+      )}
+      <Modal
+        visible={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        buttons="both"
+        title={`구독 ${picked.length}개를 삭제할까요?`}
+        description="삭제하면 모든 정보가 사라져요."
+        cancelLabel="취소"
+        confirmLabel="삭제하기"
+        onConfirm={deletePicked}
+      />
     </View>
   );
 };
