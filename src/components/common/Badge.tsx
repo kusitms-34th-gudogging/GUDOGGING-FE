@@ -8,7 +8,7 @@ import { cn } from '@/utils/cn';
 
 const badgeVariants = cva(
   // 높이 24 고정 + 가운데 정렬. 위아래 패딩(4)을 넣으면 Line의 1px 테두리만큼 글자 자리가 줄어 아래로 밀림
-  'h-s24 max-w-[160px] flex-row items-center justify-center gap-inline-xs rounded-sm px-inset-xs',
+  'h-s24 flex-row items-center justify-center gap-inline-xs rounded-sm px-inset-xs',
   {
     variants: {
       variant: {
