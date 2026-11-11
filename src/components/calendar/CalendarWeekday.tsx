@@ -10,7 +10,7 @@ export const CalendarWeekday = () => (
       <Text
         key={day}
         className={cn(
-          'w-[47px] text-center text-caption2-semibold',
+          'flex-1 text-center text-caption2-semibold',
           i === 0 ? 'text-text-brand' : i === 6 ? 'text-text-tertiary' : 'text-text-primary',
         )}
       >
