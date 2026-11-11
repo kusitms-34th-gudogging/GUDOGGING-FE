@@ -29,7 +29,7 @@ const renderDetail = async () => {
   await renderRouter(
     {
       index: () => <EndedSubscriptionDetailScreen subscription={watcha} />,
-      'register/index': () => null,
+      'register/input': () => null,
     },
     { initialUrl: '/' },
   );
@@ -47,11 +47,12 @@ describe('EndedSubscriptionDetailScreen', () => {
     expect(screen.getByText('10월 3일 점검 · 해지')).toBeOnTheScreen();
   });
 
-  it('재등록하기는 구독 추가로 간다', async () => {
+  it('재등록하기는 이 구독 정보로 채운 구독 정보 입력으로 간다', async () => {
     const user = await renderDetail();
 
     await user.press(screen.getByRole('button', { name: '재등록하기' }));
 
-    expect(screen).toHavePathname('/register');
+    expect(screen).toHavePathname('/register/input');
+    expect(screen).toHaveSearchParams({ reregister: 'watcha' });
   });
 });
