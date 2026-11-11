@@ -158,7 +158,7 @@ export const SubscriptionDetailScreen = ({ subscription: s }: SubscriptionDetail
           )}
         </View>
       </ScrollView>
-      <View className="flex-row gap-inline-sm px-screen-x pb-stack-lg pt-stack-md">
+      <View className="flex-row gap-inline-sm px-screen-x pb-[14px] pt-stack-md">
         <Button
           variant="tonal"
           label="해지하기"
