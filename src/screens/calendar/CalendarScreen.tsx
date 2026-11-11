@@ -1,4 +1,5 @@
 import { motion } from '@tokens';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
@@ -11,7 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { CalendarDay, type CalendarDaySubscription } from '@/components/calendar/CalendarDay';
+import { CalendarDay } from '@/components/calendar/CalendarDay';
 import { CalendarWeekday } from '@/components/calendar/CalendarWeekday';
 import { Badge } from '@/components/common/Badge';
 import { BottomSheet } from '@/components/common/BottomSheet';
@@ -19,41 +20,16 @@ import { Button } from '@/components/common/Button';
 import { Dial } from '@/components/common/Dial';
 import { ListItem } from '@/components/common/ListItem';
 import { TopBar } from '@/components/common/TopBar';
-import { PAID_AT, type PaymentInfo } from '@/constants/services';
+import { CALENDAR_SAMPLE, type CalendarPayment } from '@/constants/calendar';
+import { PAID_AT } from '@/constants/services';
 import { cn } from '@/utils/cn';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
 
-const LOGO = require('@/assets/images/logo_placeholder.png');
-
-type DayPayment = CalendarDaySubscription &
-  Pick<PaymentInfo, 'cycle' | 'unit' | 'paidAt'> & { amount: number };
-
-const pay = (
-  id: string,
-  name: string,
-  category: DayPayment['category'],
-  amount: number,
-  paidAt: DayPayment['paidAt'],
-): DayPayment => ({ id, name, category, logo: LOGO, amount, cycle: 1, unit: '개월', paidAt });
-
-// shortcut: 렌더 확인용 샘플 결제일이라 모든 달에 같은 날짜로 보임, 캘린더 API 연동 시 API 훅으로 교체
-// Figma C-01·C-02 예시 (이번 달 합계 142,400원, 17일 3건 · 57,400원)
-const SAMPLE: Record<number, DayPayment[]> = {
-  3: [pay('notion', '노션', 'productivity', 14000, 'web')],
-  8: [pay('figma', '피그마', 'productivity', 22000, 'web')],
-  12: [pay('claude', '클로드', 'productivity', 29000, 'appstore')],
-  17: [
-    pay('netflix', '넷플릭스', 'ott', 13500, 'appstore'),
-    pay('youtube', '유튜브 프리미엄', 'ott', 14900, 'playstore'),
-    pay('chatgpt', 'ChatGPT Plus', 'productivity', 29000, 'web'),
-  ],
-  22: [pay('adobe', '어도비', 'productivity', 6600, 'web')],
-  28: [
-    pay('melon', '멜론', 'music', 4500, 'appstore'),
-    pay('coupang', '쿠팡 와우', 'shopping', 4990, 'web'),
-    pay('wavve', '웨이브', 'ott', 3910, 'playstore'),
-  ],
-};
+// 날짜(일)별 결제
+const SAMPLE = CALENDAR_SAMPLE.reduce<Record<number, CalendarPayment[]>>((byDay, p) => {
+  (byDay[p.day] ??= []).push(p);
+  return byDay;
+}, {});
 const MONTH_TOTAL = Object.values(SAMPLE)
   .flat()
   .reduce((sum, p) => sum + p.amount, 0);
@@ -266,6 +242,10 @@ export const CalendarScreen = () => {
                   showLogo
                   cost={formatWon(p.amount)}
                   showCost
+                  iconRightAction={{
+                    accessibilityLabel: `${p.name} 상세`,
+                    onPress: () => router.push(`/calendar/detail/${p.id}`),
+                  }}
                 />
               ))}
             </View>
