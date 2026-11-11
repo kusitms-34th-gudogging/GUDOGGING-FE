@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { Image, ScrollView, Text, View } from 'react-native';
 
 import { RecommendCard } from '@/components/checkup/RecommendCard';
+import { UsageBreath } from '@/components/checkup/UsageBreath';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
 import { ListItem } from '@/components/common/ListItem';
@@ -15,6 +16,8 @@ const LOGO = require('@/assets/images/logo_placeholder.png');
 
 interface CheckupResultScreenProps {
   subscription: CheckupSubscription;
+  /** 활용도(%) 정수 */
+  usage: number;
   /** 같은 카테고리에서 구독 중인 서비스 (점검 중인 구독 포함) */
   categorySubscriptions: HomeSubscription[];
   /** 같은 서비스를 더 싸게 쓰는 상품. 없으면 영역 숨김 */
@@ -24,6 +27,7 @@ interface CheckupResultScreenProps {
 // K-80 점검 결과
 export const CheckupResultScreen = ({
   subscription,
+  usage,
   categorySubscriptions,
   recommendations,
 }: CheckupResultScreenProps) => {
@@ -41,20 +45,21 @@ export const CheckupResultScreen = ({
         showAction2={false}
       />
       <ScrollView className="flex-1" contentContainerClassName="px-screen-x pb-section pt-stack-md">
-        <View className="flex-row items-center gap-inline-sm">
-          <View className="size-logo-card overflow-hidden rounded-full border-default border-border-subtle">
-            <Image source={LOGO} className="size-full" />
+        <UsageBreath usage={usage} name={name}>
+          <View className="flex-row items-center gap-inline-sm">
+            <View className="size-logo-card overflow-hidden rounded-full border-default border-border-subtle">
+              <Image source={LOGO} className="size-full" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-text-primary text-body1-bold">{name} 점검 완료</Text>
+              <Text className="text-text-primary text-caption1-regular">
+                {`${nextDate.getMonth() + 1}월 ${nextDate.getDate()}일 결제 전에 확인했어요`}
+              </Text>
+            </View>
           </View>
-          <View className="flex-1">
-            <Text className="text-text-primary text-body1-bold">{name} 점검 완료</Text>
-            <Text className="text-text-primary text-caption1-regular">
-              {`${nextDate.getMonth() + 1}월 ${nextDate.getDate()}일 결제 전에 확인했어요`}
-            </Text>
-          </View>
-        </View>
-
-        {/* ponytail: 활용도 숨 블러(점수·구간 색·유형명) 자리만 잡아 둠. 점수 계산·인터랙션 확정 후 채움 */}
-        <View className="mt-s24 h-[236px]" />
+        </UsageBreath>
+        {/* shortcut: 블러 아래 유형명 + 안내 문구(본전 뽑는 중 등, 이용도·만족도 사분면 기준) 없음.
+            점수 계산(백엔드 확인)이 정해지면 유형·보정 여부를 props로 받아 추가 */}
 
         <View className="mt-s40 gap-section">
           <View className="gap-stack-md">

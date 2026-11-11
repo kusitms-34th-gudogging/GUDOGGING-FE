@@ -4,6 +4,16 @@ import { renderRouter, screen } from 'expo-router/testing-library';
 import { CHECKUP_RECOMMEND_SAMPLE, CHECKUP_SAMPLE } from '@/constants/checkup';
 import { CheckupResultScreen } from '@/screens/checkup/CheckupResultScreen';
 
+// 숨 블러는 Skia 네이티브 렌더링이라 그리지 않음 (장식이라 화면 동작과 무관)
+jest.mock('@shopify/react-native-skia', () => ({
+  Canvas: () => null,
+  Circle: () => null,
+  Blur: () => null,
+  Group: () => null,
+  RadialGradient: () => null,
+  vec: (x: number, y: number) => ({ x, y }),
+}));
+
 beforeEach(() => jest.useFakeTimers());
 afterEach(() => jest.useRealTimers());
 
@@ -16,6 +26,7 @@ const renderResult = async (recommendations = CHECKUP_RECOMMEND_SAMPLE.netflix) 
       'checkup/[id]/result': () => (
         <CheckupResultScreen
           subscription={netflix}
+          usage={28}
           categorySubscriptions={[{ ...netflix, cycle: 1, unit: '개월' }]}
           recommendations={recommendations}
         />

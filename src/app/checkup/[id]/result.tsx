@@ -20,6 +20,8 @@ export default function CheckupResultRoute() {
   return (
     <CheckupResultScreen
       subscription={subscription}
+      // shortcut: 활용도 계산 전이라 Figma 예시값, 점검 결과 API 연동 시 응답값으로 교체
+      usage={98}
       categorySubscriptions={categorySubscriptions}
       recommendations={CHECKUP_RECOMMEND_SAMPLE[subscription.id] ?? []}
     />
