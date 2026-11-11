@@ -17,25 +17,42 @@ import { Badge } from '@/components/common/Badge';
 import { BottomSheet } from '@/components/common/BottomSheet';
 import { Button } from '@/components/common/Button';
 import { Dial } from '@/components/common/Dial';
+import { ListItem } from '@/components/common/ListItem';
 import { TopBar } from '@/components/common/TopBar';
+import { PAID_AT, type PaymentInfo } from '@/constants/services';
 import { cn } from '@/utils/cn';
-import { formatWon } from '@/utils/formatPayment';
+import { formatCycle, formatWon } from '@/utils/formatPayment';
 
 const LOGO = require('@/assets/images/logo_placeholder.png');
 
-type DayPayment = CalendarDaySubscription & { amount: number };
+type DayPayment = CalendarDaySubscription &
+  Pick<PaymentInfo, 'cycle' | 'unit' | 'paidAt'> & { amount: number };
+
+const pay = (
+  id: string,
+  name: string,
+  category: DayPayment['category'],
+  amount: number,
+  paidAt: DayPayment['paidAt'],
+): DayPayment => ({ id, name, category, logo: LOGO, amount, cycle: 1, unit: '개월', paidAt });
 
 // shortcut: 렌더 확인용 샘플 결제일이라 모든 달에 같은 날짜로 보임, 캘린더 API 연동 시 API 훅으로 교체
+// Figma C-01·C-02 예시 (이번 달 합계 142,400원, 17일 3건 · 57,400원)
 const SAMPLE: Record<number, DayPayment[]> = {
-  3: [{ id: 'notion', name: '노션', category: 'productivity', logo: LOGO, amount: 14000 }],
-  8: [{ id: 'figma', name: '피그마', category: 'productivity', logo: LOGO, amount: 22000 }],
-  12: [{ id: 'claude', name: '클로드', category: 'productivity', logo: LOGO, amount: 29000 }],
+  3: [pay('notion', '노션', 'productivity', 14000, 'web')],
+  8: [pay('figma', '피그마', 'productivity', 22000, 'web')],
+  12: [pay('claude', '클로드', 'productivity', 29000, 'appstore')],
   17: [
-    { id: 'netflix', name: '넷플릭스', category: 'ott', logo: LOGO, amount: 13500 },
-    { id: 'youtube', name: '유튜브 프리미엄', category: 'ott', logo: LOGO, amount: 14900 },
-    { id: 'tving', name: '티빙', category: 'ott', logo: LOGO, amount: 9500 },
+    pay('netflix', '넷플릭스', 'ott', 13500, 'appstore'),
+    pay('youtube', '유튜브 프리미엄', 'ott', 14900, 'playstore'),
+    pay('chatgpt', 'ChatGPT Plus', 'productivity', 29000, 'web'),
   ],
-  22: [{ id: 'adobe', name: '어도비', category: 'productivity', logo: LOGO, amount: 39500 }],
+  22: [pay('adobe', '어도비', 'productivity', 6600, 'web')],
+  28: [
+    pay('melon', '멜론', 'music', 4500, 'appstore'),
+    pay('coupang', '쿠팡 와우', 'shopping', 4990, 'web'),
+    pay('wavve', '웨이브', 'ott', 3910, 'playstore'),
+  ],
 };
 const MONTH_TOTAL = Object.values(SAMPLE)
   .flat()
@@ -226,17 +243,33 @@ export const CalendarScreen = () => {
           </View>
         </GestureDetector>
 
-        <View className="mt-s20 gap-s8 px-screen-x">
+        <View className={cn('mt-s20 px-screen-x', payments.length ? 'gap-stack-md' : 'gap-s8')}>
           <View className="flex-row items-center justify-between">
             <Text className="text-text-primary text-head4-bold">
               {selected.getMonth() + 1}월 {selected.getDate()}일 ({WEEKDAYS[selected.getDay()]})
             </Text>
-            {/* shortcut: 결제 있는 날 상세는 디자인이 아직 없어 결제 없는 날만 그림, 디자인 나오면 추가 */}
-            {payments.length === 0 && (
-              <Text className="text-text-secondary text-body3-regular">결제 없음</Text>
-            )}
+            <Text className="text-text-secondary text-body3-regular">
+              {payments.length
+                ? `${payments.length}건 · ${formatWon(payments.reduce((sum, p) => sum + p.amount, 0))}`
+                : '결제 없음'}
+            </Text>
           </View>
-          {payments.length === 0 && (
+          {payments.length ? (
+            <View className="gap-stack-sm">
+              {payments.map((p) => (
+                <ListItem
+                  key={p.id}
+                  title={p.name}
+                  subtitle={`${formatCycle(p.cycle, p.unit)} · ${PAID_AT.find((a) => a.value === p.paidAt)?.label}`}
+                  showSubtitle
+                  logo={p.logo}
+                  showLogo
+                  cost={formatWon(p.amount)}
+                  showCost
+                />
+              ))}
+            </View>
+          ) : (
             <Text className="text-text-tertiary text-body2-regular">
               {sameDay(selected, today) && '오늘은 '}결제 예정인 구독이 없어요
             </Text>
