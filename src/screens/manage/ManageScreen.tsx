@@ -193,7 +193,7 @@ export const ManageScreen = ({
                         showSubtitle
                         logo={LOGO}
                         showLogo
-                        cost={formatWon(s.amount)}
+                        cost={formatWon(tab === 'active' ? s.amount : monthly(s))}
                         showCost
                         showCheckBox
                         checked={picked.includes(s.id)}
@@ -209,7 +209,7 @@ export const ManageScreen = ({
                       showSubtitle
                       logo={LOGO}
                       showLogo
-                      cost={formatWon(s.amount)}
+                      cost={formatWon(tab === 'active' ? s.amount : monthly(s))}
                       showCost
                       iconRightAction={{
                         accessibilityLabel: `${s.name} 상세`,
