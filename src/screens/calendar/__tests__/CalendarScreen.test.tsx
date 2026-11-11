@@ -1,4 +1,5 @@
 import { act, render, screen, userEvent } from '@testing-library/react-native';
+import { renderRouter } from 'expo-router/testing-library';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   createGestureController,
@@ -128,4 +129,24 @@ it('결제 있는 날을 누르면 건수·합계와 결제 목록이 보인다'
   expect(screen.getByText('매월 · Google Play')).toBeOnTheScreen();
   expect(screen.getByText('29,000원')).toBeOnTheScreen();
   expect(screen.queryByText('결제 없음')).not.toBeOnTheScreen();
+});
+
+it('결제 목록 행을 누르면 그 결제 상세로 이동한다', async () => {
+  await renderRouter(
+    {
+      index: () => (
+        <GestureHandlerRootView>
+          <CalendarScreen />
+        </GestureHandlerRootView>
+      ),
+      'calendar/detail/[id]': () => null,
+    },
+    { initialUrl: '/' },
+  );
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+  await user.press(screen.getByRole('button', { name: /^17(\s|$)/ }));
+  await user.press(screen.getByRole('button', { name: '넷플릭스 상세' }));
+
+  expect(screen).toHavePathname('/calendar/detail/netflix');
 });
