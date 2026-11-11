@@ -58,4 +58,26 @@ describe('ManageScreen', () => {
     expect(screen.getByText('월 7,900원 절약')).toBeOnTheScreen();
     expect(screen.getByText('10월 10일 해지 · 총 지출 47,400원')).toBeOnTheScreen();
   });
+
+  it('더보기 → 삭제로 고른 구독만 확인 모달을 거쳐 목록에서 지운다', async () => {
+    const user = await renderManage({ active, ended });
+
+    await user.press(screen.getByRole('button', { name: '더보기' }));
+    await user.press(screen.getByRole('menuitem', { name: '삭제' }));
+    // 아무것도 안 골랐으면 삭제 못 함
+    expect(screen.getByRole('button', { name: '선택한 구독 삭제' })).toBeDisabled();
+
+    // 행 어디를 눌러도 체크
+    await user.press(screen.getByText('빠른 결제'));
+    expect(screen.getByText('1개 선택')).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: '선택한 구독 삭제' }));
+    expect(screen.getByText('구독 1개를 삭제할까요?')).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: '삭제하기' }));
+
+    expect(screen.queryByText('빠른 결제')).not.toBeOnTheScreen();
+    expect(screen.getByText('늦은 결제')).toBeOnTheScreen();
+    expect(screen.getByRole('tab', { name: '구독 중 1' })).toBeOnTheScreen();
+    // 삭제가 끝나면 선택 모드에서 빠짐
+    expect(screen.getByText('월 10,000원')).toBeOnTheScreen();
+  });
 });
