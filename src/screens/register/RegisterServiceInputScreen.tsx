@@ -12,7 +12,13 @@ import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { TextField } from '@/components/common/TextField';
 import { TopBar } from '@/components/common/TopBar';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
-import { type FoundSubscription, PAID_AT, type PaidAt, SERVICES } from '@/constants/services';
+import {
+  type FoundSubscription,
+  PAID_AT,
+  type PaidAt,
+  type PaymentInfo,
+  SERVICES,
+} from '@/constants/services';
 import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 
@@ -43,12 +49,15 @@ interface RegisterServiceInputScreenProps {
   found?: FoundSubscription;
   // 불러온 구독 확인의 구독 추가하기에서 직접 입력으로 왔으면 그 화면으로 바로 돌아감
   more?: boolean;
+  // 지난 구독 재등록(M-05): 기존 정보로 채운 새 직접 입력
+  prefill?: Partial<PaymentInfo>;
 }
 
 export const RegisterServiceInputScreen = ({
   serviceId,
   found,
   more = false,
+  prefill,
 }: RegisterServiceInputScreenProps) => {
   const service = SERVICES.find((s) => s.id === serviceId);
   // 사전 등록 서비스(A-03)만 서비스명 잠금, 직접 입력·불러온 구독은 서비스명도 입력·수정
@@ -57,8 +66,8 @@ export const RegisterServiceInputScreen = ({
   const setPayment = useRegisterDraft((s) => s.setPayment);
   // 이미 저장한 값이 있으면 이어서 수정
   const saved = serviceId ? payments[serviceId] : undefined;
-  const init = saved ?? found?.payment;
-  const [name, setName] = useState(saved?.name ?? '');
+  const init = saved ?? found?.payment ?? prefill;
+  const [name, setName] = useState(saved?.name ?? prefill?.name ?? '');
   const [category, setCategory] = useState<string | undefined>(
     init?.category ?? (found ? undefined : (service?.category ?? '기타')),
   );

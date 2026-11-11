@@ -159,9 +159,12 @@ export const EndedSubscriptionDetailScreen = ({
           )}
         </View>
       </ScrollView>
-      {/* shortcut: 이 서비스를 채운 직접 입력 화면이 아직 없어 구독 추가 첫 화면으로 */}
+      {/* 기존 정보를 채운 구독 정보 입력으로. 저장하면 새 직접 입력처럼 선택한 구독(A-04)에 들어감 */}
       <View className="px-screen-x pb-stack-lg pt-stack-md">
-        <Cta label="재등록하기" onPress={() => router.push('/register')} />
+        <Cta
+          label="재등록하기"
+          onPress={() => router.push({ pathname: '/register/input', params: { reregister: s.id } })}
+        />
       </View>
     </View>
   );
