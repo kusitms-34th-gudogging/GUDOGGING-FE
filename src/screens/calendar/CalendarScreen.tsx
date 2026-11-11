@@ -20,19 +20,12 @@ import { Button } from '@/components/common/Button';
 import { Dial } from '@/components/common/Dial';
 import { ListItem } from '@/components/common/ListItem';
 import { TopBar } from '@/components/common/TopBar';
-import { CALENDAR_SAMPLE, type CalendarPayment } from '@/constants/calendar';
+import type { CalendarPayment } from '@/constants/calendar';
 import { PAID_AT } from '@/constants/services';
+import { useCalendarPayments } from '@/hooks/useCalendarPayments';
 import { cn } from '@/utils/cn';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
-
-// 날짜(일)별 결제
-const SAMPLE = CALENDAR_SAMPLE.reduce<Record<number, CalendarPayment[]>>((byDay, p) => {
-  (byDay[p.day] ??= []).push(p);
-  return byDay;
-}, {});
-const MONTH_TOTAL = Object.values(SAMPLE)
-  .flat()
-  .reduce((sum, p) => sum + p.amount, 0);
+import { paysOn } from '@/utils/paymentSchedule';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const SWIPE_DISTANCE = 50;
@@ -54,6 +47,19 @@ const monthCells = (month: Date) => {
 };
 
 const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+const sumOf = (list: CalendarPayment[]) => list.reduce((sum, p) => sum + p.amount, 0);
+const ymd = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+// 오늘이 속한 달의 결제 합계 (CAL-001: 다른 달로 이동해도 바뀌지 않음)
+const monthTotal = (payments: CalendarPayment[], today: Date) => {
+  const days = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  return Array.from({ length: days }, (_, i) =>
+    sumOf(
+      payments.filter((p) => paysOn(p, new Date(today.getFullYear(), today.getMonth(), i + 1))),
+    ),
+  ).reduce((a, b) => a + b, 0);
+};
 
 interface MonthPanelProps {
   page: number;
@@ -62,6 +68,7 @@ interface MonthPanelProps {
   current: boolean;
   today: Date;
   selected: Date;
+  payments: CalendarPayment[];
   onSelect: (date: Date) => void;
 }
 
@@ -73,6 +80,7 @@ const MonthPanel = ({
   current,
   today,
   selected,
+  payments,
   onSelect,
 }: MonthPanelProps) => {
   const month = monthOf(page);
@@ -96,7 +104,7 @@ const MonthPanel = ({
               <CalendarDay
                 key={d.toISOString()}
                 date={d.getDate()}
-                subscriptions={SAMPLE[d.getDate()]}
+                subscriptions={inMonth ? payments.filter((p) => paysOn(p, d)) : undefined}
                 today={sameDay(d, today)}
                 selected={inMonth && sameDay(d, selected)}
                 disabled={!inMonth}
@@ -119,7 +127,8 @@ export const CalendarScreen = () => {
   const [selected, setSelected] = useState(today);
   const month = monthOf(page);
   const weeks = monthCells(month).length / 7;
-  const payments = SAMPLE[selected.getDate()] ?? [];
+  const allPayments = useCalendarPayments((s) => s.payments);
+  const payments = allPayments.filter((p) => paysOn(p, selected));
 
   // 이전·현재·다음 달을 나란히 두고 같이 미는 방식 (Swiper). 놓으면 옆 달이 바로 따라 들어와 빈 화면이 없음
   // 이미 그려진 달은 자리가 안 바뀌고 offset만 움직여서, 달이 바뀌는 순간에도 깜빡이지 않음
@@ -134,6 +143,12 @@ export const CalendarScreen = () => {
   const goTo = (date: Date) => {
     setPage(pageOf(date));
     setSelected(date);
+  };
+
+  // 스와이프로 다른 달에 가면 1일 선택, 오늘이 속한 달로 돌아오면 오늘 선택 (CAL-002)
+  const moveToPage = (p: number) => {
+    setPage(p);
+    setSelected(p === pageOf(today) ? today : monthOf(p));
   };
 
   // 연월 제목을 누르면 날짜 선택 시트. 열 때마다 오늘부터 고름 (Figma C-01 연월 클릭시)
@@ -167,7 +182,7 @@ export const CalendarScreen = () => {
           -(from + dir) * width,
           { duration: motion.transition, easing: Easing.bezier(...motion['ease-move']) },
           (finished) => {
-            if (finished) scheduleOnRN(setPage, from + dir);
+            if (finished && dir) scheduleOnRN(moveToPage, from + dir);
           },
         ),
       );
@@ -190,7 +205,10 @@ export const CalendarScreen = () => {
                 {month.getFullYear()}년 {month.getMonth() + 1}월
               </Text>
             </Pressable>
-            <Badge variant="tonal" label={`이번 달 결제 합계 ${formatWon(MONTH_TOTAL)}`} />
+            <Badge
+              variant="tonal"
+              label={`이번 달 결제 합계 ${formatWon(monthTotal(allPayments, today))}`}
+            />
           </View>
           <View className="pr-s4">
             <Button variant="tonal" size="sm" label="오늘" onPress={() => goTo(today)} />
@@ -212,6 +230,7 @@ export const CalendarScreen = () => {
                   current={p === page}
                   today={today}
                   selected={selected}
+                  payments={allPayments}
                   onSelect={setSelected}
                 />
               ))}
@@ -226,7 +245,7 @@ export const CalendarScreen = () => {
             </Text>
             <Text className="text-text-secondary text-body3-regular">
               {payments.length
-                ? `${payments.length}건 · ${formatWon(payments.reduce((sum, p) => sum + p.amount, 0))}`
+                ? `${payments.length}건 · ${formatWon(sumOf(payments))}`
                 : '결제 없음'}
             </Text>
           </View>
@@ -244,7 +263,7 @@ export const CalendarScreen = () => {
                   showCost
                   iconRightAction={{
                     accessibilityLabel: `${p.name} 상세`,
-                    onPress: () => router.push(`/calendar/detail/${p.id}`),
+                    onPress: () => router.push(`/calendar/detail/${p.id}?date=${ymd(selected)}`),
                   }}
                 />
               ))}
@@ -263,13 +282,8 @@ export const CalendarScreen = () => {
         confirmLabel="확인"
         onConfirm={() => goTo(draftDate)}
       >
-        {/* shortcut: 지난 달도 볼 수 있게 앞뒤 10년, 범위가 정해지면 맞춤 */}
-        <Dial
-          value={draftDate}
-          onValueChange={setDraftDate}
-          minYear={today.getFullYear() - 10}
-          maxYear={today.getFullYear() + 10}
-        />
+        {/* 선택 가능한 연도 2024~2028 (CAL-001 바텀시트) */}
+        <Dial value={draftDate} onValueChange={setDraftDate} minYear={2024} maxYear={2028} />
       </BottomSheet>
     </View>
   );

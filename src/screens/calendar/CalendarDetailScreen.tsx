@@ -11,11 +11,12 @@ import { Modal } from '@/components/common/Modal';
 import { MoreMenu } from '@/components/common/MoreMenu';
 import { TextArea } from '@/components/common/TextArea';
 import { TopBar } from '@/components/common/TopBar';
-import { type CalendarPayment, nextPaymentDate } from '@/constants/calendar';
+import type { CalendarPayment } from '@/constants/calendar';
 import { PAID_AT } from '@/constants/services';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
 import { monthly } from '@/utils/homeSummary';
 import { fillName } from '@/utils/josa';
+import { nextPaymentAfter } from '@/utils/paymentSchedule';
 
 const monthDay = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
 const fullDate = (d: Date) => `${d.getFullYear()}년 ${monthDay(d)}`;
@@ -27,10 +28,14 @@ const InfoRow = ({ title, value }: { title: string; value: string }) => (
 
 interface CalendarDetailScreenProps {
   payment: CalendarPayment;
+  // 캘린더에서 고른 결제 날짜. 다음 결제일을 이 날짜 기준으로 계산 (CAL-003)
+  date: Date;
+  // 삭제하기: 구독과 점검 기록을 지우고 캘린더로 돌아감 (C-04)
+  onDelete: () => void;
 }
 
 // C-03 캘린더 결제 일정 상세
-export const CalendarDetailScreen = ({ payment: p }: CalendarDetailScreenProps) => {
+export const CalendarDetailScreen = ({ payment: p, date, onDelete }: CalendarDetailScreenProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const close = () => setMenuOpen(false);
@@ -60,8 +65,7 @@ export const CalendarDetailScreen = ({ payment: p }: CalendarDetailScreenProps) 
           },
         ]}
       />
-      {/* C-04 삭제되면 캘린더로 돌아감 (Figma 메모)
-          shortcut: 삭제 API가 없어 샘플에서 지워지지 않음, 연동 시 삭제 후 캘린더 목록 다시 불러오기 */}
+      {/* C-04 삭제 확인. 삭제 완료 토스트 없음 (화면설계서) */}
       <Modal
         visible={deleteOpen}
         onClose={() => setDeleteOpen(false)}
@@ -70,7 +74,7 @@ export const CalendarDetailScreen = ({ payment: p }: CalendarDetailScreenProps) 
         description="삭제하면 모든 정보가 사라져요."
         cancelLabel="취소"
         confirmLabel="삭제하기"
-        onConfirm={() => router.back()}
+        onConfirm={onDelete}
       />
       <ScrollView contentContainerClassName="gap-s20 pb-[14px] pt-stack-md">
         <View className="gap-stack-md px-screen-x">
@@ -95,7 +99,7 @@ export const CalendarDetailScreen = ({ payment: p }: CalendarDetailScreenProps) 
               결제
             </Text>
             <View>
-              <InfoRow title="다음 결제일" value={monthDay(nextPaymentDate(p.day))} />
+              <InfoRow title="다음 결제일" value={monthDay(nextPaymentAfter(p, date))} />
               <InfoRow title="결제 주기" value={formatCycle(p.cycle, p.unit)} />
               <InfoRow
                 title="결제한 곳"

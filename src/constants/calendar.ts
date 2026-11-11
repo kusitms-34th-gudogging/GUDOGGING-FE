@@ -6,8 +6,6 @@ import type { HomeSubscription } from '@/utils/homeSummary';
 // 캘린더 결제 일정 한 건 (C-01·C-02 날짜 칸·목록, C-03 상세)
 export interface CalendarPayment
   extends CalendarDaySubscription, Pick<HomeSubscription, 'amount' | 'cycle' | 'unit'> {
-  // 매달 결제되는 날
-  day: number;
   categoryLabel: string;
   paidAt: PaidAt;
   startedAt: Date;
@@ -30,9 +28,8 @@ const pay = (
   categoryLabel: string,
   amount: number,
   paidAt: PaidAt,
-  extra?: Pick<CalendarPayment, 'lastCheckup'>,
+  extra?: Partial<Pick<CalendarPayment, 'lastCheckup' | 'cycle' | 'startedAt'>>,
 ): CalendarPayment => ({
-  day,
   id,
   name,
   categoryLabel,
@@ -42,7 +39,8 @@ const pay = (
   cycle: 1,
   unit: '개월',
   paidAt,
-  startedAt: new Date(2026, 6, day),
+  // 기본은 작년 7월 시작 매월 결제 → 2026년 어느 달을 봐도 그날 결제가 보임
+  startedAt: new Date(2025, 6, day),
   ...extra,
 });
 
@@ -65,9 +63,10 @@ const checkup = (
   },
 });
 
-// shortcut: 렌더 확인용 샘플이라 모든 달 같은 날짜에 보임, 캘린더 API 연동 시 API 훅으로 교체
-// Figma C-01~C-03 예시 (이번 달 합계 142,400원, 17일 3건 · 57,400원, 넷플릭스 상세)
+// shortcut: 렌더 확인용 샘플, 캘린더 API 연동 시 API 훅(useCalendarPayments)에서 받아옴
+// Figma C-01~C-03 예시 (2026년 10·11월 합계 142,400원, 17일 3건 · 57,400원, 넷플릭스 상세)
 // 점검 없는 상세도 확인하도록 유튜브 프리미엄·웨이브는 점검 기록 없음
+// 결제 주기 계산 확인용: 넷플릭스는 2026년 7월 시작(이전 달엔 없음), 웨이브는 3개월마다
 export const CALENDAR_SAMPLE: CalendarPayment[] = [
   pay(
     3,
@@ -120,14 +119,10 @@ export const CALENDAR_SAMPLE: CalendarPayment[] = [
       '코드 리뷰에 매일 씀',
     ),
   ),
-  pay(
-    17,
-    'netflix',
-    '넷플릭스',
-    '영상·OTT',
-    13500,
-    'appstore',
-    checkup(
+  pay(17, 'netflix', '넷플릭스', '영상·OTT', 13500, 'appstore', {
+    // Figma C-03 구독 시작일
+    startedAt: new Date(2026, 6, 17),
+    ...checkup(
       10,
       3,
       '유지 추천(92%)',
@@ -136,7 +131,7 @@ export const CALENDAR_SAMPLE: CalendarPayment[] = [
       '꼭 볼 작품이 있어요',
       '시즌 3 공개돼서 이번 달은 유지할 생각임',
     ),
-  ),
+  }),
   pay(17, 'youtube', '유튜브 프리미엄', '영상·OTT', 14900, 'playstore'),
   pay(
     17,
@@ -206,13 +201,8 @@ export const CALENDAR_SAMPLE: CalendarPayment[] = [
       '배달비 무료라 주말마다 씀',
     ),
   ),
-  pay(28, 'wavve', '웨이브', '영상·OTT', 3910, 'playstore'),
+  pay(28, 'wavve', '웨이브', '영상·OTT', 3910, 'playstore', {
+    cycle: 3,
+    startedAt: new Date(2026, 7, 28),
+  }),
 ];
-
-// 오늘 이후(오늘 포함) 처음 오는 결제일
-export const nextPaymentDate = (day: number, today = new Date()) => {
-  const thisMonth = new Date(today.getFullYear(), today.getMonth(), day);
-  return thisMonth >= new Date(today.getFullYear(), today.getMonth(), today.getDate())
-    ? thisMonth
-    : new Date(today.getFullYear(), today.getMonth() + 1, day);
-};
