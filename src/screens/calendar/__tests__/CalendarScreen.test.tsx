@@ -7,6 +7,9 @@ import {
 
 import { CalendarScreen } from '@/screens/calendar/CalendarScreen';
 
+// 시트 애니메이션·제스처는 네이티브라 라이브러리 mock으로 내용만 렌더
+jest.mock('@gorhom/bottom-sheet', () => jest.requireActual('@gorhom/bottom-sheet/mock'));
+
 beforeEach(() => {
   jest.useFakeTimers();
   // 화면이 이번 달 기준이라 날짜 고정 (2026년 11월 12일)
@@ -42,7 +45,7 @@ it('오늘 버튼을 누르면 오늘 날짜가 다시 선택된다', async () =
 
   await user.press(screen.getByRole('button', { name: '20' }));
   await user.press(screen.getByRole('button', { name: '오늘' }));
-  expect(screen.getByRole('button', { name: /^12/ })).toBeSelected();
+  expect(screen.getByRole('button', { name: /^12(\s|$)/ })).toBeSelected();
   expect(screen.getByText('2026년 11월')).toBeOnTheScreen();
 });
 
@@ -60,7 +63,7 @@ it('4주로 끝나는 달은 4주만 그린다', async () => {
 
   expect(screen.getByText('2026년 2월')).toBeOnTheScreen();
   expect(screen.getByRole('button', { name: '28' })).toBeOnTheScreen();
-  expect(screen.queryAllByRole('button', { name: /^\d/ })).toHaveLength(28);
+  expect(screen.queryAllByRole('button', { name: /^\d+(\s|$)/ })).toHaveLength(28);
 });
 
 it('6주에 걸치는 달은 앞뒤 다른 달 날짜까지 6주를 그린다', async () => {
@@ -68,7 +71,7 @@ it('6주에 걸치는 달은 앞뒤 다른 달 날짜까지 6주를 그린다', 
   jest.setSystemTime(new Date(2026, 7, 1));
   await render(<CalendarScreen />, { wrapper: GestureHandlerRootView });
 
-  expect(screen.queryAllByRole('button', { name: /^\d/ })).toHaveLength(42);
+  expect(screen.queryAllByRole('button', { name: /^\d+(\s|$)/ })).toHaveLength(42);
   expect(screen.getAllByRole('button', { name: '26' })[0]).toBeDisabled();
   expect(screen.getAllByRole('button', { name: '5' }).at(-1)).toBeDisabled();
 });
@@ -93,4 +96,23 @@ it('날짜 영역을 왼쪽으로 밀면 다음 달, 오른쪽으로 밀면 이�
 
   await act(() => swipe(-30));
   expect(screen.getByText('2026년 10월')).toBeOnTheScreen();
+});
+
+it('연월을 누르면 날짜 선택 시트가 뜨고 확인하면 고른 날짜로 이동한다', async () => {
+  await render(<CalendarScreen />, { wrapper: GestureHandlerRootView });
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+  const pan = createGestureController(getByGestureTestId('calendar-swipe'));
+  await act(() => {
+    pan.begin();
+    pan.activate({ translationX: -80 });
+    pan.end({ translationX: -80 });
+    jest.advanceTimersByTime(1000);
+  });
+  await user.press(screen.getByRole('button', { name: '2026년 12월' }));
+
+  expect(screen.getByText('이동할 날짜를 선택해 주세요.')).toBeOnTheScreen();
+  // 시트는 오늘(11월 12일)로 열림
+  await user.press(screen.getByRole('button', { name: '확인' }));
+  expect(screen.getByText('2026년 11월')).toBeOnTheScreen();
+  expect(screen.getByRole('button', { name: /^12(\s|$)/ })).toBeSelected();
 });
