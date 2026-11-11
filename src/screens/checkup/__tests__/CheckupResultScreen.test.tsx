@@ -56,7 +56,7 @@ describe('CheckupResultScreen', () => {
     await renderResult();
     expect(screen.getByText('같은 넷플릭스, 더 싸게')).toBeOnTheScreen();
 
-    screen.unmount();
+    await screen.unmount();
     await renderResult([]);
     expect(screen.queryByText('같은 넷플릭스, 더 싸게')).not.toBeOnTheScreen();
   });
