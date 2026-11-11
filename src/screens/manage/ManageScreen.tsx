@@ -8,9 +8,11 @@ import { FloatingButton } from '@/components/common/FloatingButton';
 import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { MoreMenu } from '@/components/manage/MoreMenu';
 import { MANAGE_SAMPLE } from '@/constants/manage';
+import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/cn';
 import { formatWon } from '@/utils/formatPayment';
 import { daysUntil, type HomeSubscription, monthly } from '@/utils/homeSummary';
@@ -51,6 +53,7 @@ export const ManageScreen = ({
   // shortcut: 삭제는 화면 안 목록에서만 빠짐, 구독 삭제 API 연동 시 호출 후 목록 다시 불러오기
   const [lists, setLists] = useState({ active, ended });
   const [tab, setTab] = useState<Tab>('active');
+  const { show } = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState<string[]>([]);
@@ -69,6 +72,7 @@ export const ManageScreen = ({
       active: tab === 'active' ? l.active.filter((s) => !picked.includes(s.id)) : l.active,
       ended: tab === 'ended' ? l.ended.filter((s) => !picked.includes(s.id)) : l.ended,
     }));
+    show({ type: 'success', message: `구독 ${picked.length}개를 삭제했어요` });
     stopSelecting();
   };
 
@@ -221,19 +225,24 @@ export const ManageScreen = ({
               </View>
             </View>
           </ScrollView>
-          {/* 탭바(하단 안전 영역 + 4 + 52) 위 18 */}
-          <View
-            pointerEvents="box-none"
-            className="pb-safe absolute inset-x-0 bottom-0 items-end px-screen-x"
-          >
+        </>
+      )}
+      {/* 탭바(하단 안전 영역 + 4 + 52) 위 18에 + 버튼, 그 위 8에 토스트. 구독이 없으면 + 버튼 자리만 비움 */}
+      <View pointerEvents="box-none" className="pb-safe absolute inset-x-0 bottom-0">
+        <View pointerEvents="box-none">
+          <ToastOutlet className="bottom-0 pb-stack-sm" />
+        </View>
+        <View pointerEvents="box-none" className="mb-[74px] items-end px-screen-x">
+          {isEmpty ? (
+            <View className="size-s48" />
+          ) : (
             <FloatingButton
               accessibilityLabel="구독 추가"
               onPress={() => router.push('/register')}
-              className="mb-[74px]"
             />
-          </View>
-        </>
-      )}
+          )}
+        </View>
+      </View>
       <Modal
         visible={confirmOpen}
         onClose={() => setConfirmOpen(false)}
