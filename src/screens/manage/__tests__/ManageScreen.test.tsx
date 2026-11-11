@@ -1,7 +1,9 @@
 import { userEvent } from '@testing-library/react-native';
+import { Slot } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
 import SubscriptionDetailRoute from '@/app/manage/detail/[id]';
+import { ToastProvider } from '@/components/common/ToastProvider';
 import { type EndedSubscription, ManageScreen } from '@/screens/manage/ManageScreen';
 import type { HomeSubscription } from '@/utils/homeSummary';
 
@@ -15,17 +17,26 @@ const ended: EndedSubscription[] = [
   {
     id: 'c',
     name: '왓챠',
-    amount: 7900,
+    // 연 결제: 목록·합계 모두 월 환산(94,800 / 12 = 7,900)
+    amount: 94800,
     cycle: 1,
-    unit: '개월',
+    unit: '년',
     cancelledAt: day(10),
     totalSpent: 47400,
   },
 ];
 
+// 삭제 완료 토스트용 (앱에선 루트 레이아웃이 감쌈)
+const ToastLayout = () => (
+  <ToastProvider>
+    <Slot />
+  </ToastProvider>
+);
+
 const renderManage = async (props: Parameters<typeof ManageScreen>[0]) => {
   await renderRouter(
     {
+      _layout: ToastLayout,
       index: () => <ManageScreen {...props} />,
       'register/index': () => null,
       'manage/detail/[id]': () => null,
@@ -61,6 +72,7 @@ describe('ManageScreen', () => {
     await user.press(screen.getByRole('tab', { name: '구독 종료 1' }));
 
     expect(screen.getByText('월 7,900원 절약')).toBeOnTheScreen();
+    expect(screen.getByText('7,900원')).toBeOnTheScreen();
     expect(screen.getByText('10월 10일 해지 · 총 지출 47,400원')).toBeOnTheScreen();
   });
 
@@ -82,6 +94,7 @@ describe('ManageScreen', () => {
     expect(screen.queryByText('빠른 결제')).not.toBeOnTheScreen();
     expect(screen.getByText('늦은 결제')).toBeOnTheScreen();
     expect(screen.getByRole('tab', { name: '구독 중 1' })).toBeOnTheScreen();
+    expect(screen.getByText('구독 1개를 삭제했어요')).toBeOnTheScreen();
     // 삭제가 끝나면 선택 모드에서 빠짐
     expect(screen.getByText('월 10,000원')).toBeOnTheScreen();
   });
@@ -105,7 +118,11 @@ describe('ManageScreen', () => {
 
   it('상세 경로는 같은 id 체계에서 구독 상태에 따라 구독 중·지난 구독 화면을 고른다', async () => {
     await renderRouter(
-      { index: () => <ManageScreen />, 'manage/detail/[id]': SubscriptionDetailRoute },
+      {
+        _layout: ToastLayout,
+        index: () => <ManageScreen />,
+        'manage/detail/[id]': SubscriptionDetailRoute,
+      },
       { initialUrl: '/' },
     );
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
