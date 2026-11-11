@@ -1,4 +1,6 @@
-import { render, screen, userEvent } from '@testing-library/react-native';
+import { act, render, screen, userEvent } from '@testing-library/react-native';
+import { router } from 'expo-router';
+import { renderRouter, screen as routerScreen } from 'expo-router/testing-library';
 
 import { CALENDAR_SAMPLE } from '@/constants/calendar';
 import { CalendarDetailScreen } from '@/screens/calendar/CalendarDetailScreen';
@@ -45,4 +47,37 @@ it('더보기를 누르면 편집·삭제 메뉴가 보인다', async () => {
 
   expect(screen.getByText('편집')).toBeOnTheScreen();
   expect(screen.getByText('삭제')).toBeOnTheScreen();
+});
+
+it('삭제를 누르면 확인 모달이 뜨고, 취소하면 그대로 남는다', async () => {
+  await render(<CalendarDetailScreen payment={find('netflix')} />);
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+  await user.press(screen.getByRole('button', { name: '더보기' }));
+  await user.press(screen.getByText('삭제'));
+  // 받침 없는 이름은 '를'
+  expect(screen.getByText('넷플릭스를 삭제할까요?')).toBeOnTheScreen();
+
+  await user.press(screen.getByRole('button', { name: '취소' }));
+  expect(screen.queryByText('넷플릭스를 삭제할까요?')).not.toBeOnTheScreen();
+});
+
+it('삭제하기를 누르면 캘린더로 돌아간다', async () => {
+  await renderRouter(
+    {
+      index: () => null,
+      'calendar/detail/[id]': () => <CalendarDetailScreen payment={find('melon')} />,
+    },
+    { initialUrl: '/' },
+  );
+  await act(() => router.push('/calendar/detail/melon'));
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+  await user.press(routerScreen.getByRole('button', { name: '더보기' }));
+  await user.press(routerScreen.getByText('삭제'));
+  // 받침 있는 이름은 '을'
+  expect(routerScreen.getByText('멜론을 삭제할까요?')).toBeOnTheScreen();
+  await user.press(routerScreen.getByRole('button', { name: '삭제하기' }));
+
+  expect(routerScreen).toHavePathname('/');
 });
