@@ -2,7 +2,7 @@ import { Image, Text, View } from 'react-native';
 
 import { Badge } from '@/components/common/Badge';
 
-// 구독 상세(M-03 구독 중 · M-05 지난 구독)가 같이 쓰는 조각
+// 구독 상세(M-03 구독 중 · M-05 지난 구독)와 캘린더 상세(C-03)가 같이 쓰는 조각
 
 const LOGO = require('@/assets/images/logo_placeholder.png');
 
