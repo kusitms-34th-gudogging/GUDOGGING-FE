@@ -6,6 +6,7 @@ import {
   getByGestureTestId,
 } from 'react-native-gesture-handler/jest-utils';
 
+import { useCalendarPayments } from '@/hooks/useCalendarPayments';
 import { CalendarScreen } from '@/screens/calendar/CalendarScreen';
 
 // 시트 애니메이션·제스처는 네이티브라 라이브러리 mock으로 내용만 렌더
@@ -149,4 +150,36 @@ it('결제 목록 행을 누르면 그 결제 상세로 이동한다', async () 
   await user.press(screen.getByRole('button', { name: '넷플릭스 상세' }));
 
   expect(screen).toHavePathname('/calendar/detail/netflix');
+  // 상세가 고른 날짜 기준으로 다음 결제일을 계산하도록 날짜를 넘김
+  expect(screen).toHaveSearchParams({ id: 'netflix', date: '2026-11-17' });
+});
+
+it('스와이프로 다른 달에 가면 1일이 선택되고, 결제 합계 배지는 이번 달 그대로다', async () => {
+  await render(<CalendarScreen />, { wrapper: GestureHandlerRootView });
+  expect(screen.getByText('이번 달 결제 합계 142,400원')).toBeOnTheScreen();
+
+  const pan = createGestureController(getByGestureTestId('calendar-swipe'));
+  await act(() => {
+    pan.begin();
+    pan.activate({ translationX: 80 });
+    pan.end({ translationX: 80 });
+    jest.advanceTimersByTime(1000);
+  });
+
+  expect(screen.getByText('2026년 10월')).toBeOnTheScreen();
+  expect(screen.getByText('10월 1일 (목)')).toBeOnTheScreen();
+  // 10월은 웨이브(3개월마다)가 없어 합계가 다르지만 배지는 오늘(11월) 기준
+  expect(screen.getByText('이번 달 결제 합계 142,400원')).toBeOnTheScreen();
+});
+
+it('삭제한 결제는 캘린더에서 사라진다', async () => {
+  await render(<CalendarScreen />, { wrapper: GestureHandlerRootView });
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+  await act(() => useCalendarPayments.getState().remove('chatgpt'));
+  await user.press(screen.getByRole('button', { name: /^17(\s|$)/ }));
+
+  expect(screen.getByText('2건 · 28,400원')).toBeOnTheScreen();
+  expect(screen.queryByText('ChatGPT Plus')).not.toBeOnTheScreen();
+  expect(screen.getByText('이번 달 결제 합계 113,400원')).toBeOnTheScreen();
 });
