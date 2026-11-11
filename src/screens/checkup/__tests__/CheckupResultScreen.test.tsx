@@ -1,17 +1,36 @@
 import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
-import { CHECKUP_SAMPLE } from '@/constants/checkup';
+import { CHECKUP_RECOMMEND_SAMPLE, CHECKUP_SAMPLE } from '@/constants/checkup';
 import { CheckupResultScreen } from '@/screens/checkup/CheckupResultScreen';
+
+// 숨 블러는 Skia 네이티브 렌더링이라 그리지 않음 (장식이라 화면 동작과 무관)
+jest.mock('@shopify/react-native-skia', () => ({
+  Canvas: () => null,
+  Circle: () => null,
+  Blur: () => null,
+  Group: () => null,
+  RadialGradient: () => null,
+  vec: (x: number, y: number) => ({ x, y }),
+}));
 
 beforeEach(() => jest.useFakeTimers());
 afterEach(() => jest.useRealTimers());
 
-const renderResult = async () => {
+const netflix = CHECKUP_SAMPLE[0];
+
+const renderResult = async (recommendations = CHECKUP_RECOMMEND_SAMPLE.netflix) => {
   await renderRouter(
     {
       index: () => null,
-      'checkup/[id]/result': () => <CheckupResultScreen subscription={CHECKUP_SAMPLE[0]} />,
+      'checkup/[id]/result': () => (
+        <CheckupResultScreen
+          subscription={netflix}
+          usage={28}
+          categorySubscriptions={[{ ...netflix, cycle: 1, unit: '개월' }]}
+          recommendations={recommendations}
+        />
+      ),
       'checkup/[id]/cancel': () => null,
     },
     { initialUrl: '/checkup/netflix/result' },
@@ -31,5 +50,14 @@ describe('CheckupResultScreen', () => {
 
     await user.press(screen.getByRole('button', { name: '유지하기' }));
     expect(screen).toHavePathname('/');
+  });
+
+  it('추천 상품이 없으면 더 싸게 영역을 숨긴다', async () => {
+    await renderResult();
+    expect(screen.getByText('같은 넷플릭스, 더 싸게')).toBeOnTheScreen();
+
+    await screen.unmount();
+    await renderResult([]);
+    expect(screen.queryByText('같은 넷플릭스, 더 싸게')).not.toBeOnTheScreen();
   });
 });

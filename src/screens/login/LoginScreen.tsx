@@ -116,7 +116,7 @@ export const LoginScreen = ({ onLogin, onLoggedIn }: LoginScreenProps) => {
         </Animated.View>
       </View>
 
-      <View className="gap-inline-sm px-screen-x pb-s16 pt-[66px]">
+      <View className="gap-inline-sm px-screen-x pb-s16 pt-[43px]">
         <View className="gap-stack-md">
           <SocialLoginButton provider="apple" onPress={() => handleLogin('apple')} />
           <SocialLoginButton provider="google" onPress={() => handleLogin('google')} />

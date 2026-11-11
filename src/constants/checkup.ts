@@ -246,3 +246,52 @@ export const CHECKUP_SAMPLE: CheckupSubscription[] = [
   },
   { id: 'icloud', name: 'iCloud+', amount: 1100, nextDate: new Date(2026, 10, 2) },
 ];
+
+// K-80 "같은 {서비스명}, 더 싸게" 추천 카드
+export interface CheckupRecommendation {
+  id: string;
+  title: string;
+  // 포함 내용 (예: 넷플릭스 + 유튜브 프리미엄)
+  subtitle: string;
+  // 제공사 유형 · 핵심 조건
+  tags: [string, string];
+  // 월 절감액. upTo면 '최대 N원' (카드 할인 등 금액이 확정되지 않을 때)
+  saving: number;
+  upTo?: boolean;
+  // 지금 내는 월 금액 (절감 막대의 기준)
+  current: number;
+  // 금액 대신 보여 줄 조건. 없으면 '월 N원에 이용'
+  condition?: string;
+}
+
+// shortcut: 추천 API 없이 서비스 id별 샘플, API 연동 시 추천 조회 훅으로 교체 (정렬·개수 제한은 서버)
+export const CHECKUP_RECOMMEND_SAMPLE: Record<string, CheckupRecommendation[]> = {
+  netflix: [
+    {
+      id: 'udok-double',
+      title: '유독 더블 스트리밍',
+      subtitle: '넷플릭스 + 유튜브 프리미엄',
+      tags: ['LG U+ 구독상품', '12개월 약정'],
+      saving: 9500,
+      current: 28400,
+    },
+    {
+      id: 'card-discount',
+      title: '제휴 카드 청구 할인',
+      subtitle: '넷플릭스 결제 금액 할인',
+      tags: ['카드사 할인', '전월 실적 조건'],
+      saving: 5000,
+      upTo: true,
+      current: 13500,
+      condition: '전월 30만원 이상 이용 시',
+    },
+    {
+      id: 'telecom-ott',
+      title: '통신사 OTT 결합',
+      subtitle: '넷플릭스 스탠다드',
+      tags: ['통신사 구독상품', '약정 없음'],
+      saving: 3000,
+      current: 13500,
+    },
+  ],
+};

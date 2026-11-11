@@ -81,6 +81,18 @@ export const MANAGE_SAMPLE: SubscriptionDetail[] = [
   },
   {
     status: 'active',
+    id: 'youtube',
+    name: '유튜브 프리미엄',
+    amount: 14900,
+    ...monthly,
+    nextDate: inDays(20),
+    category: '영상·OTT',
+    paidAt: 'appstore',
+    startedAt: inDays(-400),
+    steady: true,
+  },
+  {
+    status: 'active',
     id: 'melon',
     name: '멜론',
     amount: 10900,

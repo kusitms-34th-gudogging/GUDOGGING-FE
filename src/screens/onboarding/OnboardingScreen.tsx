@@ -18,7 +18,7 @@ import { cn } from '@/utils/cn';
 // 화면 높이 계산용 고정 블록 (상단바 · 문구 · CTA + 하단 여백)
 const TOP_BAR = 56;
 const HEAD = 92;
-const CTA_AREA = 72;
+const CTA_AREA = 70;
 const VISUAL_GAP = 8;
 const VISUAL_GAP_COMPACT = 24; // 작은 기기: 비주얼 아래끝과 문구 사이 24 이상
 const CTA_GAP_COMPACT = 48; // 작은 기기: 문구와 CTA 사이 최소 간격
@@ -137,8 +137,9 @@ export const OnboardingScreen = ({ onRequestNotification, onComplete }: Onboardi
           </Animated.View>
         </View>
 
-        <View className="flex-1 justify-end px-screen-x pb-s16">
+        <View className="flex-1 justify-end px-screen-x">
           <Cta
+            className="mb-[14px]"
             label={page === 1 ? '다음' : '시작하기'}
             onPress={() => (page === 1 ? goTo(2) : setSheetVisible(true))}
           />
