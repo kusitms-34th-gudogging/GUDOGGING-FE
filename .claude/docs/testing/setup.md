@@ -17,6 +17,7 @@ pnpm expo install jest-expo jest @types/jest @testing-library/react-native test-
 - Reanimated 4는 [공식 테스트 가이드](https://docs.swmansion.com/react-native-reanimated/docs/guides/testing/)대로 resolver + `setUpTests()`. 없으면 Reanimated를 쓰는 컴포넌트가 import 단계에서 `setCSSEventHandler is not available`로 실패
   - `resolver`는 공식 `react-native-reanimated/jest/resolver` 대신 루트 `jest-resolver.js`. 공식 resolver는 경로에 `react-native-worklets`가 들어 있는지로 판단하는데, pnpm은 Reanimated를 `.pnpm/react-native-reanimated@x_react-native-worklets@y/`에 둬서 Reanimated 전체가 웹 구현으로 풀림(`window.matchMedia is not a function`). Reanimated를 올리면 `jest-resolver.js`의 목록을 공식 resolver와 대조
   - `setupFilesAfterEnv`의 루트 `jest-setup.ts`에서 `setUpTests()` 호출
+- gesture-handler 3은 `jest-setup.ts`에서 공식 `react-native-gesture-handler/jestSetup` + `installUIRuntimeBindings` mock. mock이 없으면 gesture-handler를 import하는 테스트가 `getUIRuntimeHolder is not supported on web`로 실패. `GestureDetector`를 쓰는 화면은 `render(..., { wrapper: GestureHandlerRootView })`, 제스처는 `react-native-gesture-handler/jest-utils`의 `createGestureController(getByGestureTestId(testID))`로 발생
 
 ```json
 "jest": {
