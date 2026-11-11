@@ -62,7 +62,7 @@ it('4주로 끝나는 달은 4주만 그린다', async () => {
   await render(<CalendarScreen />, { wrapper: GestureHandlerRootView });
 
   expect(screen.getByText('2026년 2월')).toBeOnTheScreen();
-  expect(screen.getByRole('button', { name: '28' })).toBeOnTheScreen();
+  expect(screen.getByRole('button', { name: /^28(\s|$)/ })).toBeOnTheScreen();
   expect(screen.queryAllByRole('button', { name: /^\d+(\s|$)/ })).toHaveLength(28);
 });
 
@@ -115,4 +115,17 @@ it('연월을 누르면 날짜 선택 시트가 뜨고 확인하면 고른 날�
   await user.press(screen.getByRole('button', { name: '확인' }));
   expect(screen.getByText('2026년 11월')).toBeOnTheScreen();
   expect(screen.getByRole('button', { name: /^12(\s|$)/ })).toBeSelected();
+});
+
+it('결제 있는 날을 누르면 건수·합계와 결제 목록이 보인다', async () => {
+  await render(<CalendarScreen />, { wrapper: GestureHandlerRootView });
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+  await user.press(screen.getByRole('button', { name: /^17(\s|$)/ }));
+
+  expect(screen.getByText('3건 · 57,400원')).toBeOnTheScreen();
+  expect(screen.getByText('ChatGPT Plus')).toBeOnTheScreen();
+  expect(screen.getByText('매월 · Google Play')).toBeOnTheScreen();
+  expect(screen.getByText('29,000원')).toBeOnTheScreen();
+  expect(screen.queryByText('결제 없음')).not.toBeOnTheScreen();
 });
