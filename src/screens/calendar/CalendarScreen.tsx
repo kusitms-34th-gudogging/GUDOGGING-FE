@@ -1,6 +1,6 @@
 import { motion } from '@tokens';
 import { useEffect, useState } from 'react';
-import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
@@ -14,7 +14,9 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { CalendarDay, type CalendarDaySubscription } from '@/components/calendar/CalendarDay';
 import { CalendarWeekday } from '@/components/calendar/CalendarWeekday';
 import { Badge } from '@/components/common/Badge';
+import { BottomSheet } from '@/components/common/BottomSheet';
 import { Button } from '@/components/common/Button';
+import { Dial } from '@/components/common/Dial';
 import { TopBar } from '@/components/common/TopBar';
 import { cn } from '@/utils/cn';
 import { formatWon } from '@/utils/formatPayment';
@@ -136,9 +138,17 @@ export const CalendarScreen = () => {
     if (Math.round(-offset.get() / width) !== page) offset.set(-page * width);
   }, [page, width, offset]);
 
-  const goToday = () => {
-    setPage(pageOf(today));
-    setSelected(today);
+  const goTo = (date: Date) => {
+    setPage(pageOf(date));
+    setSelected(date);
+  };
+
+  // 연월 제목을 누르면 날짜 선택 시트. 열 때마다 오늘부터 고름 (Figma C-01 연월 클릭시)
+  const [dateSheet, setDateSheet] = useState(false);
+  const [draftDate, setDraftDate] = useState(today);
+  const openDateSheet = () => {
+    setDraftDate(new Date());
+    setDateSheet(true);
   };
 
   // 가로 10 넘게 움직이면 시작, 세로로 먼저 움직이면 포기해서 세로 스크롤·날짜 탭은 그대로 둠
@@ -177,13 +187,20 @@ export const CalendarScreen = () => {
       <ScrollView contentContainerClassName="pb-[120px] pt-s12">
         <View className="flex-row items-center justify-between px-screen-x">
           <View className="items-start gap-s2">
-            <Text accessibilityRole="header" className="pl-[2px] text-text-primary text-head3-bold">
-              {month.getFullYear()}년 {month.getMonth() + 1}월
-            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityHint="이동할 날짜를 선택해요"
+              onPress={openDateSheet}
+              className="active:opacity-pressed"
+            >
+              <Text className="pl-[2px] text-text-primary text-head3-bold">
+                {month.getFullYear()}년 {month.getMonth() + 1}월
+              </Text>
+            </Pressable>
             <Badge variant="tonal" label={`이번 달 결제 합계 ${formatWon(MONTH_TOTAL)}`} />
           </View>
           <View className="pr-s4">
-            <Button variant="tonal" size="sm" label="오늘" onPress={goToday} />
+            <Button variant="tonal" size="sm" label="오늘" onPress={() => goTo(today)} />
           </View>
         </View>
 
@@ -226,6 +243,21 @@ export const CalendarScreen = () => {
           )}
         </View>
       </ScrollView>
+      <BottomSheet
+        visible={dateSheet}
+        onClose={() => setDateSheet(false)}
+        title="이동할 날짜를 선택해 주세요."
+        confirmLabel="확인"
+        onConfirm={() => goTo(draftDate)}
+      >
+        {/* shortcut: 지난 달도 볼 수 있게 앞뒤 10년, 범위가 정해지면 맞춤 */}
+        <Dial
+          value={draftDate}
+          onValueChange={setDraftDate}
+          minYear={today.getFullYear() - 10}
+          maxYear={today.getFullYear() + 10}
+        />
+      </BottomSheet>
     </View>
   );
 };
