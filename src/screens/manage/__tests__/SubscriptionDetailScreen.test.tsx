@@ -1,12 +1,27 @@
 import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
+import type { ActiveSubscriptionDetail } from '@/constants/manage';
 import { SubscriptionDetailScreen } from '@/screens/manage/SubscriptionDetailScreen';
+
+const netflix: ActiveSubscriptionDetail = {
+  status: 'active',
+  id: 'netflix',
+  name: 'Netflix',
+  amount: 13500,
+  cycle: 1,
+  unit: '개월',
+  nextDate: new Date(2026, 9, 17),
+  category: '영상·OTT',
+  paidAt: 'appstore',
+  startedAt: new Date(2026, 6, 17),
+  steady: false,
+};
 
 const renderDetail = async () => {
   await renderRouter(
     {
-      index: () => <SubscriptionDetailScreen />,
+      index: () => <SubscriptionDetailScreen subscription={netflix} />,
       'checkup/[id]/index': () => null,
       'checkup/[id]/cancel': () => null,
     },

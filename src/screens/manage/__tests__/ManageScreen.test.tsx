@@ -1,6 +1,7 @@
 import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
+import SubscriptionDetailRoute from '@/app/manage/detail/[id]';
 import { type EndedSubscription, ManageScreen } from '@/screens/manage/ManageScreen';
 import type { HomeSubscription } from '@/utils/homeSummary';
 
@@ -27,7 +28,7 @@ const renderManage = async (props: Parameters<typeof ManageScreen>[0]) => {
     {
       index: () => <ManageScreen {...props} />,
       'register/index': () => null,
-      'subscription/[id]': () => null,
+      'manage/detail/[id]': () => null,
     },
     { initialUrl: '/' },
   );
@@ -90,6 +91,31 @@ describe('ManageScreen', () => {
 
     await user.press(screen.getByRole('button', { name: '빠른 결제 상세' }));
 
-    expect(screen).toHavePathname('/subscription/a');
+    expect(screen).toHavePathname('/manage/detail/a');
+  });
+
+  it('구독 종료 행도 같은 상세 경로로 간다', async () => {
+    const user = await renderManage({ active, ended });
+
+    await user.press(screen.getByRole('tab', { name: '구독 종료 1' }));
+    await user.press(screen.getByRole('button', { name: '왓챠 상세' }));
+
+    expect(screen).toHavePathname('/manage/detail/c');
+  });
+
+  it('상세 경로는 같은 id 체계에서 구독 상태에 따라 구독 중·지난 구독 화면을 고른다', async () => {
+    await renderRouter(
+      { index: () => <ManageScreen />, 'manage/detail/[id]': SubscriptionDetailRoute },
+      { initialUrl: '/' },
+    );
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+    await user.press(screen.getByRole('button', { name: 'Netflix 상세' }));
+    expect(screen.getByRole('button', { name: '구독 점검' })).toBeOnTheScreen();
+
+    await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
+    await user.press(screen.getByRole('tab', { name: '구독 종료 2' }));
+    await user.press(screen.getByRole('button', { name: '왓챠 상세' }));
+    expect(screen.getByRole('button', { name: '재등록하기' })).toBeOnTheScreen();
   });
 });
