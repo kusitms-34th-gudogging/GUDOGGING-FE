@@ -1,16 +1,10 @@
 import { Redirect } from 'expo-router';
-import { useEffect } from 'react';
 
+import { launch } from '@/lib/launch';
 import { HomeScreen } from '@/screens/home/HomeScreen';
 
-// 앱 실행 후 처음 한 번만 로그인 화면으로 보냄 (로그인 → 온보딩 → 홈)
-const launch = { loginShown: false };
-
+// 앱 실행 후 로그인 화면을 아직 안 봤으면 로그인부터 (로그인 → 온보딩 → 홈)
 export default function HomeRoute() {
-  useEffect(() => {
-    launch.loginShown = true;
-  }, []);
-
   if (!launch.loginShown) return <Redirect href="/login" />;
   return <HomeScreen />;
 }
