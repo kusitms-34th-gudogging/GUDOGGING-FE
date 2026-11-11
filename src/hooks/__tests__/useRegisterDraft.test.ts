@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, renderHook } from '@testing-library/react-native';
 
 import {
+  getFoundServiceIds,
   getRegisteredServices,
   hasRegisterDraft,
   useRegisterDraft,
@@ -92,5 +93,29 @@ describe('useRegisterDraft', () => {
     });
 
     expect(result.current.map((s) => s.name)).toEqual(['Netflix', '직접 입력 구독']);
+  });
+});
+
+describe('getFoundServiceIds', () => {
+  // 샘플: ChatGPT Plus·Netflix·YouTube Premium은 사전 등록 서비스로 인식, 밀리의 서재는 아님
+  it('불러온 구독이 가리키는 사전 등록 서비스를 돌려준다', () => {
+    expect(getFoundServiceIds({})).toEqual(['chatgpt', 'netflix', 'youtube']);
+  });
+
+  it('수정 화면에서 이름을 바꾼 구독은 다른 서비스로 보고 뺀다', () => {
+    const payment = {
+      category: '영상·OTT',
+      amount: 13500,
+      cycle: 1,
+      unit: '개월',
+      nextDate: new Date(2026, 10, 20),
+      paidAt: 'web' as const,
+    };
+    expect(
+      getFoundServiceIds({
+        'found-netflix': { ...payment, name: '넷플 가족' },
+        'found-youtube': { ...payment, name: 'YouTube Premium' },
+      }),
+    ).toEqual(['chatgpt', 'youtube']);
   });
 });

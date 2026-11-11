@@ -7,6 +7,7 @@ interface CheckboxProps {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   disabled?: boolean;
+  locked?: boolean;
   accessibilityLabel: string;
   className?: string;
 }
@@ -15,6 +16,7 @@ export const Checkbox = ({
   checked,
   onCheckedChange,
   disabled,
+  locked,
   accessibilityLabel,
   className,
 }: CheckboxProps) => {
@@ -23,9 +25,9 @@ export const Checkbox = ({
   return (
     <Pressable
       accessibilityRole="checkbox"
-      accessibilityState={{ checked }}
+      accessibilityState={{ checked, disabled: disabled || locked }}
       accessibilityLabel={accessibilityLabel}
-      disabled={disabled}
+      disabled={disabled || locked}
       onPress={() => onCheckedChange(!checked)}
       className={cn('size-touch-target items-center justify-center', className)}
     >

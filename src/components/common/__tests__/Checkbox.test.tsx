@@ -46,4 +46,19 @@ describe('Checkbox', () => {
 
     expect(onCheckedChange).not.toHaveBeenCalled();
   });
+
+  it('locked면 체크된 채로 비활성으로 알리고, 눌러도 onCheckedChange가 호출되지 않는다', async () => {
+    const onCheckedChange = jest.fn();
+    await render(
+      <Checkbox checked locked onCheckedChange={onCheckedChange} accessibilityLabel="Netflix" />,
+    );
+
+    const checkbox = screen.getByRole('checkbox', { name: 'Netflix' });
+    expect(checkbox).toBeChecked();
+    expect(checkbox).toBeDisabled();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await user.press(checkbox);
+
+    expect(onCheckedChange).not.toHaveBeenCalled();
+  });
 });

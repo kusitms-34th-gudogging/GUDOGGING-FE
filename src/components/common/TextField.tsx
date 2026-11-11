@@ -9,6 +9,10 @@ interface TextFieldProps extends Omit<
   'className' | 'editable' | 'placeholderTextColor'
 > {
   label: string;
+  // 단위 선택처럼 옆 필드와 라벨을 공유하면 끔 (Figma Text field · Trailing의 Show label)
+  showLabel?: boolean;
+  // 값 뒤에 붙는 단위 (Figma Text field · Trailing=Text, 예: 원)
+  suffix?: string;
   helper?: string;
   showHelper?: boolean;
   error?: boolean;
@@ -18,6 +22,8 @@ interface TextFieldProps extends Omit<
 
 export const TextField = ({
   label,
+  showLabel = true,
+  suffix,
   helper,
   showHelper,
   error,
@@ -32,9 +38,11 @@ export const TextField = ({
 
   return (
     <View className={cn('min-w-[200px] gap-stack-sm', className)}>
-      <Text numberOfLines={1} className="text-text-primary text-body3-regular">
-        {label}
-      </Text>
+      {showLabel && (
+        <Text numberOfLines={1} className="px-s2 text-text-primary text-body3-semibold">
+          {label}
+        </Text>
+      )}
       <View
         className={cn(
           // 테두리를 항상 1px로 두고(기본은 투명) 패딩(16)에서 빼서, 포커스 시 글자가 밀리지 않게 함 (Figma 안쪽 stroke와 동일)
@@ -64,6 +72,7 @@ export const TextField = ({
             disabled ? 'text-text-disabled' : 'text-text-primary',
           )}
         />
+        {suffix && <Text className="text-text-secondary text-body2-regular">{suffix}</Text>}
       </View>
       {showHelper && helper && (
         <Text

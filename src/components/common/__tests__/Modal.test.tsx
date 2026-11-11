@@ -52,25 +52,18 @@ describe('Modal', () => {
     expect(onConfirm).not.toHaveBeenCalled();
   });
 
-  it('배경을 누르면 onClose만 호출된다', async () => {
-    const onConfirm = jest.fn();
-    const onClose = jest.fn();
+  it('배경은 눌러서 닫는 버튼이 아니다', async () => {
     await render(
       <Modal
         visible
-        onClose={onClose}
+        onClose={jest.fn()}
         buttons="confirm"
         title="해지할까요?"
         confirmLabel="확인"
-        onConfirm={onConfirm}
       />,
     );
 
-    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
-    await user.press(screen.getByRole('button', { name: '닫기' }));
-
-    expect(onClose).toHaveBeenCalledTimes(1);
-    expect(onConfirm).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: '닫기' })).not.toBeOnTheScreen();
   });
 
   it('buttons가 없으면 확인·취소 버튼이 보이지 않는다', async () => {

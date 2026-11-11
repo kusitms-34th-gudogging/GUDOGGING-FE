@@ -53,7 +53,7 @@ export const ImageCard = (props: ImageCardProps) => {
           accessibilityRole="button"
           accessibilityLabel={deleteAccessibilityLabel}
           onPress={onDelete}
-          className="absolute right-0 top-0 px-inline-sm py-stack-sm active:opacity-pressed"
+          className="absolute -top-[2px] right-0 px-inline-sm py-stack-sm active:opacity-pressed"
         >
           <View className="size-[22px] items-center justify-center rounded-pill bg-[#D9D9D9]">
             <CloseIcon className="size-icon-xs text-icon-secondary" />

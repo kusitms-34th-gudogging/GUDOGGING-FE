@@ -53,7 +53,7 @@ describe('RegisterScreenshotImagesScreen', () => {
 
     await user.press(screen.getByRole('button', { name: '스크린샷 추가' }));
 
-    expect(screen.getByText('PNG, JPG 10MB 이하만 추가할 수 있어요.')).toBeOnTheScreen();
+    expect(screen.getByText('이미지 1장당 최대 10MB까지 업로드할 수 있습니다.')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: '스크린샷 1 삭제' })).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: '스크린샷 2 삭제' })).not.toBeOnTheScreen();
   });

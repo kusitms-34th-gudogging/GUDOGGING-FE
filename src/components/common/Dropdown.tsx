@@ -36,7 +36,7 @@ export const Dropdown = ({
 }: DropdownProps) => (
   <View className={cn('min-w-[120px] gap-stack-sm', open && 'z-10', className)}>
     {showLabel && (
-      <Text numberOfLines={1} className="text-text-primary text-body3-regular">
+      <Text numberOfLines={1} className="px-s2 text-text-primary text-body3-semibold">
         {label}
       </Text>
     )}

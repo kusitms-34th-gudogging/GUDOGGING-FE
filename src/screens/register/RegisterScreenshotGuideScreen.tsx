@@ -8,7 +8,6 @@ import { Cta } from '@/components/common/Cta';
 import { TopBar } from '@/components/common/TopBar';
 import { GuideStep } from '@/components/register/GuideStep';
 import { ScreenTitle } from '@/components/register/ScreenTitle';
-import { useToast } from '@/hooks/useToast';
 
 // Apple 계정의 전체 구독 목록 (App Store 구독 관리)
 const SUBSCRIPTIONS_URL = 'https://apps.apple.com/account/subscriptions';
@@ -20,14 +19,13 @@ const STEPS = [
 ];
 
 export const RegisterScreenshotGuideScreen = () => {
-  const { show } = useToast();
   // 구독 관리 화면을 열고 돌아오면 뒤로가기 + 버튼 2개 상태
   const [opened, setOpened] = useState(false);
 
   const openSubscriptions = () =>
     Linking.openURL(SUBSCRIPTIONS_URL)
       .then(() => setOpened(true))
-      .catch(() => show({ type: 'error', message: '구독 관리 화면을 열 수 없어요.' }));
+      .catch(() => {});
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -38,13 +36,13 @@ export const RegisterScreenshotGuideScreen = () => {
         showAction1={false}
         showAction2={false}
       />
-      <View className="flex-1 gap-inset-lg px-screen-x pt-stack-md">
+      <View className="flex-1 gap-section px-screen-x pt-stack-md">
         <ScreenTitle
           title={'스크린샷으로\n구독을 가져와요.'}
           description="구독 목록을 캡처하면 구독 정보를 찾아드려요."
         />
         <View className="gap-inset-md">
-          <View className="gap-inset-md">
+          <View className="gap-stack-md">
             {STEPS.map(({ icon, text }) => (
               <GuideStep key={text} icon={icon} iconClassName="text-icon-primary" label={text} />
             ))}
@@ -57,7 +55,12 @@ export const RegisterScreenshotGuideScreen = () => {
       <View className="pb-safe px-screen-x">
         {opened ? (
           <View className="mb-[14px] flex-row gap-inline-sm">
-            <Button variant="tonal" label="구독 목록 열기" onPress={openSubscriptions} />
+            <Button
+              variant="tonal"
+              label="구독 목록 열기"
+              onPress={openSubscriptions}
+              className="flex-1"
+            />
             <Button
               label="스크린샷 등록하기"
               onPress={() => router.push('/register/images')}

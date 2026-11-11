@@ -24,7 +24,8 @@ export const Segment = ({ label, selected, onSelect, onLayout, className }: Segm
     <Text
       numberOfLines={1}
       className={cn(
-        'transition-colors',
+        // Figma처럼 글자는 좌우 패딩 영역까지 쓰고 최대 128에서 말줄임 (선택 시 굵어져도 안 잘리게)
+        '-mx-inset-md max-w-[128px] transition-colors',
         selected
           ? 'text-text-primary text-body3-semibold'
           : 'text-text-secondary text-body3-regular',

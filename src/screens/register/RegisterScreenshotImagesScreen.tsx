@@ -6,6 +6,7 @@ import { Text, View } from 'react-native';
 import { AlertCircleIcon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
 import { ImageCard } from '@/components/common/ImageCard';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useToast } from '@/hooks/useToast';
 import { isAllowedImage } from '@/utils/imageFile';
@@ -25,7 +26,8 @@ export const RegisterScreenshotImagesScreen = () => {
     if (result.canceled) return;
     const allowed = result.assets.filter(isAllowedImage);
     if (allowed.length < result.assets.length)
-      show({ type: 'error', message: 'PNG, JPG 10MB 이하만 추가할 수 있어요.' });
+      // 앨범에서 PNG·JPG만 고를 수 있어 걸러지는 건 사실상 용량 초과뿐
+      show({ type: 'error', message: '이미지 1장당 최대 10MB까지 업로드할 수 있습니다.' });
     setUris((prev) => [...prev, ...allowed.map((a) => a.uri)].slice(0, MAX_IMAGES));
   };
 
@@ -65,6 +67,7 @@ export const RegisterScreenshotImagesScreen = () => {
             {'PNG, JPG만 가능해요.\n1장당 10MB 이하로 최대 5장까지 올릴 수 있어요.'}
           </Text>
         </View>
+        <ToastOutlet className="bottom-0 pb-stack-sm" />
       </View>
       <View className="pb-safe px-screen-x">
         <Cta

@@ -25,12 +25,18 @@ export const Toast = ({ type, message }: ToastProps) => {
   const Icon = type && type !== 'default' ? icons[type] : null;
 
   return (
-    <View className="min-h-touch-target max-w-[335px] flex-row items-center gap-inline-sm rounded-toast bg-action-inverse px-inset-md py-inset-sm shadow-elevation-2">
+    <View
+      className={cn(
+        // 배경은 Figma에서 변수 없이 #111111 80%
+        'min-h-touch-target max-w-[335px] flex-row items-center rounded-toast bg-bg-inverse/80 px-inset-md py-inset-sm shadow-elevation-2',
+        Icon ? 'gap-inline-xs' : 'gap-inline-sm',
+      )}
+    >
       {Icon && <Icon className={toastIconVariants({ type })} />}
       <Text
         numberOfLines={2}
         className={cn(
-          'shrink text-text-inverse text-body2-regular',
+          'shrink text-text-inverse text-caption1-regular',
           Icon ? 'max-w-[265px]' : 'max-w-[295px]',
         )}
       >

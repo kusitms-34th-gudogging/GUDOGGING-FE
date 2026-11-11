@@ -27,12 +27,8 @@ export const Modal = ({
 }: ModalProps) => (
   <RNModal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
     <View className="flex-1 items-center justify-center">
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="닫기"
-        onPress={onClose}
-        className="absolute inset-0 bg-bg-dim"
-      />
+      {/* 바깥(딤)을 눌러도 닫히지 않음. 버튼으로만 닫음 (화면설계서) */}
+      <View className="absolute inset-0 bg-bg-dim" />
       <View className="w-[280px] overflow-hidden rounded-card bg-surface-raised shadow-elevation-3">
         <View className="w-full gap-stack-xs px-inset-md py-s20">
           <Text numberOfLines={2} className="text-center text-text-primary text-body2-semibold">

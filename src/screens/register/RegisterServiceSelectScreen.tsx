@@ -1,19 +1,21 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 
-import { CloseIcon, PlusIcon } from '@/assets/icons';
+import { CloseIcon } from '@/assets/icons';
 import { Chip } from '@/components/common/Chip';
 import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
 import { SearchBar } from '@/components/common/SearchBar';
 import { TopBar } from '@/components/common/TopBar';
-import { SERVICES } from '@/constants/services';
-import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
-import { hasRegisterDraft, useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { AddServiceRow } from '@/components/register/AddServiceRow';
+import { FadeScrollView } from '@/components/register/FadeScrollView';
+import { type Service, SERVICES } from '@/constants/services';
+import { getFoundServiceIds, useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { keywordRank } from '@/utils/search';
 
 interface RegisterServiceSelectScreenProps {
-  // 불러온 구독 확인(A-09)의 서비스 더 선택하기로 왔으면 흐름 안 이동이라 이탈 팝업 없음
+  // 불러온 구독 확인(A-09)의 구독 추가하기로 왔는지
   more?: boolean;
 }
 
@@ -22,20 +24,31 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
   // 불러오기 팝업으로 이어서 등록할 수 있게 저장소에 둠
   const selectedIds = useRegisterDraft((s) => s.selectedIds);
   const setSelectedIds = useRegisterDraft((s) => s.setSelectedIds);
-  const hasDraft = useRegisterDraft(hasRegisterDraft);
-  // 직접 등록의 첫 화면: 등록 중이던 값이 있으면 나갈 때 이탈 팝업
-  const { modal: leaveModal } = useLeaveConfirm(!more && hasDraft);
+  // 이번에 새로 고른 것만 체크해서, 불러온 구독 확인에서 체크를 푼 구독이 다시 체크되지 않게
+  const [initialIds] = useState(selectedIds);
+  // 분석으로 불러온 서비스는 체크된 채로 잠금. 해제는 불러온 구독 확인에서만 (기획 답변)
+  const payments = useRegisterDraft((s) => s.payments);
+  const lockedIds = more ? getFoundServiceIds(payments) : [];
 
   const toggle = (id: string) =>
     setSelectedIds(
       selectedIds.includes(id) ? selectedIds.filter((v) => v !== id) : [...selectedIds, id],
     );
-  const selected = SERVICES.filter((s) => selectedIds.includes(s.id));
+  // 칩은 선택한 순서대로
+  const selected = selectedIds.flatMap((id) => SERVICES.filter((s) => s.id === id));
   const count = selected.length;
-  // shortcut: 영문·한글 이름 부분 일치만
-  const keyword = query.trim().toLowerCase();
+  const keyword = query.trim();
+  // 이름 일치율 높은 순, 카테고리로만 맞으면 맨 아래. 같은 순위는 목록 순서 (기획 답변)
+  // shortcut: 이미 등록한 서비스 제외 없음, 구독 목록 API 연동 시 제외
+  const rankOf = (s: Service) =>
+    keywordRank([s.name, s.nameKo], keyword) ??
+    // 이름 순위(0~3)보다 아래
+    (keywordRank([s.category], keyword) === undefined ? undefined : 4);
   const results = keyword
-    ? SERVICES.filter((s) => `${s.name} ${s.nameKo}`.toLowerCase().includes(keyword))
+    ? SERVICES.map((s) => ({ s, rank: rankOf(s) }))
+        .filter((r) => r.rank !== undefined)
+        .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+        .map((r) => r.s)
     : SERVICES;
 
   return (
@@ -48,20 +61,14 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
         showAction1={false}
         showAction2={false}
       />
-      <View className="flex-1 gap-screen-x px-screen-x pt-stack-md">
+      {/* 목록 영역은 CTA 위 56까지 채움 (Figma 목록 주석) */}
+      <View className="flex-1 gap-inset-lg px-screen-x pb-[56px] pt-stack-md">
         <View className="gap-stack-lg">
           <SearchBar value={query} onChangeText={setQuery} placeholder="검색" />
-          <View className="gap-stack-md">
-            <View className="gap-s2">
-              <Text className="text-text-primary text-head4-bold">
-                등록할 서비스를 모두 선택해 주세요.
-              </Text>
-              {count > 0 && (
-                <Text className="text-text-secondary text-caption1-regular">
-                  선택한 서비스 {count}
-                </Text>
-              )}
-            </View>
+          <View className="gap-stack-sm">
+            <Text className="px-s2 text-text-primary text-head4-bold">
+              등록할 서비스를 모두 선택해 주세요.
+            </Text>
             {count > 0 && (
               // 화면 끝까지 스크롤되게 좌우 여백을 상쇄하고 안쪽에서 다시 줌
               <ScrollView
@@ -83,50 +90,51 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
             )}
           </View>
         </View>
-        {/* 화면이 작으면 리스트가 줄어들도록 shrink */}
-        <View className="shrink gap-inline-sm">
-          {!!keyword && <Text className="text-text-primary text-body3-regular">검색 결과</Text>}
-          <View className="shrink gap-inline-xs">
-            {/* 뷰포트에 최대 5개, 이후 스크롤 */}
-            <ScrollView className="max-h-[361px] shrink" contentContainerClassName="gap-inline-xs">
-              {results.map((s) => (
-                <ListItem
-                  key={s.id}
-                  title={s.name}
-                  logo={require('@/assets/images/logo_placeholder.png')}
-                  showLogo
-                  showCheckBox
-                  checked={selectedIds.includes(s.id)}
-                  onCheckedChange={() => toggle(s.id)}
-                />
-              ))}
-            </ScrollView>
+        <View className="flex-1 gap-inline-xs">
+          <Text className="text-text-primary text-body3-semibold">
+            {keyword ? '검색 결과' : '전체'}
+          </Text>
+          <FadeScrollView className="flex-1" contentContainerClassName="gap-inline-xs">
+            {results.map((s) => (
+              <ListItem
+                key={s.id}
+                title={s.name}
+                subtitle={s.category}
+                showSubtitle
+                logo={require('@/assets/images/logo_placeholder.png')}
+                showLogo
+                showCheckBox
+                checked={selectedIds.includes(s.id) || lockedIds.includes(s.id)}
+                onCheckedChange={() => toggle(s.id)}
+                checkBoxLocked={lockedIds.includes(s.id)}
+              />
+            ))}
             {!!keyword && (
-              <Pressable
-                accessibilityRole="button"
+              <AddServiceRow
+                label="직접 입력하기"
                 onPress={() =>
                   router.push({ pathname: '/register/input', params: more ? { more: '1' } : {} })
                 }
-                className="h-[69px] flex-row items-center gap-inline-md border-b-default border-border-default px-inline-xs active:opacity-pressed"
-              >
-                <PlusIcon className="size-[28px] text-icon-secondary" />
-                <Text className="text-text-secondary text-body2-semibold">직접 입력하기</Text>
-              </Pressable>
+              />
             )}
-          </View>
+          </FadeScrollView>
         </View>
       </View>
       <View className="pb-safe px-screen-x">
         <Cta
           label={`${count}개 선택 완료`}
           disabled={count === 0}
-          onPress={() =>
-            router.push({ pathname: '/register/selected', params: more ? { more: '1' } : {} })
-          }
+          onPress={() => {
+            if (!more) return router.push('/register/selected');
+            // 결제 정보 입력 없이 불러온 구독 확인으로 돌아가 확인 필요에 보임
+            useRegisterDraft
+              .getState()
+              .addFoundChecked(selectedIds.filter((id) => !initialIds.includes(id)));
+            router.back();
+          }}
           className="mb-[14px]"
         />
       </View>
-      {leaveModal}
     </View>
   );
 };

@@ -15,11 +15,10 @@ const PAYMENT: PaymentInfo = {
   paidAt: 'web',
 };
 
-const renderSelected = async ({ more = false } = {}) => {
+const renderSelected = async () => {
   await renderRouter(
     {
-      'register/found': () => null,
-      'register/selected': () => <RegisterSelectedServiceScreen more={more} />,
+      'register/selected': () => <RegisterSelectedServiceScreen />,
       'register/done': () => null,
       'register/select': () => null,
     },
@@ -56,23 +55,32 @@ describe('RegisterSelectedServiceScreen', () => {
   });
 
   // 이어서 등록은 선택한 구독 화면으로 바로 들어와 앞 화면이 서비스 선택이 아님
-  it('서비스 더 선택하기를 누르면 서비스 선택으로 간다', async () => {
+  it('구독 추가하기를 누르면 서비스 선택으로 간다', async () => {
     const user = await renderSelected();
 
-    await user.press(screen.getByRole('button', { name: '서비스 더 선택하기' }));
+    await user.press(screen.getByRole('button', { name: '구독 추가하기' }));
 
     expect(screen).toHavePathname('/register/select');
   });
 
-  it('불러온 구독에서 더 고른 경우 등록 대신 불러온 구독 확인으로 돌아가 체크해 둔다', async () => {
-    useRegisterDraft.getState().setFoundChecked(['youtube']);
+  it('불러오기로 바로 들어와도 뒤로 가면 서비스 선택으로 간다', async () => {
+    const user = await renderSelected();
+
+    await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
+
+    expect(screen).toHavePathname('/register/select');
+  });
+
+  it('결제 정보가 없는 구독을 먼저 보여 주고, 입력 전엔 금액 대신 화살표로 입력을 안내한다', async () => {
     useRegisterDraft.getState().setPayment('netflix', PAYMENT);
-    useRegisterDraft.getState().setPayment('youtube', PAYMENT);
-    const user = await renderSelected({ more: true });
+    await renderSelected();
 
-    await user.press(screen.getByRole('button', { name: '2개 구독 추가하기' }));
-
-    expect(screen).toHavePathname('/register/found');
-    expect(useRegisterDraft.getState().foundChecked).toEqual(['youtube', 'netflix']);
+    const rows = screen.getAllByRole('button', { name: /결제 정보/ });
+    expect(rows.map((r) => r.props.accessibilityLabel)).toEqual([
+      'YouTube Premium 결제 정보 입력하기',
+      'Netflix 결제 정보 수정하기',
+    ]);
+    expect(screen.getByText('13,500원')).toBeOnTheScreen();
+    expect(screen.queryByText('입력하기')).not.toBeOnTheScreen();
   });
 });
