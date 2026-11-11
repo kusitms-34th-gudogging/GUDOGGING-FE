@@ -12,7 +12,7 @@ interface GuideItemProps {
 }
 
 export const GuideItem = ({ icon: Icon, iconClassName, label }: GuideItemProps) => (
-  <View className="flex-row items-start gap-inset-sm">
+  <View className="flex-row items-start gap-inline-sm">
     <View className="py-px">
       <Icon className={cn('size-icon-sm', iconClassName)} />
     </View>

@@ -79,13 +79,13 @@ export const AddSubscriptionScreen = ({
         onTextActionPress={onSkip}
       />
 
-      <View className="mt-s12 flex-1 gap-s24 px-screen-x">
+      <View className="mt-s12 flex-1 gap-section px-screen-x">
         <View className="gap-inline-sm">
           <Text className="text-text-primary text-head1-bold">{title}</Text>
           <Text className="text-text-primary text-body2-regular">{description}</Text>
         </View>
         <View className="gap-stack-lg">
-          <View className="gap-stack-lg">
+          <View className="gap-stack-md">
             {guides.map((guide) => (
               <GuideItem key={guide.label} {...guide} />
             ))}
@@ -96,8 +96,8 @@ export const AddSubscriptionScreen = ({
         </View>
       </View>
 
-      <View className="px-screen-x pb-s16">
-        <Cta label={cta} onPress={onConfirm} />
+      <View className="px-screen-x">
+        <Cta label={cta} onPress={onConfirm} className="mb-[14px]" />
       </View>
     </SafeAreaView>
   );
