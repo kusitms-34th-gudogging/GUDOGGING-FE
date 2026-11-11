@@ -1,80 +1,30 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Image, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 
 import { MoreIcon } from '@/assets/icons';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
+import { ListItem } from '@/components/common/ListItem';
 import { Toggle } from '@/components/common/Toggle';
 import { TopBar } from '@/components/common/TopBar';
 import { DetailCostCard } from '@/components/manage/DetailCostCard';
+import { Divider, ServiceHeader } from '@/components/manage/DetailParts';
 import { MoreMenu } from '@/components/manage/MoreMenu';
-import { PAID_AT, type PaidAt } from '@/constants/services';
+import type { ActiveSubscriptionDetail } from '@/constants/manage';
+import { PAID_AT } from '@/constants/services';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
-import { type HomeSubscription, monthly } from '@/utils/homeSummary';
-
-export interface SubscriptionDetail extends HomeSubscription {
-  category: string;
-  paidAt: PaidAt;
-  startedAt: Date;
-  // 꾸준히 쓰는 구독: 점검 알림 없이 유지
-  steady: boolean;
-  lastCheckup?: {
-    period: string;
-    result: string;
-    usage: string;
-    satisfaction: string;
-    plan: string;
-  };
-}
-
-const LOGO = require('@/assets/images/logo_placeholder.png');
-// shortcut: 구독 상세 API 없이 샘플, 연동 시 라우트 id로 조회하는 API 훅으로 교체
-// 점검 화면이 점검 샘플에서 서비스를 찾으므로 같은 id를 씀
-const SAMPLE: SubscriptionDetail = {
-  id: 'netflix',
-  name: 'Netflix',
-  amount: 13500,
-  cycle: 1,
-  unit: '개월',
-  nextDate: new Date(2026, 9, 17),
-  category: '영상 · OTT',
-  paidAt: 'appstore',
-  startedAt: new Date(2026, 6, 17),
-  steady: false,
-  lastCheckup: {
-    period: '3월~6월 결과',
-    result: '유지 추천(92%)',
-    usage: '한 달 6~10편 봤어요',
-    satisfaction: '보고 싶은 작품이 계속 생겨요',
-    plan: '꼭 볼 작품이 있어요',
-  },
-};
+import { monthly } from '@/utils/homeSummary';
 
 const monthDay = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
 const fullDate = (d: Date) => `${d.getFullYear()}년 ${monthDay(d)}`;
 
-const InfoRow = ({ label, value }: { label: string; value: string }) => (
-  <View className="min-w-[280px] flex-row items-center gap-inset-xs py-inline-xs">
-    <Text numberOfLines={1} className="flex-1 text-text-primary text-body3-semibold">
-      {label}
-    </Text>
-    <Text numberOfLines={1} className="text-text-secondary text-body3-semibold">
-      {value}
-    </Text>
-  </View>
-);
-
-const Divider = () => <View className="h-px bg-border-subtle" />;
-
 interface SubscriptionDetailScreenProps {
-  subscription?: SubscriptionDetail;
+  subscription: ActiveSubscriptionDetail;
 }
 
 // M-03 구독 상세 (구독 중)
-export const SubscriptionDetailScreen = ({
-  subscription: s = SAMPLE,
-}: SubscriptionDetailScreenProps) => {
+export const SubscriptionDetailScreen = ({ subscription: s }: SubscriptionDetailScreenProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
   // shortcut: 화면 안에서만 바뀜, 구독 수정 API 연동 시 저장
   const [steady, setSteady] = useState(s.steady);
@@ -96,18 +46,12 @@ export const SubscriptionDetailScreen = ({
       />
       <ScrollView contentContainerClassName="gap-s20 pb-stack-md pt-stack-md">
         <View className="gap-stack-md px-screen-x">
-          <View className="flex-row items-center gap-inline-xs">
-            <View className="flex-row items-center gap-inline-sm">
-              <View className="size-logo-card overflow-hidden rounded-full border-default border-border-subtle">
-                <Image source={LOGO} className="size-full" />
-              </View>
-              <Text numberOfLines={1} className="shrink text-text-primary text-body2-semibold">
-                {s.name}
-              </Text>
-            </View>
-            <Badge variant="tonal" label="구독 중" />
-            <Badge variant="tonal" label={s.category} />
-          </View>
+          <ServiceHeader
+            name={s.name}
+            status="구독 중"
+            category={s.category}
+            badgeVariant="tonal"
+          />
           <DetailCostCard
             label="결제 예정"
             amount={formatWon(s.amount)}
@@ -134,13 +78,36 @@ export const SubscriptionDetailScreen = ({
               결제
             </Text>
             <View>
-              {s.nextDate && <InfoRow label="다음 결제일" value={monthDay(s.nextDate)} />}
-              <InfoRow label="결제 주기" value={formatCycle(s.cycle, s.unit)} />
-              <InfoRow
-                label="결제한 곳"
-                value={PAID_AT.find((p) => p.value === s.paidAt)?.label ?? ''}
+              {s.nextDate && (
+                <ListItem
+                  title="다음 결제일"
+                  cost={monthDay(s.nextDate)}
+                  showCost
+                  costColor="text-text-secondary"
+                  costFullWidth
+                />
+              )}
+              <ListItem
+                title="결제 주기"
+                cost={formatCycle(s.cycle, s.unit)}
+                showCost
+                costColor="text-text-secondary"
+                costFullWidth
               />
-              <InfoRow label="구독 시작일" value={fullDate(s.startedAt)} />
+              <ListItem
+                title="결제한 곳"
+                cost={PAID_AT.find((p) => p.value === s.paidAt)?.label ?? ''}
+                showCost
+                costColor="text-text-secondary"
+                costFullWidth
+              />
+              <ListItem
+                title="구독 시작일"
+                cost={fullDate(s.startedAt)}
+                showCost
+                costColor="text-text-secondary"
+                costFullWidth
+              />
             </View>
           </View>
           {s.lastCheckup && (
@@ -157,10 +124,34 @@ export const SubscriptionDetailScreen = ({
                   <Badge variant="tonal" label={s.lastCheckup.period} />
                 </View>
                 <View className="gap-s2">
-                  <InfoRow label="점검 결과" value={s.lastCheckup.result} />
-                  <InfoRow label="이용도" value={s.lastCheckup.usage} />
-                  <InfoRow label="만족도" value={s.lastCheckup.satisfaction} />
-                  <InfoRow label="다음 달" value={s.lastCheckup.plan} />
+                  <ListItem
+                    title="점검 결과"
+                    cost={s.lastCheckup.result}
+                    showCost
+                    costColor="text-text-secondary"
+                    costFullWidth
+                  />
+                  <ListItem
+                    title="이용도"
+                    cost={s.lastCheckup.usage}
+                    showCost
+                    costColor="text-text-secondary"
+                    costFullWidth
+                  />
+                  <ListItem
+                    title="만족도"
+                    cost={s.lastCheckup.satisfaction}
+                    showCost
+                    costColor="text-text-secondary"
+                    costFullWidth
+                  />
+                  <ListItem
+                    title="다음 달"
+                    cost={s.lastCheckup.plan}
+                    showCost
+                    costColor="text-text-secondary"
+                    costFullWidth
+                  />
                 </View>
               </View>
             </>

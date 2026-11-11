@@ -10,6 +10,7 @@ import { Modal } from '@/components/common/Modal';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { TopBar } from '@/components/common/TopBar';
 import { MoreMenu } from '@/components/manage/MoreMenu';
+import { MANAGE_SAMPLE } from '@/constants/manage';
 import { cn } from '@/utils/cn';
 import { formatWon } from '@/utils/formatPayment';
 import { daysUntil, type HomeSubscription, monthly } from '@/utils/homeSummary';
@@ -20,53 +21,9 @@ export interface EndedSubscription extends HomeSubscription {
 }
 
 const LOGO = require('@/assets/images/logo_placeholder.png');
-const inDays = (n: number) => {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
-};
-// shortcut: 구독 API 없이 오늘 기준 샘플, 구독 목록 API 연동 시 API 훅으로 교체
-const ACTIVE_SAMPLE: HomeSubscription[] = [
-  {
-    id: 'chatgpt',
-    name: 'ChatGPT Plus',
-    amount: 29000,
-    cycle: 1,
-    unit: '개월',
-    nextDate: inDays(1),
-  },
-  {
-    id: 'youtube',
-    name: 'YouTube Premium',
-    amount: 14900,
-    cycle: 1,
-    unit: '개월',
-    nextDate: inDays(1),
-  },
-  { id: 'netflix', name: '넷플릭스', amount: 13500, cycle: 1, unit: '개월', nextDate: inDays(5) },
-  { id: 'melon', name: '멜론', amount: 10900, cycle: 1, unit: '개월', nextDate: inDays(9) },
-  { id: 'coupang', name: '쿠팡 와우', amount: 7890, cycle: 1, unit: '개월', nextDate: inDays(12) },
-  { id: 'millie', name: '밀리의 서재', amount: 9900, cycle: 1, unit: '개월', nextDate: inDays(20) },
-];
-const ENDED_SAMPLE: EndedSubscription[] = [
-  {
-    id: 'watcha',
-    name: '왓챠',
-    amount: 7900,
-    cycle: 1,
-    unit: '개월',
-    cancelledAt: inDays(-26),
-    totalSpent: 47400,
-  },
-  {
-    id: 'tving',
-    name: '티빙',
-    amount: 9900,
-    cycle: 1,
-    unit: '개월',
-    cancelledAt: inDays(-40),
-    totalSpent: 59400,
-  },
-];
+// shortcut: 구독 목록 API 연동 시 API 훅으로 교체
+const ACTIVE_SAMPLE = MANAGE_SAMPLE.filter((s) => s.status === 'active');
+const ENDED_SAMPLE = MANAGE_SAMPLE.filter((s) => s.status === 'ended');
 
 type Tab = 'active' | 'ended';
 
@@ -244,8 +201,7 @@ export const ManageScreen = ({
                       />
                     </Pressable>
                   ) : (
-                    // 행 전체가 터치 영역 → 구독 상세
-                    // shortcut: 구독 종료 탭은 지난 구독 상세(M-05)가 아직 없어 이동 없음
+                    // 행 전체가 터치 영역 → 구독 상세 (상태에 따라 M-03 · M-05)
                     <ListItem
                       key={s.id}
                       title={s.name}
@@ -255,14 +211,10 @@ export const ManageScreen = ({
                       showLogo
                       cost={formatWon(s.amount)}
                       showCost
-                      iconRightAction={
-                        tab === 'active'
-                          ? {
-                              accessibilityLabel: `${s.name} 상세`,
-                              onPress: () => router.push(`/subscription/${s.id}`),
-                            }
-                          : undefined
-                      }
+                      iconRightAction={{
+                        accessibilityLabel: `${s.name} 상세`,
+                        onPress: () => router.push(`/manage/detail/${s.id}`),
+                      }}
                     />
                   ),
                 )}

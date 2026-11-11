@@ -19,6 +19,8 @@ interface ListItemProps {
   cost?: string;
   showCost?: boolean;
   costColor?: string;
+  // 금액 자리에 긴 글(구독 상세 정보 값 등)을 둘 때 최대 폭 120 대신 남는 폭까지 쓰고 말줄임
+  costFullWidth?: boolean;
   logo?: ImageSourcePropType | ComponentType<SvgProps>;
   showLogo?: boolean;
   iconLeft?: ComponentType<SvgProps>;
@@ -42,6 +44,7 @@ export const ListItem = ({
   cost,
   showCost,
   costColor = 'text-text-primary',
+  costFullWidth,
   logo,
   showLogo,
   iconLeft: IconLeft,
@@ -106,7 +109,14 @@ export const ListItem = ({
       {((showCost && cost) || (showIconRight && IconRight)) && (
         <Trailing action={trailingAction}>
           {showCost && cost && (
-            <Text numberOfLines={1} className={cn('max-w-[120px] text-body3-semibold', costColor)}>
+            <Text
+              numberOfLines={1}
+              className={cn(
+                costFullWidth ? 'shrink' : 'max-w-[120px]',
+                'text-body3-semibold',
+                costColor,
+              )}
+            >
               {cost}
             </Text>
           )}
