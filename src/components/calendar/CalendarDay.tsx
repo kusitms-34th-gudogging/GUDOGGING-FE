@@ -37,13 +37,24 @@ const BAR_COLORS: Record<CheckupCategory, string> = {
 
 type DayState = 'default' | 'today' | 'selected' | 'disabled';
 
-const circleVariants = cva('size-[28px] items-center justify-center rounded-full', {
-  variants: {
-    state: { default: '', today: 'bg-bg-dim', selected: 'bg-bg-brand', disabled: '' },
+// 선택이 바뀌면 이전 칸은 흐려지고 새 칸은 진해지며 색이 서서히 바뀜. 배경·글자 각각 transition (transition.md)
+// 슬라이딩 표시(useSlidingIndicator)는 가로 한 줄용이라 주를 넘나드는 달력엔 안 맞아 칸마다 전환
+const circleVariants = cva(
+  'size-[28px] items-center justify-center rounded-full transition-colors duration-200',
+  {
+    variants: {
+      // 배경 없는 상태도 bg-transparent로 둬야 선택이 풀릴 때 색이 서서히 빠짐
+      state: {
+        default: 'bg-transparent',
+        today: 'bg-bg-dim',
+        selected: 'bg-bg-brand',
+        disabled: 'bg-transparent',
+      },
+    },
   },
-});
+);
 
-const dateVariants = cva('text-center', {
+const dateVariants = cva('text-center transition-colors duration-200', {
   variants: {
     state: {
       default: 'text-body3-semibold text-text-primary',
