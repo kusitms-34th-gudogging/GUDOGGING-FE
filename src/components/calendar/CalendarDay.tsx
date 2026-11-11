@@ -92,7 +92,12 @@ export const CalendarDay = ({
             <>
               <View className="flex-row gap-s2">
                 {items.slice(0, MAX_LOGOS).map((s) => (
-                  <Image key={s.id} source={s.logo} className="size-[20px] rounded-full" />
+                  <Image
+                    key={s.id}
+                    source={s.logo}
+                    accessibilityLabel={s.name}
+                    className="size-[20px] rounded-full"
+                  />
                 ))}
               </View>
               {more > 0 && (
