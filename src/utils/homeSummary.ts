@@ -63,7 +63,7 @@ export const upcomingPayments = (subs: HomeSubscription[], today: Date) => {
 };
 
 // 월로 환산한 금액 (원 단위 반올림)
-const monthly = ({ amount, cycle, unit }: HomeSubscription) => {
+export const monthly = ({ amount, cycle, unit }: HomeSubscription) => {
   const perMonth = { 일: 365 / 12, 주: 52 / 12, 개월: 1, 년: 1 / 12 }[unit];
   return Math.round((amount * perMonth) / cycle);
 };

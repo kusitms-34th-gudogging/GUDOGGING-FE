@@ -4,13 +4,22 @@ import { cn } from '@/utils/cn';
 
 interface SegmentProps {
   label: string;
+  // 라벨 뒤 개수. 선택되면 브랜드색 굵게 (구독 중 6)
+  count?: number;
   selected: boolean;
   onSelect: () => void;
   onLayout?: (e: LayoutChangeEvent) => void;
   className?: string;
 }
 
-export const Segment = ({ label, selected, onSelect, onLayout, className }: SegmentProps) => (
+export const Segment = ({
+  label,
+  count,
+  selected,
+  onSelect,
+  onLayout,
+  className,
+}: SegmentProps) => (
   <Pressable
     accessibilityRole="tab"
     accessibilityState={{ selected }}
@@ -32,6 +41,9 @@ export const Segment = ({ label, selected, onSelect, onLayout, className }: Segm
       )}
     >
       {label}
+      {count !== undefined && (
+        <Text className={cn(selected && 'text-text-brand text-body3-bold')}> {count}</Text>
+      )}
     </Text>
   </Pressable>
 );

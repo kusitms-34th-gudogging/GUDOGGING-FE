@@ -174,3 +174,42 @@ it('사전 등록 서비스는 그 서비스의 카테고리를 기본값으로 
 
   expect(screen.getByText('음악')).toBeOnTheScreen();
 });
+
+it('지난 구독 재등록은 기존 정보로 채운 새 직접 입력으로 열린다', async () => {
+  jest.setSystemTime(new Date(2026, 10, 12, 10));
+  // 기본값(기타 · 1개월 · 웹·직접 결제)과 다른 값이라야 채워졌는지 구분됨
+  await renderRouter(
+    {
+      'register/input': () => (
+        <RegisterServiceInputScreen
+          prefill={{
+            name: '왓챠',
+            category: '음악',
+            amount: 7900,
+            cycle: 2,
+            unit: '주',
+            paidAt: 'appstore',
+          }}
+        />
+      ),
+    },
+    { initialUrl: '/register/input' },
+  );
+
+  // 사전 등록 서비스가 아니라 서비스명 입력란이 보이고, 기존 이름으로 채워 둠
+  expect(screen.getByLabelText('서비스명')).toHaveDisplayValue('왓챠');
+  expect(screen.getByRole('button', { name: '카테고리' })).toHaveAccessibilityValue({
+    text: '음악',
+  });
+  expect(screen.getByLabelText('결제 금액')).toHaveDisplayValue('7,900');
+  expect(screen.getByLabelText('결제 주기')).toHaveDisplayValue('2');
+  expect(screen.getByRole('button', { name: '결제 주기 단위' })).toHaveAccessibilityValue({
+    text: '주',
+  });
+  expect(screen.getByRole('tab', { name: 'App Store' })).toBeSelected();
+  // 다음 결제일은 새로 정해야 해서 채우지 않고 오늘
+  expect(screen.getByRole('button', { name: '다음 결제일' })).toHaveAccessibilityValue({
+    text: '2026.11.12',
+  });
+  expect(screen.getByRole('button', { name: '저장하기' })).toBeEnabled();
+});

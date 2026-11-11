@@ -9,6 +9,7 @@ import { Segment } from './Segment';
 interface SegmentedControlOption<T extends string> {
   value: T;
   label: string;
+  count?: number;
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -44,6 +45,7 @@ export const SegmentedControl = <T extends string>({
         <Segment
           key={option.value}
           label={option.label}
+          count={option.count}
           selected={option.value === selected}
           onSelect={() => onSelect(option.value)}
           onLayout={onItemLayout(index)}
