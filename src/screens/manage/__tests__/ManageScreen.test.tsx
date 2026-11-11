@@ -24,7 +24,11 @@ const ended: EndedSubscription[] = [
 
 const renderManage = async (props: Parameters<typeof ManageScreen>[0]) => {
   await renderRouter(
-    { index: () => <ManageScreen {...props} />, 'register/index': () => null },
+    {
+      index: () => <ManageScreen {...props} />,
+      'register/index': () => null,
+      'subscription/[id]': () => null,
+    },
     { initialUrl: '/' },
   );
   return userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
@@ -79,5 +83,13 @@ describe('ManageScreen', () => {
     expect(screen.getByRole('tab', { name: '구독 중 1' })).toBeOnTheScreen();
     // 삭제가 끝나면 선택 모드에서 빠짐
     expect(screen.getByText('월 10,000원')).toBeOnTheScreen();
+  });
+
+  it('구독 중 행을 누르면 그 구독의 상세로 간다', async () => {
+    const user = await renderManage({ active, ended });
+
+    await user.press(screen.getByRole('button', { name: '빠른 결제 상세' }));
+
+    expect(screen).toHavePathname('/subscription/a');
   });
 });
