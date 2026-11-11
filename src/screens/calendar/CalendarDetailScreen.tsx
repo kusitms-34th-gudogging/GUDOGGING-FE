@@ -7,6 +7,7 @@ import { Badge } from '@/components/common/Badge';
 import { DetailCostCard } from '@/components/common/DetailCostCard';
 import { Divider, ServiceHeader } from '@/components/common/DetailParts';
 import { ListItem } from '@/components/common/ListItem';
+import { Modal } from '@/components/common/Modal';
 import { MoreMenu } from '@/components/common/MoreMenu';
 import { TextArea } from '@/components/common/TextArea';
 import { TopBar } from '@/components/common/TopBar';
@@ -14,6 +15,7 @@ import { type CalendarPayment, nextPaymentDate } from '@/constants/calendar';
 import { PAID_AT } from '@/constants/services';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
 import { monthly } from '@/utils/homeSummary';
+import { fillName } from '@/utils/josa';
 
 const monthDay = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
 const fullDate = (d: Date) => `${d.getFullYear()}년 ${monthDay(d)}`;
@@ -30,6 +32,7 @@ interface CalendarDetailScreenProps {
 // C-03 캘린더 결제 일정 상세
 export const CalendarDetailScreen = ({ payment: p }: CalendarDetailScreenProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const close = () => setMenuOpen(false);
 
   return (
@@ -41,14 +44,33 @@ export const CalendarDetailScreen = ({ payment: p }: CalendarDetailScreenProps) 
         showAction2={false}
         action1={{ icon: MoreIcon, accessibilityLabel: '더보기', onPress: () => setMenuOpen(true) }}
       />
-      {/* shortcut: 편집 화면·삭제 API가 아직 없어 메뉴만 닫힘 */}
+      {/* shortcut: 편집 화면이 아직 없어 편집은 메뉴만 닫힘 */}
       <MoreMenu
         visible={menuOpen}
         onClose={close}
         options={[
           { label: '편집', onSelect: close },
-          { label: '삭제', destructive: true, onSelect: close },
+          {
+            label: '삭제',
+            destructive: true,
+            onSelect: () => {
+              close();
+              setDeleteOpen(true);
+            },
+          },
         ]}
+      />
+      {/* C-04 삭제되면 캘린더로 돌아감 (Figma 메모)
+          shortcut: 삭제 API가 없어 샘플에서 지워지지 않음, 연동 시 삭제 후 캘린더 목록 다시 불러오기 */}
+      <Modal
+        visible={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        buttons="both"
+        title={fillName('{name}을 삭제할까요?', p.name)}
+        description="삭제하면 모든 정보가 사라져요."
+        cancelLabel="취소"
+        confirmLabel="삭제하기"
+        onConfirm={() => router.back()}
       />
       <ScrollView contentContainerClassName="gap-s20 pb-[14px] pt-stack-md">
         <View className="gap-stack-md px-screen-x">
