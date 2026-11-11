@@ -1,20 +1,15 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import Animated, {
-  type EntryExitAnimationFunction,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
 
 import { ChevronDownIcon, MoreIcon, TrashIcon } from '@/assets/icons';
 import { Button } from '@/components/common/Button';
-import { DropdownOption } from '@/components/common/DropdownOption';
 import { FloatingButton } from '@/components/common/FloatingButton';
 import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { TopBar } from '@/components/common/TopBar';
+import { MoreMenu } from '@/components/manage/MoreMenu';
 import { cn } from '@/utils/cn';
 import { formatWon } from '@/utils/formatPayment';
 import { daysUntil, type HomeSubscription, monthly } from '@/utils/homeSummary';
@@ -83,18 +78,6 @@ const activeSubtitle = (s: HomeSubscription, today: Date) => {
     s.unit === '개월' && s.cycle === 1 ? `매월 ${s.nextDate.getDate()}일` : monthDay(s.nextDate);
   return `${when} · D-${daysUntil(s.nextDate, today)}`;
 };
-// iOS 풀다운 메뉴처럼 scale 0.9 → 1 + 페이드 (0.25s spring)
-const popIn: EntryExitAnimationFunction = () => {
-  'worklet';
-  return {
-    initialValues: { opacity: 0, transform: [{ scale: 0.9 }] },
-    animations: {
-      opacity: withTiming(1, { duration: 250 }),
-      transform: [{ scale: withSpring(1, { duration: 250 }) }],
-    },
-  };
-};
-
 const sumMonthly = (subs: HomeSubscription[]) => subs.reduce((sum, s) => sum + monthly(s), 0);
 
 interface ManageScreenProps {
@@ -148,39 +131,22 @@ export const ManageScreen = ({
 
   return (
     <View className="pt-safe pb-safe flex-1 bg-bg-default">
-      {/* 더보기 메뉴가 목록·바깥 닫기 영역 위에 오게 */}
-      <View className="z-20">
-        <TopBar
-          title="구독 관리"
-          showAction2={false}
-          showAction1={!isEmpty}
-          action1={{
-            icon: MoreIcon,
-            accessibilityLabel: '더보기',
-            onPress: () => setMenuOpen((o) => !o),
-          }}
-        />
-        {menuOpen && (
-          // ⋯ 버튼 자리에서 아래로 펼침, 배경 dim 없음
-          <Animated.View
-            entering={popIn}
-            accessibilityRole="menu"
-            className="absolute right-inset-md top-[36px] w-[160px] rounded-md bg-surface-raised p-inset-2xs shadow-elevation-2"
-          >
-            {/* 삭제 선택 중 빠져나가는 동작은 디자인에 없어 같은 메뉴에서 '선택 취소'로 */}
-            <DropdownOption
-              label={selecting ? '선택 취소' : '삭제'}
-              destructive={!selecting}
-              selected={false}
-              onSelect={() => {
-                setMenuOpen(false);
-                if (selecting) stopSelecting();
-                else setSelecting(true);
-              }}
-            />
-          </Animated.View>
-        )}
-      </View>
+      <TopBar
+        title="구독 관리"
+        showAction2={false}
+        showAction1={!isEmpty}
+        action1={{ icon: MoreIcon, accessibilityLabel: '더보기', onPress: () => setMenuOpen(true) }}
+      />
+      {/* 삭제 선택 중 빠져나가는 동작은 디자인에 없어 같은 메뉴에서 '선택 취소'로 */}
+      <MoreMenu
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        options={[
+          selecting
+            ? { label: '선택 취소', onSelect: stopSelecting }
+            : { label: '삭제', destructive: true, onSelect: () => setSelecting(true) },
+        ]}
+      />
       {isEmpty ? (
         // 떠 있는 탭바(52 + 하단 4)를 빼고 남은 영역에서 세로 중앙
         <View className="flex-1 items-center justify-center gap-stack-md px-screen-x pb-[56px]">
@@ -278,7 +244,8 @@ export const ManageScreen = ({
                       />
                     </Pressable>
                   ) : (
-                    // shortcut: 행을 누르면 구독 상세(M-03·M-05)로 가야 하는데 화면이 없어 이동 없음
+                    // 행 전체가 터치 영역 → 구독 상세
+                    // shortcut: 구독 종료 탭은 지난 구독 상세(M-05)가 아직 없어 이동 없음
                     <ListItem
                       key={s.id}
                       title={s.name}
@@ -288,6 +255,14 @@ export const ManageScreen = ({
                       showLogo
                       cost={formatWon(s.amount)}
                       showCost
+                      iconRightAction={
+                        tab === 'active'
+                          ? {
+                              accessibilityLabel: `${s.name} 상세`,
+                              onPress: () => router.push(`/subscription/${s.id}`),
+                            }
+                          : undefined
+                      }
                     />
                   ),
                 )}
@@ -306,15 +281,6 @@ export const ManageScreen = ({
             />
           </View>
         </>
-      )}
-      {menuOpen && (
-        // 메뉴 바깥을 누르면 닫힘
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="메뉴 닫기"
-          onPress={() => setMenuOpen(false)}
-          className="absolute inset-0 z-10"
-        />
       )}
       <Modal
         visible={confirmOpen}
