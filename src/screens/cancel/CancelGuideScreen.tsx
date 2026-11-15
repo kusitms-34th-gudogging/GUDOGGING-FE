@@ -9,7 +9,6 @@ import { Modal } from '@/components/common/Modal';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { TopBar } from '@/components/common/TopBar';
 import { type CancelGuide, DEFAULT_WEB_GUIDE } from '@/constants/cancel';
-import { endSubscription } from '@/constants/manage';
 import { fillName } from '@/utils/josa';
 
 const STEP_ICONS = [Step1Icon, Step2Icon, Step3Icon];
@@ -44,12 +43,8 @@ export const CancelGuideScreen = ({ subscriptionId, name, guide }: CancelGuideSc
       .catch(() => {});
   };
 
-  // shortcut: 해지 API 없이 샘플만 구독 종료로 바꿈, 연동 시 구독 종료·해지일 저장·점검 알림 중단 API로 교체
-  // 해지를 시작한 구독 상세로 돌아가 구독 종료(M-05)로 표시
-  const onComplete = () => {
-    endSubscription(subscriptionId);
-    router.dismissTo(`/manage/detail/${subscriptionId}`);
-  };
+  // shortcut: 해지 API 없이 구독 상세로만 돌아감, 연동 시 구독 종료·해지일 저장·점검 알림 중단 후 이동
+  const onComplete = () => router.dismissTo(`/manage/detail/${subscriptionId}`);
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">

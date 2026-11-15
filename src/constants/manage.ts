@@ -160,18 +160,3 @@ export const MANAGE_SAMPLE: SubscriptionDetail[] = [
     totalSpent: 59400,
   },
 ];
-
-// shortcut: 해지 확인용으로 메모리 샘플만 구독 종료로 바꿈 (새로고침하면 구독 중). 해지 API 연동 시 삭제
-export const endSubscription = (id: string) => {
-  const i = MANAGE_SAMPLE.findIndex((s) => s.id === id);
-  const s = MANAGE_SAMPLE[i];
-  if (s?.status !== 'active') return;
-  // 총 지출은 값이 없어 1회 결제 금액으로 대신함, 지난 점검은 종료 화면 형식이 달라 버림
-  MANAGE_SAMPLE[i] = {
-    ...s,
-    status: 'ended',
-    cancelledAt: new Date(),
-    totalSpent: s.amount,
-    lastCheckup: undefined,
-  };
-};
