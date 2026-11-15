@@ -5,27 +5,25 @@ import { Text, View } from 'react-native';
 import { CheckCircleIcon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
 import { Modal } from '@/components/common/Modal';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useGmailLink } from '@/hooks/useGmailLink';
-
-// shortcut: Gmail OAuth 없이 고정 주소로 연결됨 표시, 연동 작업 시 OAuth 결과 주소로 교체
-const SAMPLE_GMAIL = 'suum.mail@gmail.com';
+import { useToast } from '@/hooks/useToast';
+import { connectGmailAccount, disconnectGmailAccount } from '@/lib/account';
 
 interface MypageGmailScreenProps {
-  // 연결된 주소, 사용자가 계정 선택·권한 동의를 취소하면 null, 실패하면 throw
-  // shortcut: OAuth 없어 항상 성공, 연동 작업 시 Google 로그인 요청으로 교체
-  connectGmail?: () => Promise<string | null>;
-  // shortcut: 해제 API 없어 항상 성공, API 연동 시 해제 요청 함수로 교체
-  disconnectGmail?: () => Promise<void>;
+  connectGmail?: typeof connectGmailAccount;
+  disconnectGmail?: typeof disconnectGmailAccount;
 }
 
-// E-02 미연결 · E-03 연결됨 · 연결·해제 실패 시 E-04
+// E-02 미연결 · E-03 연결됨 · 연결 실패 시 E-04, 해제 실패 시 E-03 유지 + 토스트
 export const MypageGmailScreen = ({
-  connectGmail = async () => SAMPLE_GMAIL,
-  disconnectGmail = async () => {},
+  connectGmail = connectGmailAccount,
+  disconnectGmail = disconnectGmailAccount,
 }: MypageGmailScreenProps) => {
   const { gmail, setGmail } = useGmailLink();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const { show } = useToast();
 
   const connect = async () => {
     try {
@@ -43,7 +41,8 @@ export const MypageGmailScreen = ({
       await disconnectGmail();
       setGmail(null);
     } catch {
-      router.push('/mypage/gmail-failed');
+      // 연결 상태 유지 (화면설계서 E-03b). shortcut: 안내 문구·방식 미정, 정해지면 교체
+      show({ type: 'error', message: '연결을 해제하지 못했어요. 다시 시도해 주세요.' });
     }
   };
 
@@ -73,6 +72,7 @@ export const MypageGmailScreen = ({
               : '로그인 계정과 별도로 연결할 수 있어요.'}
           </Text>
         </View>
+        <ToastOutlet className="bottom-0 pb-stack-sm" />
       </View>
       <View className="pb-safe px-screen-x">
         <Cta
