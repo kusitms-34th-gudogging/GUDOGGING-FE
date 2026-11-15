@@ -56,7 +56,7 @@ test('최종 확인에서 계속 이용하기를 누르면 탈퇴하지 않고 �
 
 test('탈퇴가 실패하면 데이터를 지우지 않고 탈퇴 실패 화면으로 간다', async () => {
   useGmailLink.setState({ gmail: 'suum.mail@gmail.com' });
-  await renderFromMypage({ withdrawAccount: () => Promise.reject(new Error('fail')) });
+  await renderFromMypage({ withdraw: () => Promise.reject(new Error('fail')) });
 
   await userEvent.press(screen.getByRole('button', { name: '탈퇴하기' }));
   await userEvent.press(screen.getAllByRole('button', { name: '탈퇴하기' }).at(-1)!);

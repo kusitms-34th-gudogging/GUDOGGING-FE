@@ -1,12 +1,25 @@
 import { userEvent } from '@testing-library/react-native';
+import { Slot } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
 import MypageGmailRoute from '@/app/mypage/gmail';
+import { ToastProvider } from '@/components/common/ToastProvider';
 import { useGmailLink } from '@/hooks/useGmailLink';
 import { MypageScreen } from '@/screens/mypage/MypageScreen';
 
+// Gmail 연동 화면의 토스트용 (앱에선 루트 레이아웃이 감쌈)
+const ToastLayout = () => (
+  <ToastProvider>
+    <Slot />
+  </ToastProvider>
+);
+
 test('Gmail 연동 행을 누르면 Gmail 연동 화면으로 이동한다', async () => {
-  await renderRouter({ index: () => <MypageScreen />, 'mypage/gmail': MypageGmailRoute });
+  await renderRouter({
+    _layout: ToastLayout,
+    index: () => <MypageScreen />,
+    'mypage/gmail': MypageGmailRoute,
+  });
 
   await userEvent.press(screen.getByRole('button', { name: 'Gmail 연동' }));
 
