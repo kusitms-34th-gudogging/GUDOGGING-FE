@@ -92,10 +92,7 @@ export const CalendarDetailScreen = ({ payment: p, date, onDelete }: CalendarDet
         </View>
         <View className="gap-stack-md">
           <View className="gap-stack-sm px-screen-x">
-            <Text
-              accessibilityRole="header"
-              className="px-[2px] text-text-primary text-body2-semibold"
-            >
+            <Text accessibilityRole="header" className="text-text-primary text-body1-semibold">
               결제
             </Text>
             <View>
@@ -115,7 +112,7 @@ export const CalendarDetailScreen = ({ payment: p, date, onDelete }: CalendarDet
                 <View className="flex-row items-center gap-stack-xs">
                   <Text
                     accessibilityRole="header"
-                    className="px-[2px] text-text-primary text-body2-semibold"
+                    className="text-text-primary text-body1-semibold"
                   >
                     최근 점검
                   </Text>
