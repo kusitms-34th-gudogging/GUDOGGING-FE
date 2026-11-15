@@ -11,12 +11,12 @@ const renderFromMypage = async () => {
   await renderRouter({
     index: () => null,
     'mypage/withdraw': () => <MypageWithdrawScreen />,
-    login: () => null,
+    'mypage/withdraw-done': () => null,
   });
   await act(() => router.push('/mypage/withdraw'));
 };
 
-test('최종 확인에서 탈퇴하기를 누르면 기기의 계정 데이터를 비우고 로그인 화면으로 간다', async () => {
+test('최종 확인에서 탈퇴하기를 누르면 기기의 계정 데이터를 비우고 탈퇴 완료 화면으로 간다', async () => {
   useGmailLink.setState({ gmail: 'suum.mail@gmail.com' });
   useRegisterDraft.setState({ selectedIds: ['netflix'] });
   useNotificationSettings.setState({ checkupReminder: true });
@@ -26,7 +26,7 @@ test('최종 확인에서 탈퇴하기를 누르면 기기의 계정 데이터�
   // 팝업의 탈퇴하기 (화면 버튼과 이름이 같아 마지막 것)
   await userEvent.press(screen.getAllByRole('button', { name: '탈퇴하기' }).at(-1)!);
 
-  expect(screen).toHavePathname('/login');
+  expect(screen).toHavePathname('/mypage/withdraw-done');
   expect(useGmailLink.getState().gmail).toBeNull();
   expect(useRegisterDraft.getState().selectedIds).toEqual([]);
   expect(useNotificationSettings.getState().checkupReminder).toBe(false);

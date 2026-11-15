@@ -11,13 +11,13 @@ import { useGmailLink } from '@/hooks/useGmailLink';
 import { useNotificationSettings } from '@/hooks/useNotificationSettings';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 
-// shortcut: 탈퇴 API 없음, 기기에 남은 계정 데이터만 비우고 로그인 화면으로. 인증 연동 시 탈퇴 요청·토큰 삭제 추가
+// shortcut: 탈퇴 API 없음, 기기에 남은 계정 데이터만 비우고 완료 화면으로. 인증 연동 시 탈퇴 요청·토큰 삭제 추가
 const withdraw = () => {
   useGmailLink.getState().setGmail(null);
   useRegisterDraft.getState().reset();
   useCheckupDraft.getState().reset();
   useNotificationSettings.getState().setCheckupReminder(false);
-  router.replace('/login');
+  router.replace('/mypage/withdraw-done');
 };
 
 // E-07 회원 탈퇴 안내 · E-08 최종 확인 팝업
