@@ -41,8 +41,8 @@ export const CheckupCancelScreen = ({ subscription }: CheckupCancelScreenProps) 
   // 선택지 1개 이상 또는 직접 입력 내용이 있으면 활성화 (공백만은 빈 값)
   const canSubmit = picked.length > 0 || (customOn && custom.trim() !== '');
 
-  // ponytail: 결제 경로별 해지 안내(X-01·X-03·X-04)와 이유 저장 API가 생기면 연결. 건너뛰기는 이유 없이 같은 곳으로
-  const goGuide = () => {};
+  // ponytail: 이유 저장 API가 생기면 저장 후 이동. 건너뛰기는 이유 없이 같은 곳으로
+  const goGuide = () => router.push(`/cancel/${subscription.id}`);
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
