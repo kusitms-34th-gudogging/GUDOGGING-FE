@@ -35,3 +35,11 @@ test('로그아웃을 확인하면 Gmail 연결을 비우고 로그인 화면으
   expect(screen).toHavePathname('/login');
   expect(useGmailLink.getState().gmail).toBeNull();
 });
+
+test('회원 탈퇴 행을 누르면 회원 탈퇴 화면으로 이동한다', async () => {
+  await renderRouter({ index: () => <MypageScreen />, 'mypage/withdraw': () => null });
+
+  await userEvent.press(screen.getByRole('button', { name: '회원 탈퇴' }));
+
+  expect(screen).toHavePathname('/mypage/withdraw');
+});
