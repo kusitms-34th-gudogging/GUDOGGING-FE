@@ -1,41 +1,59 @@
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AccessibilityInfo, Text, View } from 'react-native';
 
 import { Button } from '@/components/common/Button';
 import { ShakingAlertIcon } from '@/components/common/ShakingAlertIcon';
 import { StatusBlurBackground } from '@/components/common/StatusBlurBackground';
 import { TopBar } from '@/components/common/TopBar';
+import { useGmailLink } from '@/hooks/useGmailLink';
+import { clearAccountData, connectGmailAccount, withdrawAccount } from '@/lib/account';
 
 // E-04 Gmail 연동 실패 · E-10 회원 탈퇴 실패: 배치·모션은 같고 문구·버튼만 다름
-// 다시 시도하기는 직전 화면(Gmail 연동·회원 탈퇴)으로 돌아가 다시 누르게 함
-// shortcut: 연동·탈퇴 API 없음, 연동 작업 시 이 화면에서 바로 다시 요청
+// 취소(확인·취소하기)는 직전 화면(E-02·E-07)으로, 다시 시도하기는 같은 요청을 다시 보냄
 const COPY = {
-  gmail: {
-    header: 'Gmail 연동',
-    title: 'Gmail을 연결하지 못했어요.',
-    cancelLabel: '확인',
-    onCancel: () => router.back(),
-  },
-  withdraw: {
-    header: '회원 탈퇴',
-    title: '회원 탈퇴에 실패했어요.',
-    cancelLabel: '취소하기',
-    // 탈퇴를 그만두면 마이페이지로
-    onCancel: () => router.dismissTo('/mypage'),
-  },
+  gmail: { header: 'Gmail 연동', title: 'Gmail을 연결하지 못했어요.', cancelLabel: '확인' },
+  withdraw: { header: '회원 탈퇴', title: '회원 탈퇴에 실패했어요.', cancelLabel: '취소하기' },
 };
 
 interface MypageFailedScreenProps {
   kind: keyof typeof COPY;
+  connectGmail?: typeof connectGmailAccount;
+  withdraw?: typeof withdrawAccount;
 }
 
-export const MypageFailedScreen = ({ kind }: MypageFailedScreenProps) => {
-  const { header, title, cancelLabel, onCancel } = COPY[kind];
+export const MypageFailedScreen = ({
+  kind,
+  connectGmail = connectGmailAccount,
+  withdraw = withdrawAccount,
+}: MypageFailedScreenProps) => {
+  const { header, title, cancelLabel } = COPY[kind];
+  const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
     AccessibilityInfo.announceForAccessibility(title);
   }, [title]);
+
+  // 성공하면 다음 화면으로, 실패하면 이 화면을 다시 보여 줌 (안내 다시 읽기)
+  const retry = async () => {
+    setRetrying(true);
+    try {
+      if (kind === 'gmail') {
+        const gmail = await connectGmail();
+        // 연결되면 E-03, 계정 선택을 취소하면 E-02 (둘 다 직전 Gmail 연동 화면이 상태대로 보여 줌)
+        if (gmail) useGmailLink.getState().setGmail(gmail);
+        router.back();
+      } else {
+        await withdraw();
+        clearAccountData();
+        router.replace('/mypage/withdraw-done');
+      }
+    } catch {
+      AccessibilityInfo.announceForAccessibility(title);
+    } finally {
+      setRetrying(false);
+    }
+  };
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -54,8 +72,14 @@ export const MypageFailedScreen = ({ kind }: MypageFailedScreenProps) => {
       </View>
       <View className="pb-safe px-screen-x">
         <View className="mb-[14px] flex-row gap-inline-sm">
-          <Button variant="tonal" label={cancelLabel} onPress={onCancel} className="flex-1" />
-          <Button label="다시 시도하기" onPress={() => router.back()} className="flex-1" />
+          <Button
+            variant="tonal"
+            label={cancelLabel}
+            onPress={() => router.back()}
+            className="flex-1"
+          />
+          {/* 요청 중 다시 눌러 두 번 보내지 않게 */}
+          <Button label="다시 시도하기" disabled={retrying} onPress={retry} className="flex-1" />
         </View>
       </View>
     </View>

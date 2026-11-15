@@ -6,34 +6,27 @@ import { AlertCircleIcon } from '@/assets/icons';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
 import { TopBar } from '@/components/common/TopBar';
-import { useCheckupDraft } from '@/hooks/useCheckupDraft';
-import { useGmailLink } from '@/hooks/useGmailLink';
-import { useNotificationSettings } from '@/hooks/useNotificationSettings';
-import { useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { clearAccountData, withdrawAccount } from '@/lib/account';
 
 interface MypageWithdrawScreenProps {
-  // shortcut: 탈퇴 API 없어 항상 성공, API 연동 시 탈퇴 요청·토큰 삭제로 교체
-  withdrawAccount?: () => Promise<void>;
+  withdraw?: typeof withdrawAccount;
 }
 
 // E-07 회원 탈퇴 안내 · E-08 최종 확인 팝업 · 성공 시 E-9, 실패 시 E-10
 export const MypageWithdrawScreen = ({
-  withdrawAccount = async () => {},
+  withdraw: requestWithdraw = withdrawAccount,
 }: MypageWithdrawScreenProps) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const withdraw = async () => {
     try {
-      await withdrawAccount();
+      await requestWithdraw();
     } catch {
       router.push('/mypage/withdraw-failed');
       return;
     }
     // 탈퇴가 끝난 뒤에만 기기에 남은 계정 데이터를 비움
-    useGmailLink.getState().setGmail(null);
-    useRegisterDraft.getState().reset();
-    useCheckupDraft.getState().reset();
-    useNotificationSettings.getState().setCheckupReminder(false);
+    clearAccountData();
     router.replace('/mypage/withdraw-done');
   };
 
