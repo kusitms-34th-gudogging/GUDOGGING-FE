@@ -2,11 +2,11 @@ import { router } from 'expo-router';
 import { Text, View } from 'react-native';
 
 import { Cta } from '@/components/common/Cta';
+import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { PaymentListItem } from '@/components/register/PaymentListItem';
-import { ScreenTitle } from '@/components/register/ScreenTitle';
 import { FOUND_SAMPLE, type PaymentInfo, SERVICES } from '@/constants/services';
 import {
   getFoundServiceIds,

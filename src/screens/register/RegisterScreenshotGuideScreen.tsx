@@ -5,9 +5,9 @@ import { Linking, Text, View } from 'react-native';
 import { Step1Icon, Step2Icon, Step3Icon } from '@/assets/icons';
 import { Button } from '@/components/common/Button';
 import { Cta } from '@/components/common/Cta';
+import { GuideStep } from '@/components/common/GuideStep';
+import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { TopBar } from '@/components/common/TopBar';
-import { GuideStep } from '@/components/register/GuideStep';
-import { ScreenTitle } from '@/components/register/ScreenTitle';
 
 // Apple 계정의 전체 구독 목록 (App Store 구독 관리)
 const SUBSCRIPTIONS_URL = 'https://apps.apple.com/account/subscriptions';

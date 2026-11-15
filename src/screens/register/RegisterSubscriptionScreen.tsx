@@ -12,8 +12,8 @@ import {
 } from '@/assets/graphics';
 import { Modal } from '@/components/common/Modal';
 import { OptionCard } from '@/components/common/OptionCard';
+import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { TopBar } from '@/components/common/TopBar';
-import { ScreenTitle } from '@/components/register/ScreenTitle';
 import { hasRegisterDraft, useRegisterDraft } from '@/hooks/useRegisterDraft';
 
 export type RegisterMethod = 'screenshot' | 'gmail' | 'manual';
