@@ -2,9 +2,9 @@ import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { AccessibilityInfo, Text, View } from 'react-native';
 
-import { AlertBlurBackground } from '@/components/common/AlertBlurBackground';
 import { Cta } from '@/components/common/Cta';
 import { ShakingAlertIcon } from '@/components/common/ShakingAlertIcon';
+import { StatusBlurBackground } from '@/components/common/StatusBlurBackground';
 import { TopBar } from '@/components/common/TopBar';
 
 // A-08e 스크린샷·A-12e Gmail이 모션은 같고 문구만 다름
@@ -36,7 +36,7 @@ export const RegisterFailedScreen = ({ source }: RegisterFailedScreenProps) => {
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
-      <AlertBlurBackground />
+      <StatusBlurBackground />
       <TopBar
         variant="detail"
         title={header}

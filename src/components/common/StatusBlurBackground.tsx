@@ -38,9 +38,20 @@ const TEXT_POOL = [
   [1, 0],
 ];
 
-// 인식 실패(A-08e·A-12e) 배경: 빨간 블러가 계속 일렁이고, 아이콘·문구 뒤 흰 영역은 고정
+// 결과 화면 블러 색: 인식 실패(A-08e·A-12e)·연동 실패는 빨강, 탈퇴 완료(E-9)는 초록
+const TONES = {
+  error: { wash: colors.red['200'], core: [colors.red['600'], colors.red['500']] },
+  success: { wash: colors.success['200'], core: [colors.success['600'], colors.success['500']] },
+};
+
+interface StatusBlurBackgroundProps {
+  tone?: keyof typeof TONES;
+}
+
+// 결과 화면 배경: 블러가 계속 일렁이고, 아이콘·문구 뒤 흰 영역은 고정
 // 812 프레임 기준 좌표를 확대 없이 상태바(44) 위부터 깔아 확인 중 화면과 그래픽 위치를 맞춤
-export const AlertBlurBackground = () => {
+export const StatusBlurBackground = ({ tone = 'error' }: StatusBlurBackgroundProps) => {
+  const { wash: washColor, core: coreColors } = TONES[tone];
   const reduceMotion = useReducedMotion();
   const fade = useSharedValue(reduceMotion ? 1 : 0);
   const wash = useSharedValue(0);
@@ -91,19 +102,19 @@ export const AlertBlurBackground = () => {
           {/* 연한 블러: 중심 (188, 280), 지름 440, sigma 60. 블러가 번질 여유까지 포함한 800 틀 */}
           <Animated.View style={washStyle} className="absolute -left-[212px] -top-[120px]">
             <Canvas className="size-[800px]">
-              <Circle cx={400} cy={400} r={220} color={colors.red['200']}>
+              <Circle cx={400} cy={400} r={220} color={washColor}>
                 <Blur blur={60} />
               </Circle>
             </Canvas>
           </Animated.View>
-          {/* 빨강 블러: 중심 (188, 280), 지름 300, sigma 60 */}
+          {/* 진한 블러: 중심 (188, 280), 지름 300, sigma 60 */}
           <Animated.View style={coreStyle} className="absolute -left-[142px] -top-[50px]">
             <Canvas className="size-[660px]">
               <Circle cx={330} cy={330} r={150}>
                 <LinearGradient
                   start={vec(255, 200.094)}
                   end={vec(405, 459.906)}
-                  colors={[colors.red['600'], colors.red['500']]}
+                  colors={coreColors}
                 />
                 <Blur blur={60} />
               </Circle>

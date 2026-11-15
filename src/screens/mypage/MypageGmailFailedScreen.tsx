@@ -2,9 +2,9 @@ import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { AccessibilityInfo, Text, View } from 'react-native';
 
-import { AlertBlurBackground } from '@/components/common/AlertBlurBackground';
 import { Button } from '@/components/common/Button';
 import { ShakingAlertIcon } from '@/components/common/ShakingAlertIcon';
+import { StatusBlurBackground } from '@/components/common/StatusBlurBackground';
 import { TopBar } from '@/components/common/TopBar';
 
 const TITLE = 'Gmail을 연결하지 못했어요.';
@@ -17,7 +17,7 @@ export const MypageGmailFailedScreen = () => {
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
-      <AlertBlurBackground />
+      <StatusBlurBackground />
       <TopBar
         variant="detail"
         title="Gmail 연동"
