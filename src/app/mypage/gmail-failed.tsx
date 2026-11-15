@@ -1,5 +1,5 @@
-import { MypageGmailFailedScreen } from '@/screens/mypage/MypageGmailFailedScreen';
+import { MypageFailedScreen } from '@/screens/mypage/MypageFailedScreen';
 
 export default function MypageGmailFailedRoute() {
-  return <MypageGmailFailedScreen />;
+  return <MypageFailedScreen kind="gmail" />;
 }

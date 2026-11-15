@@ -11,18 +11,31 @@ import { useGmailLink } from '@/hooks/useGmailLink';
 import { useNotificationSettings } from '@/hooks/useNotificationSettings';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 
-// shortcut: 탈퇴 API 없음, 기기에 남은 계정 데이터만 비우고 완료 화면으로. 인증 연동 시 탈퇴 요청·토큰 삭제 추가
-const withdraw = () => {
-  useGmailLink.getState().setGmail(null);
-  useRegisterDraft.getState().reset();
-  useCheckupDraft.getState().reset();
-  useNotificationSettings.getState().setCheckupReminder(false);
-  router.replace('/mypage/withdraw-done');
-};
+interface MypageWithdrawScreenProps {
+  // shortcut: 탈퇴 API 없어 항상 성공, API 연동 시 탈퇴 요청·토큰 삭제로 교체
+  withdrawAccount?: () => Promise<void>;
+}
 
-// E-07 회원 탈퇴 안내 · E-08 최종 확인 팝업
-export const MypageWithdrawScreen = () => {
+// E-07 회원 탈퇴 안내 · E-08 최종 확인 팝업 · 성공 시 E-9, 실패 시 E-10
+export const MypageWithdrawScreen = ({
+  withdrawAccount = async () => {},
+}: MypageWithdrawScreenProps) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const withdraw = async () => {
+    try {
+      await withdrawAccount();
+    } catch {
+      router.push('/mypage/withdraw-failed');
+      return;
+    }
+    // 탈퇴가 끝난 뒤에만 기기에 남은 계정 데이터를 비움
+    useGmailLink.getState().setGmail(null);
+    useRegisterDraft.getState().reset();
+    useCheckupDraft.getState().reset();
+    useNotificationSettings.getState().setCheckupReminder(false);
+    router.replace('/mypage/withdraw-done');
+  };
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">

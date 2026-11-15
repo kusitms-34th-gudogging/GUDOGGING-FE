@@ -7,10 +7,11 @@ import { useNotificationSettings } from '@/hooks/useNotificationSettings';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { MypageWithdrawScreen } from '@/screens/mypage/MypageWithdrawScreen';
 
-const renderFromMypage = async () => {
+const renderFromMypage = async (props: Parameters<typeof MypageWithdrawScreen>[0] = {}) => {
   await renderRouter({
     index: () => null,
-    'mypage/withdraw': () => <MypageWithdrawScreen />,
+    'mypage/withdraw': () => <MypageWithdrawScreen {...props} />,
+    'mypage/withdraw-failed': () => null,
     'mypage/withdraw-done': () => null,
   });
   await act(() => router.push('/mypage/withdraw'));
@@ -50,5 +51,16 @@ test('최종 확인에서 계속 이용하기를 누르면 탈퇴하지 않고 �
   await userEvent.press(screen.getByRole('button', { name: '계속 이용하기' }));
 
   expect(screen).toHavePathname('/mypage/withdraw');
+  expect(useGmailLink.getState().gmail).toBe('suum.mail@gmail.com');
+});
+
+test('탈퇴가 실패하면 데이터를 지우지 않고 탈퇴 실패 화면으로 간다', async () => {
+  useGmailLink.setState({ gmail: 'suum.mail@gmail.com' });
+  await renderFromMypage({ withdrawAccount: () => Promise.reject(new Error('fail')) });
+
+  await userEvent.press(screen.getByRole('button', { name: '탈퇴하기' }));
+  await userEvent.press(screen.getAllByRole('button', { name: '탈퇴하기' }).at(-1)!);
+
+  expect(screen).toHavePathname('/mypage/withdraw-failed');
   expect(useGmailLink.getState().gmail).toBe('suum.mail@gmail.com');
 });
