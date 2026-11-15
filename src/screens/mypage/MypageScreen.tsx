@@ -63,7 +63,11 @@ const getSections = (openLogout: () => void): { title: string; items: MenuItem[]
     title: '계정 관리',
     items: [
       { title: '로그아웃', icon: assetSlot(CheckColorAsset), onPress: openLogout },
-      { title: '회원 탈퇴', icon: assetSlot(AlertColorAsset) },
+      {
+        title: '회원 탈퇴',
+        icon: assetSlot(AlertColorAsset),
+        onPress: () => router.push('/mypage/withdraw'),
+      },
     ],
   },
 ];
@@ -73,7 +77,7 @@ interface MypageScreenProps {
   loginProvider?: string;
 }
 
-// shortcut: 계정 정보·약관·회원 탈퇴 행 이동은 아직 없음, 로그인 API·하위 화면 연동 시 props와 onPress 연결
+// shortcut: 계정 정보·약관 행 이동은 아직 없음, 로그인 API·하위 화면 연동 시 props와 onPress 연결
 export const MypageScreen = ({
   email = 'suum.user@icloud.com',
   loginProvider = 'Apple로 로그인',
