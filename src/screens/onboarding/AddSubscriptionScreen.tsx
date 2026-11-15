@@ -3,8 +3,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CheckIcon, Step1Icon, Step2Icon, Step3Icon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
+import { GuideStep } from '@/components/common/GuideStep';
+import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { TopBar } from '@/components/common/TopBar';
-import { GuideItem } from '@/components/onboarding/GuideItem';
 import type { LoginProvider } from '@/types/auth';
 
 // Apple 로그인은 스크린샷 안내(O-04), Google 로그인은 Gmail 연동 안내(O-05)
@@ -80,14 +81,11 @@ export const AddSubscriptionScreen = ({
       />
 
       <View className="mt-s12 flex-1 gap-section px-screen-x">
-        <View className="gap-inline-sm">
-          <Text className="text-text-primary text-head1-bold">{title}</Text>
-          <Text className="text-text-primary text-body2-regular">{description}</Text>
-        </View>
+        <ScreenTitle title={title} description={description} />
         <View className="gap-stack-lg">
           <View className="gap-stack-md">
             {guides.map((guide) => (
-              <GuideItem key={guide.label} {...guide} />
+              <GuideStep key={guide.label} {...guide} />
             ))}
           </View>
           <Text className="px-s2 text-text-secondary text-caption2-regular">

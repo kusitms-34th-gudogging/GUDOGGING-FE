@@ -3,9 +3,9 @@ import { Text, View } from 'react-native';
 
 import { CheckIcon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
+import { GuideStep } from '@/components/common/GuideStep';
+import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { TopBar } from '@/components/common/TopBar';
-import { GuideStep } from '@/components/register/GuideStep';
-import { ScreenTitle } from '@/components/register/ScreenTitle';
 
 const GUIDES = [
   'Gmail 연결은 선택 사항이에요.',
