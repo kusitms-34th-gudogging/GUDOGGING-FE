@@ -11,7 +11,11 @@ const TITLE = '새는 돈이 또 보이면\n그때 다시 불러주세요';
 
 // 탈퇴가 끝난 상태라 탈퇴 확인으로 돌아가지 않고 로그인 화면으로
 // shortcut: 확인 이후 이동(로그인 화면 / 앱 종료) 미정, 정해지면 교체
-const leave = () => router.replace('/login');
+// 쌓인 계정 화면(마이페이지·탈퇴)을 비워 로그인에서 스와이프로 돌아가지 않게
+const leave = () => {
+  router.dismissAll();
+  router.replace('/login');
+};
 
 // E-9 회원 탈퇴 완료
 export const MypageWithdrawDoneScreen = () => {
