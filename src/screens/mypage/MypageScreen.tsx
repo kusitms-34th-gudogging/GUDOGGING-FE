@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { type ComponentType, Fragment } from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
@@ -30,7 +31,11 @@ const SECTIONS = [
   {
     title: '연동 및 알림',
     items: [
-      { title: 'Gmail 연동', icon: assetSlot(MailColorAsset) },
+      {
+        title: 'Gmail 연동',
+        icon: assetSlot(MailColorAsset),
+        onPress: () => router.push('/mypage/gmail'),
+      },
       { title: '알림 설정', icon: assetSlot(BellColorAsset) },
     ],
   },
@@ -55,7 +60,7 @@ interface MypageScreenProps {
   loginProvider?: string;
 }
 
-// shortcut: 계정 정보·각 행 이동은 아직 없음, 로그인 API·하위 화면 연동 시 props와 iconRightAction 연결
+// shortcut: 계정 정보·Gmail 외 행 이동은 아직 없음, 로그인 API·하위 화면 연동 시 props와 onPress 연결
 export const MypageScreen = ({
   email = 'suum.user@icloud.com',
   loginProvider = 'Apple로 로그인',
@@ -87,6 +92,11 @@ export const MypageScreen = ({
                     showIconLeft
                     iconRight={ChevronRightIcon}
                     showIconRight
+                    iconRightAction={
+                      'onPress' in item && item.onPress
+                        ? { accessibilityLabel: item.title, onPress: item.onPress }
+                        : undefined
+                    }
                   />
                 ))}
               </View>
