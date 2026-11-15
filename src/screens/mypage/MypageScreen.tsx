@@ -36,7 +36,11 @@ const SECTIONS = [
         icon: assetSlot(MailColorAsset),
         onPress: () => router.push('/mypage/gmail'),
       },
-      { title: '알림 설정', icon: assetSlot(BellColorAsset) },
+      {
+        title: '알림 설정',
+        icon: assetSlot(BellColorAsset),
+        onPress: () => router.push('/mypage/notification'),
+      },
     ],
   },
   {
@@ -60,7 +64,7 @@ interface MypageScreenProps {
   loginProvider?: string;
 }
 
-// shortcut: 계정 정보·Gmail 외 행 이동은 아직 없음, 로그인 API·하위 화면 연동 시 props와 onPress 연결
+// shortcut: 계정 정보·약관·계정 관리 행 이동은 아직 없음, 로그인 API·하위 화면 연동 시 props와 onPress 연결
 export const MypageScreen = ({
   email = 'suum.user@icloud.com',
   loginProvider = 'Apple로 로그인',
