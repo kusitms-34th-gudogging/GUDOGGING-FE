@@ -2,6 +2,7 @@
 export { default as AlertCircleIcon } from './icon_alert_circle_regular.svg';
 export { default as AlertTriangleIcon } from './icon_alert_triangle_regular.svg';
 export { default as ArrowLeftIcon } from './icon_arrow_left_regular.svg';
+export { default as BellDotIcon } from './icon_bell_dot_regular.svg';
 export { default as BellIcon } from './icon_bell_regular.svg';
 export { default as BreathIcon } from './icon_breath_regular.svg';
 export { default as CalendarIcon } from './icon_calendar_regular.svg';
