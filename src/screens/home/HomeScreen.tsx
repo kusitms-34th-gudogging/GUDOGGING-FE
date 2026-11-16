@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
 
-import { BellIcon } from '@/assets/icons';
+import { BellDotIcon, BellIcon } from '@/assets/icons';
 import { Badge } from '@/components/common/Badge';
 import { FloatingButton } from '@/components/common/FloatingButton';
 import { ListItem } from '@/components/common/ListItem';
@@ -11,6 +11,7 @@ import { CostCard } from '@/components/home/CostCard';
 import { HomeEmptyState } from '@/components/home/HomeEmptyState';
 import { SectionHeader } from '@/components/home/SectionHeader';
 import { ServiceCard } from '@/components/home/ServiceCard';
+import { useNotifications } from '@/hooks/useNotifications';
 import { cn } from '@/utils/cn';
 import { formatWon } from '@/utils/formatPayment';
 import {
@@ -22,6 +23,7 @@ import {
   upcomingPayments,
   yearTotal,
 } from '@/utils/homeSummary';
+import { groupNotifications } from '@/utils/notification';
 
 const LOGO = require('@/assets/images/logo_placeholder.png');
 const inDays = (n: number) => {
@@ -79,6 +81,10 @@ export const HomeScreen = ({ subscriptions = SAMPLE }: HomeScreenProps) => {
   // 점검 기록이 한 건도 없으면 사용 현황 대신 점검 유도 카드 (H-03)
   const hasCheckup = subscriptions.some((s) => s.usage !== undefined);
   const checkupTarget = nextCheckupTarget(subscriptions, today);
+  // 목록에 보이는(최근 30일) 알림 중 안 읽은 게 있으면 종에 점
+  const notifications = useNotifications((s) => s.notifications);
+  const { today: todayAlerts, previous } = groupNotifications(notifications, today);
+  const hasUnread = [...todayAlerts, ...previous].some((n) => !n.read);
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -87,8 +93,11 @@ export const HomeScreen = ({ subscriptions = SAMPLE }: HomeScreenProps) => {
         title="홈"
         showBack={false}
         showAction2={false}
-        // shortcut: 알림 목록 화면 없음(설계서 '추후 추가'), 생기면 이동
-        action1={{ icon: BellIcon, accessibilityLabel: '알림', onPress: () => {} }}
+        action1={{
+          icon: hasUnread ? BellDotIcon : BellIcon,
+          accessibilityLabel: '알림',
+          onPress: () => router.push('/notification'),
+        }}
       />
       {/* 아래는 떠 있는 탭바(하단 안전 영역 + 4 + 52)에 가리지 않게 여백. 빈 상태는 화면 높이만큼 채우고 안에서 탭바만큼 뺌 */}
       <ScrollView

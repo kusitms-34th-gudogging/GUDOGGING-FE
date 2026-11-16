@@ -127,6 +127,19 @@ export const MANAGE_SAMPLE: SubscriptionDetail[] = [
     startedAt: inDays(-60),
     steady: false,
   },
+  // 알림 목록(H-04) 해지 확인 알림 샘플: 점검에서 해지하기를 골랐고 내일 결제
+  {
+    status: 'active',
+    id: 'claude',
+    name: 'Claude',
+    amount: 29000,
+    ...monthly,
+    nextDate: inDays(1),
+    category: '생산성·AI',
+    paidAt: 'web',
+    startedAt: inDays(-90),
+    steady: false,
+  },
   {
     status: 'ended',
     id: 'watcha',

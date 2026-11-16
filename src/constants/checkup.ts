@@ -245,6 +245,21 @@ export const CHECKUP_SAMPLE: CheckupSubscription[] = [
     nextDate: new Date(2026, 9, 28),
   },
   { id: 'icloud', name: 'iCloud+', amount: 1100, nextDate: new Date(2026, 10, 2) },
+  // 알림 목록(H-04) 샘플이 가리키는 구독
+  {
+    id: 'youtube',
+    name: '유튜브 프리미엄',
+    category: '영상·OTT',
+    amount: 14900,
+    nextDate: new Date(2026, 10, 20),
+  },
+  {
+    id: 'claude',
+    name: 'Claude',
+    category: '생산성·AI',
+    amount: 29000,
+    nextDate: new Date(2026, 10, 18),
+  },
 ];
 
 // K-80 "같은 {서비스명}, 더 싸게" 추천 카드

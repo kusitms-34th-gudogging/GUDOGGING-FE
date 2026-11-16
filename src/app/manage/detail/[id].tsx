@@ -5,7 +5,7 @@ import { EndedSubscriptionDetailScreen } from '@/screens/manage/EndedSubscriptio
 import { SubscriptionDetailScreen } from '@/screens/manage/SubscriptionDetailScreen';
 
 export default function SubscriptionDetailRoute() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, confirmCancel } = useLocalSearchParams<{ id: string; confirmCancel?: string }>();
   // shortcut: 샘플에서 찾음, 구독 상세 API 연동 시 훅으로 교체
   const subscription = MANAGE_SAMPLE.find((s) => s.id === id);
   if (!subscription) return null;
@@ -13,6 +13,6 @@ export default function SubscriptionDetailRoute() {
   return subscription.status === 'ended' ? (
     <EndedSubscriptionDetailScreen subscription={subscription} />
   ) : (
-    <SubscriptionDetailScreen subscription={subscription} />
+    <SubscriptionDetailScreen subscription={subscription} confirmCancel={!!confirmCancel} />
   );
 }

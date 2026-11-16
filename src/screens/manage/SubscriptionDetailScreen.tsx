@@ -8,6 +8,7 @@ import { Button } from '@/components/common/Button';
 import { DetailCostCard } from '@/components/common/DetailCostCard';
 import { Divider, ServiceHeader } from '@/components/common/DetailParts';
 import { ListItem } from '@/components/common/ListItem';
+import { Modal } from '@/components/common/Modal';
 import { MoreMenu } from '@/components/common/MoreMenu';
 import { Toggle } from '@/components/common/Toggle';
 import { TopBar } from '@/components/common/TopBar';
@@ -15,17 +16,24 @@ import type { ActiveSubscriptionDetail } from '@/constants/manage';
 import { PAID_AT } from '@/constants/services';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
 import { monthly } from '@/utils/homeSummary';
+import { fillName } from '@/utils/josa';
 
 const monthDay = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
 const fullDate = (d: Date) => `${d.getFullYear()}년 ${monthDay(d)}`;
 
 interface SubscriptionDetailScreenProps {
   subscription: ActiveSubscriptionDetail;
+  // 해지 확인 알림(N-02)으로 들어오면 해지 완료 확인 모달(X-06)을 띄운 채 시작
+  confirmCancel?: boolean;
 }
 
 // M-03 구독 상세 (구독 중)
-export const SubscriptionDetailScreen = ({ subscription: s }: SubscriptionDetailScreenProps) => {
+export const SubscriptionDetailScreen = ({
+  subscription: s,
+  confirmCancel = false,
+}: SubscriptionDetailScreenProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(confirmCancel);
   // shortcut: 화면 안에서만 바뀜, 구독 수정 API 연동 시 저장
   const [steady, setSteady] = useState(s.steady);
 
@@ -171,6 +179,16 @@ export const SubscriptionDetailScreen = ({ subscription: s }: SubscriptionDetail
           className="flex-1"
         />
       </View>
+      {/* shortcut: 해지 API 없어 모달만 닫음, 연동 시 구독 종료 처리 후 구독 종료(M-05)로 */}
+      <Modal
+        visible={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        buttons="both"
+        title={fillName('{name}을 해지했나요?', s.name)}
+        description={'해지 완료를 누르면 점검 알림이\n더 이상 오지 않아요.'}
+        cancelLabel="취소"
+        confirmLabel="해지 완료"
+      />
     </View>
   );
 };
