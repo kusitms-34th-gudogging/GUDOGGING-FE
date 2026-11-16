@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Image, type ImageSourcePropType, Text, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, Text, View } from 'react-native';
 
 import { cn } from '@/utils/cn';
 
@@ -38,6 +38,7 @@ interface NotificationItemProps extends VariantProps<typeof notificationItemVari
   time: string;
   logo?: ImageSourcePropType;
   showLogo?: boolean;
+  onPress?: () => void;
   className?: string;
 }
 
@@ -48,9 +49,15 @@ export const NotificationItem = ({
   time,
   logo,
   showLogo = true,
+  onPress,
   className,
 }: NotificationItemProps) => (
-  <View className={cn(notificationItemVariants({ state }), className)}>
+  <Pressable
+    accessibilityRole="button"
+    disabled={!onPress}
+    onPress={onPress}
+    className={cn(notificationItemVariants({ state }), 'active:opacity-pressed', className)}
+  >
     {showLogo && logo && <Image source={logo} className="size-logo-card" />}
     <View className="flex-1 gap-inset-2xs">
       <View className="flex-row items-start gap-inline-sm">
@@ -61,5 +68,5 @@ export const NotificationItem = ({
       </View>
       <Text className={notificationDescriptionVariants({ state })}>{description}</Text>
     </View>
-  </View>
+  </Pressable>
 );
