@@ -6,7 +6,7 @@ paths:
 # 아이콘 규칙
 
 - 이 폴더는 **단색 SVG 전용**. 여러 색 SVG는 다른 폴더에 (전부 currentColor로 바뀌어버림)
-- 예외: 아이콘 색을 바꾸고 일부(알림 점 등)만 색이 고정이면 여기에. 바뀔 부분만 `#000`, 고정 부분은 Figma 색 그대로 (`icon_bell_dot_regular.svg`)
+- 예외: 아이콘 색을 바꾸고 일부(알림 점 등)만 색이 고정이면 여기에. 바뀔 부분만 `#000`, 고정 부분은 Figma 색 그대로 (`icon_bell_dot_regular.svg`). 고정 부분이 검정이면 `black`으로 적음 (`#000`으로 두면 같이 바뀜)
 - 파일명: `icon_{모양}_{방향(화살표만)}_{fill|regular|thin}.svg` (소문자 snake_case)
   - 예: `icon_home_regular.svg`, `icon_arrow_left_fill.svg`
 - `index.ts`에서 컴포넌트 이름으로 export: `export { default as HomeIcon } from './icon_home_regular.svg';`
@@ -18,4 +18,4 @@ paths:
 ## 이럴 때 더 읽기
 
 - 아이콘을 새로 추가할 때 → `.claude/skills/add-icon/SKILL.md`
-- 여러 색이거나 색이 고정된 SVG면 → `.claude/rules/graphics.md`
+- 여러 색이거나 색이 고정된 SVG면 (위 예외 제외) → `.claude/rules/graphics.md`

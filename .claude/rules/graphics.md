@@ -64,4 +64,4 @@ import { WalletColorAsset } from '@/assets/graphics';
 ## 이럴 때 더 읽기
 
 - 에셋을 새로 추가할 때 → `.claude/skills/add-asset/SKILL.md`
-- 단색이고 쓰는 곳마다 색이 바뀌면(아이콘) → `.claude/rules/icons.md`
+- 쓰는 곳마다 색이 바뀌면(단색, 또는 알림 점처럼 일부만 색 고정인 아이콘) → `.claude/rules/icons.md`
