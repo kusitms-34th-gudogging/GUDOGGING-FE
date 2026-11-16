@@ -18,10 +18,12 @@ const netflix: ActiveSubscriptionDetail = {
   steady: false,
 };
 
-const renderDetail = async () => {
+const renderDetail = async (confirmCancel = false) => {
   await renderRouter(
     {
-      index: () => <SubscriptionDetailScreen subscription={netflix} />,
+      index: () => (
+        <SubscriptionDetailScreen subscription={netflix} confirmCancel={confirmCancel} />
+      ),
       'checkup/[id]/index': () => null,
       'checkup/[id]/cancel': () => null,
     },
@@ -52,5 +54,20 @@ describe('SubscriptionDetailScreen', () => {
 
     await user.press(screen.getByRole('button', { name: '해지하기' }));
     expect(screen).toHavePathname('/checkup/netflix/cancel');
+  });
+
+  it('해지 확인 알림으로 들어오면 해지 완료 확인 모달을 띄우고, 취소하면 상세에 남는다', async () => {
+    const user = await renderDetail(true);
+
+    expect(screen.getByText(/해지했나요\?/)).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: '취소' }));
+    expect(screen.queryByText(/해지했나요\?/)).not.toBeOnTheScreen();
+    expect(screen).toHavePathname('/');
+  });
+
+  it('그냥 들어오면 해지 완료 확인 모달이 없다', async () => {
+    await renderDetail();
+
+    expect(screen.queryByText(/해지했나요\?/)).not.toBeOnTheScreen();
   });
 });
