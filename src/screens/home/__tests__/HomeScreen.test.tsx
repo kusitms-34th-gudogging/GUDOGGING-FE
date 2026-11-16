@@ -21,6 +21,7 @@ const renderHome = async (subscriptions: HomeSubscription[]) => {
       'register/index': () => null,
       'checkup/[id]': () => null,
       calendar: () => null,
+      notification: () => null,
     },
     { initialUrl: '/' },
   );
@@ -92,5 +93,12 @@ describe('HomeScreen', () => {
 
     await user.press(screen.getByRole('button', { name: '구독 추가' }));
     expect(screen).toHavePathname('/register');
+  });
+
+  it('종 아이콘을 누르면 알림 목록으로 간다', async () => {
+    const user = await renderHome([]);
+
+    await user.press(screen.getByRole('button', { name: '알림' }));
+    expect(screen).toHavePathname('/notification');
   });
 });

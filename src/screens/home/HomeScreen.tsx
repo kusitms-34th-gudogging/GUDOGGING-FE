@@ -87,8 +87,11 @@ export const HomeScreen = ({ subscriptions = SAMPLE }: HomeScreenProps) => {
         title="홈"
         showBack={false}
         showAction2={false}
-        // shortcut: 알림 목록 화면 없음(설계서 '추후 추가'), 생기면 이동
-        action1={{ icon: BellIcon, accessibilityLabel: '알림', onPress: () => {} }}
+        action1={{
+          icon: BellIcon,
+          accessibilityLabel: '알림',
+          onPress: () => router.push('/notification'),
+        }}
       />
       {/* 아래는 떠 있는 탭바(하단 안전 영역 + 4 + 52)에 가리지 않게 여백. 빈 상태는 화면 높이만큼 채우고 안에서 탭바만큼 뺌 */}
       <ScrollView
