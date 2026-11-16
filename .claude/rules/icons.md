@@ -6,6 +6,7 @@ paths:
 # 아이콘 규칙
 
 - 이 폴더는 **단색 SVG 전용**. 여러 색 SVG는 다른 폴더에 (전부 currentColor로 바뀌어버림)
+- 예외: 아이콘 색을 바꾸고 일부(알림 점 등)만 색이 고정이면 여기에. 바뀔 부분만 `#000`, 고정 부분은 Figma 색 그대로 (`icon_bell_dot_regular.svg`)
 - 파일명: `icon_{모양}_{방향(화살표만)}_{fill|regular|thin}.svg` (소문자 snake_case)
   - 예: `icon_home_regular.svg`, `icon_arrow_left_fill.svg`
 - `index.ts`에서 컴포넌트 이름으로 export: `export { default as HomeIcon } from './icon_home_regular.svg';`
