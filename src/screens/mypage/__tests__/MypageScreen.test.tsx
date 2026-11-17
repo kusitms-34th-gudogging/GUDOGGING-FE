@@ -65,6 +65,11 @@ test('로그아웃을 확인하면 로그인 화면으로, 취소하면 그대�
   await userEvent.press(screen.getByRole('button', { name: '로그아웃' }));
   await userEvent.press(screen.getByRole('button', { name: '로그아웃 하기' }));
 
+  // 서버 세션 종료를 요청하고, 응답이 실패(이 테스트는 목 응답 없음 → 404)여도 기기에선 로그아웃
+  const logoutCall = jest
+    .mocked(globalThis.fetch)
+    .mock.calls.find(([url]) => String(url).endsWith('/api/v1/auth/logout'));
+  expect(logoutCall?.[1]?.method).toBe('POST');
   expect(screen).toHavePathname('/login');
 });
 

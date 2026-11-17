@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { type ComponentType, Fragment, useState } from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
@@ -16,6 +15,7 @@ import { ChevronRightIcon } from '@/assets/icons';
 import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
 import { TopBar } from '@/components/common/TopBar';
+import { useLogout } from '@/hooks/useLogout';
 import { useMe } from '@/hooks/useMe';
 
 const PROFILE = require('@/assets/images/logo_placeholder.png');
@@ -77,15 +77,13 @@ const getSections = (openLogout: () => void): { title: string; items: MenuItem[]
 // 계정 정보를 못 불러와도 메뉴는 쓸 수 있게 계정 칸만 비워 둠
 export const MypageScreen = () => {
   const { data: me } = useMe();
-  const client = useQueryClient();
+  const logoutMutation = useLogout();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const sections = getSections(() => setLogoutOpen(true));
 
-  // shortcut: 로그아웃 API는 토큰 저장과 함께 붙임, 지금은 계정 데이터 캐시만 비우고 로그인 화면으로
-  const logout = () => {
-    client.clear();
-    router.replace('/login');
-  };
+  // 서버 세션을 끝내고 기기 토큰·계정 데이터 캐시를 비운 뒤 로그인 화면으로 (실패해도 기기에선 로그아웃)
+  const logout = () =>
+    logoutMutation.mutate(undefined, { onSettled: () => router.replace('/login') });
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
