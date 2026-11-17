@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { act, renderHook } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import {
   getFoundServiceIds,
@@ -8,11 +8,15 @@ import {
   useRegisterDraft,
   useRegisterServices,
 } from '@/hooks/useRegisterDraft';
+import { createQueryWrapper, mockApi, TEST_SERVICES } from '@/lib/testing';
+
+const CATALOG = [{ id: 'netflix', name: 'Netflix', category: '영상·OTT' }];
 
 beforeEach(async () => {
   useRegisterDraft.getState().reset();
   await AsyncStorage.clear();
 });
+afterEach(() => jest.restoreAllMocks());
 
 describe('useRegisterDraft', () => {
   it('저장소에서 다시 읽으면 결제일이 Date로 돌아온다', async () => {
@@ -67,7 +71,7 @@ describe('useRegisterDraft', () => {
       'custom-b': { ...payment, name: '체크 해제한 구독' },
     };
 
-    expect(getRegisteredServices(['netflix', 'custom-a'], payments)).toEqual([
+    expect(getRegisteredServices(['netflix', 'custom-a'], payments, CATALOG)).toEqual([
       { id: 'netflix', name: 'Netflix' },
       { id: 'custom-a', name: '밀리의 서재' },
     ]);
@@ -82,7 +86,10 @@ describe('useRegisterDraft', () => {
       nextDate: new Date(2026, 10, 12),
       paidAt: 'web' as const,
     };
-    const { result } = await renderHook(() => useRegisterServices(['netflix']));
+    mockApi({ 'GET /api/v1/services': { services: TEST_SERVICES } });
+    const { result } = await renderHook(() => useRegisterServices(['netflix']), {
+      wrapper: createQueryWrapper(),
+    });
 
     await act(() => {
       useRegisterDraft.getState().setPayment('custom-1', { ...payment, name: '직접 입력 구독' });
@@ -92,7 +99,9 @@ describe('useRegisterDraft', () => {
         .setPayment('custom-found-millie', { ...payment, name: '밀리의 서재' });
     });
 
-    expect(result.current.map((s) => s.name)).toEqual(['Netflix', '직접 입력 구독']);
+    await waitFor(() =>
+      expect(result.current.map((s) => s.name)).toEqual(['Netflix', '직접 입력 구독']),
+    );
   });
 });
 

@@ -6,13 +6,13 @@ import { CloseIcon } from '@/assets/icons';
 import { Chip } from '@/components/common/Chip';
 import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
+import { QueryState } from '@/components/common/QueryState';
 import { SearchBar } from '@/components/common/SearchBar';
 import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
-import { type Service, SERVICES } from '@/constants/services';
 import { getFoundServiceIds, useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { keywordRank } from '@/utils/search';
+import { useServices } from '@/hooks/useServices';
 
 interface RegisterServiceSelectScreenProps {
   // 불러온 구독 확인(A-09)의 구독 추가하기로 왔는지
@@ -34,22 +34,15 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
     setSelectedIds(
       selectedIds.includes(id) ? selectedIds.filter((v) => v !== id) : [...selectedIds, id],
     );
-  // 칩은 선택한 순서대로
-  const selected = selectedIds.flatMap((id) => SERVICES.filter((s) => s.id === id));
-  const count = selected.length;
   const keyword = query.trim();
-  // 이름 일치율 높은 순, 카테고리로만 맞으면 맨 아래. 같은 순위는 목록 순서 (기획 답변)
-  // shortcut: 이미 등록한 서비스 제외 없음, 구독 목록 API 연동 시 제외
-  const rankOf = (s: Service) =>
-    keywordRank([s.name, s.nameKo], keyword) ??
-    // 이름 순위(0~3)보다 아래
-    (keywordRank([s.category], keyword) === undefined ? undefined : 4);
-  const results = keyword
-    ? SERVICES.map((s) => ({ s, rank: rankOf(s) }))
-        .filter((r) => r.rank !== undefined)
-        .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
-        .map((r) => r.s)
-    : SERVICES;
+  // 전체 목록(칩 이름 찾기용)과 검색 결과. 검색·순서는 서버가 정함 (명세)
+  // shortcut: 이미 등록한 서비스 제외·많이 등록한 TOP 5는 명세 응답에 필드가 없어 안 함 (노션 확인 요청)
+  const all = useServices();
+  const search = useServices(keyword);
+  const results = search.data ?? [];
+  // 칩은 선택한 순서대로
+  const selected = selectedIds.flatMap((id) => (all.data ?? []).filter((s) => s.id === id));
+  const count = selected.length;
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -94,6 +87,9 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
           <Text className="text-text-primary text-body3-semibold">
             {keyword ? '검색 결과' : '전체'}
           </Text>
+          {!search.data && (
+            <QueryState isError={search.isError} onRetry={() => void search.refetch()} />
+          )}
           <FadeScrollView className="flex-1" contentContainerClassName="gap-inline-xs">
             {results.map((s) => (
               <ListItem

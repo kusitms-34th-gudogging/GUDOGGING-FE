@@ -9,6 +9,7 @@ import { ListItem } from '@/components/common/ListItem';
 import { TopBar } from '@/components/common/TopBar';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { getRegisteredServices, useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { useServices } from '@/hooks/useServices';
 import { formatPaymentSummary, formatWon } from '@/utils/formatPayment';
 
 interface RegisterDoneScreenProps {
@@ -19,9 +20,11 @@ const HAPTIC_MS = 880;
 
 export const RegisterDoneScreen = ({ serviceIds }: RegisterDoneScreenProps) => {
   // 들어온 시점의 값으로 그리고, 등록이 끝났으니 저장소는 바로 비움 (나간 뒤 불러오기 팝업이 뜨지 않게)
+  // 서비스 목록은 서비스 선택에서 이미 불러와 캐시에 있음
+  const catalog = useServices().data ?? [];
   const [{ payments, services }] = useState(() => {
     const { payments } = useRegisterDraft.getState();
-    return { payments, services: getRegisteredServices(serviceIds, payments) };
+    return { payments, services: getRegisteredServices(serviceIds, payments, catalog) };
   });
   useEffect(() => {
     useRegisterDraft.getState().reset();

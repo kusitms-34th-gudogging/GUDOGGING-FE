@@ -6,6 +6,7 @@ import { Pressable, Text } from 'react-native';
 
 import { FOUND_SAMPLE } from '@/constants/services';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { createQueryWrapper, mockApi, TEST_SERVICES } from '@/lib/testing';
 import { RegisterServiceInputScreen } from '@/screens/register/RegisterServiceInputScreen';
 import { RegisterServiceSelectScreen } from '@/screens/register/RegisterServiceSelectScreen';
 
@@ -27,12 +28,13 @@ const renderInput = async () => {
       'register/select': () => <RegisterServiceSelectScreen />,
       'register/input': () => <RegisterServiceInputScreen serviceId="netflix" />,
     },
-    { initialUrl: '/register' },
+    { initialUrl: '/register', wrapper: createQueryWrapper() },
   );
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   await user.press(screen.getByRole('button', { name: '직접 등록하기' }));
-  await user.press(screen.getByRole('checkbox', { name: 'Netflix' }));
+  await user.press(await screen.findByRole('checkbox', { name: 'Netflix' }));
   await act(() => router.push('/register/input'));
+  await screen.findByLabelText('결제 금액');
   return user;
 };
 
@@ -40,8 +42,12 @@ beforeEach(async () => {
   jest.useFakeTimers();
   useRegisterDraft.getState().reset();
   await AsyncStorage.clear();
+  mockApi({ 'GET /api/v1/services': { services: TEST_SERVICES } });
 });
-afterEach(() => jest.useRealTimers());
+afterEach(() => {
+  jest.useRealTimers();
+  jest.restoreAllMocks();
+});
 
 describe('RegisterServiceInputScreen 이탈 팝업', () => {
   it('입력한 게 없으면 뒤로 가기에 팝업 없이 앞 화면으로 간다', async () => {
@@ -88,9 +94,10 @@ describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
         'register/found': () => null,
         'register/input': () => <RegisterServiceInputScreen serviceId={found?.id} found={found} />,
       },
-      { initialUrl: '/register/found' },
+      { initialUrl: '/register/found', wrapper: createQueryWrapper() },
     );
     await act(() => router.push('/register/input'));
+    await screen.findByLabelText('결제 금액');
     return userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   };
 
@@ -148,13 +155,13 @@ it('불러온 구독 확인에서 직접 입력으로 추가하면 그 화면으
       'register/select': () => null,
       'register/input': () => <RegisterServiceInputScreen more />,
     },
-    { initialUrl: '/register/found' },
+    { initialUrl: '/register/found', wrapper: createQueryWrapper() },
   );
   await act(() => router.push('/register/select'));
   await act(() => router.push('/register/input'));
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-  await user.type(screen.getByLabelText('서비스명'), '왓챠');
+  await user.type(await screen.findByLabelText('서비스명'), '왓챠');
   await user.type(screen.getByLabelText('결제 금액'), '7900');
   await user.press(screen.getByLabelText('다음 결제일'));
   // 시트 mock은 단위·결제일 시트를 둘 다 그려서 뒤의 결제일 시트 확인을 누름
@@ -166,13 +173,23 @@ it('불러온 구독 확인에서 직접 입력으로 추가하면 그 화면으
   expect(useRegisterDraft.getState().payments[id]?.name).toBe('왓챠');
 });
 
-it('사전 등록 서비스는 그 서비스의 카테고리를 기본값으로 채운다', async () => {
+it('사전 등록 서비스는 그 서비스의 카테고리와 요금제 기본 금액을 기본값으로 채운다', async () => {
   await renderRouter(
     { 'register/input': () => <RegisterServiceInputScreen serviceId="spotify" /> },
-    { initialUrl: '/register/input' },
+    { initialUrl: '/register/input', wrapper: createQueryWrapper() },
   );
 
-  expect(screen.getByText('음악')).toBeOnTheScreen();
+  expect(await screen.findByText('음악')).toBeOnTheScreen();
+  expect(screen.getByLabelText('결제 금액')).toHaveDisplayValue('10,900');
+});
+
+it('요금제 기본 금액이 없는 서비스는 금액을 비워 둔다', async () => {
+  await renderRouter(
+    { 'register/input': () => <RegisterServiceInputScreen serviceId="chatgpt" /> },
+    { initialUrl: '/register/input', wrapper: createQueryWrapper() },
+  );
+
+  expect(await screen.findByLabelText('결제 금액')).toHaveDisplayValue('');
 });
 
 it('지난 구독 재등록은 기존 정보로 채운 새 직접 입력으로 열린다', async () => {
@@ -193,11 +210,11 @@ it('지난 구독 재등록은 기존 정보로 채운 새 직접 입력으로 �
         />
       ),
     },
-    { initialUrl: '/register/input' },
+    { initialUrl: '/register/input', wrapper: createQueryWrapper() },
   );
 
   // 사전 등록 서비스가 아니라 서비스명 입력란이 보이고, 기존 이름으로 채워 둠
-  expect(screen.getByLabelText('서비스명')).toHaveDisplayValue('왓챠');
+  expect(await screen.findByLabelText('서비스명')).toHaveDisplayValue('왓챠');
   expect(screen.getByRole('button', { name: '카테고리' })).toHaveAccessibilityValue({
     text: '음악',
   });

@@ -7,15 +7,17 @@ import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { PaymentListItem } from '@/components/register/PaymentListItem';
-import { FOUND_SAMPLE, type PaymentInfo, SERVICES } from '@/constants/services';
+import { FOUND_SAMPLE, type PaymentInfo } from '@/constants/services';
 import {
   getFoundServiceIds,
   useRegisterDraft,
   useRegisterServices,
 } from '@/hooks/useRegisterDraft';
+import { useServices } from '@/hooks/useServices';
 
 export const RegisterFoundScreen = () => {
   const payments = useRegisterDraft((s) => s.payments);
+  const catalog = useServices().data ?? [];
   const setPayment = useRegisterDraft((s) => s.setPayment);
   const foundChecked = useRegisterDraft((s) => s.foundChecked);
   const setFoundChecked = useRegisterDraft((s) => s.setFoundChecked);
@@ -122,7 +124,7 @@ export const RegisterFoundScreen = () => {
                 !payments[f.id] &&
                 setPayment(f.id, {
                   ...f.payment,
-                  name: SERVICES.some((s) => s.id === f.id) ? undefined : f.name,
+                  name: catalog.some((s) => s.id === f.id) ? undefined : f.name,
                 }),
             );
             router.push({

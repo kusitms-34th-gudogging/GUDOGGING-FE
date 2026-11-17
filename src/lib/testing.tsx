@@ -39,3 +39,20 @@ export const mockApi = (routes: Routes) =>
     }
     return new Response(JSON.stringify({ code: 200, message: '', data: route }));
   });
+
+// 서비스 목록 응답 (GET /api/v1/services). 등록 화면 테스트 공통, id는 읽기 쉬운 값
+export const TEST_SERVICES = [
+  ['netflix', 'Netflix', 'VIDEO_OTT', 13500],
+  ['chatgpt', 'ChatGPT', 'PRODUCTIVITY_AI', null],
+  ['youtube', 'YouTube Premium', 'VIDEO_OTT', 14900],
+  ['spotify', 'Spotify', 'MUSIC', 10900],
+  ['coupang', '쿠팡 와우', 'SHOPPING_DELIVERY', 7890],
+  ['disney', '디즈니+', 'VIDEO_OTT', 9900],
+  ['tving', '티빙', 'VIDEO_OTT', 13900],
+].map(([serviceId, serviceName, category, defaultAmount]) => ({
+  serviceId,
+  serviceName,
+  category,
+  logoUrl: '',
+  defaultAmount,
+}));

@@ -8,6 +8,7 @@ import { Cta } from '@/components/common/Cta';
 import { Dial } from '@/components/common/Dial';
 import { Dropdown } from '@/components/common/Dropdown';
 import { OptionCard } from '@/components/common/OptionCard';
+import { QueryState } from '@/components/common/QueryState';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { TextField } from '@/components/common/TextField';
 import { TopBar } from '@/components/common/TopBar';
@@ -17,10 +18,11 @@ import {
   PAID_AT,
   type PaidAt,
   type PaymentInfo,
-  SERVICES,
+  type Service,
 } from '@/constants/services';
 import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { useServices } from '@/hooks/useServices';
 
 const CATEGORIES = [
   '영상·OTT',
@@ -53,13 +55,26 @@ interface RegisterServiceInputScreenProps {
   prefill?: Partial<PaymentInfo>;
 }
 
-export const RegisterServiceInputScreen = ({
+// 사전 등록 서비스의 카테고리·기본 금액이 입력란 초기값이라, 서비스 목록을 받은 뒤에 그림
+export const RegisterServiceInputScreen = (props: RegisterServiceInputScreenProps) => {
+  const { data, isError, refetch } = useServices();
+  if (!data) {
+    return (
+      <View className="pt-safe flex-1 bg-bg-default">
+        <QueryState isError={isError} onRetry={refetch} />
+      </View>
+    );
+  }
+  return <ServiceInputForm {...props} service={data.find((s) => s.id === props.serviceId)} />;
+};
+
+const ServiceInputForm = ({
   serviceId,
+  service,
   found,
   more = false,
   prefill,
-}: RegisterServiceInputScreenProps) => {
-  const service = SERVICES.find((s) => s.id === serviceId);
+}: RegisterServiceInputScreenProps & { service?: Service }) => {
   // 사전 등록 서비스(A-03)만 서비스명 잠금, 직접 입력·불러온 구독은 서비스명도 입력·수정
   const isCustom = !service;
   const payments = useRegisterDraft((s) => s.payments);
@@ -71,8 +86,11 @@ export const RegisterServiceInputScreen = ({
   const [category, setCategory] = useState<string | undefined>(
     init?.category ?? (found ? undefined : (service?.category ?? '기타')),
   );
-  // shortcut: 사전 등록 요금제 가격을 기본값으로 못 넣음, 서비스 목록 API에 가격이 생기면 기본값으로
-  const [amount, setAmount] = useState(init?.amount ? String(init.amount) : '');
+  // 값이 없으면 사전 등록 요금제 기본 금액 (서비스 목록 defaultAmount)
+  const [amount, setAmount] = useState(() => {
+    const value = init?.amount ?? service?.defaultAmount;
+    return value ? String(value) : '';
+  });
   // 값이 없으면(분석이 못 읽은 불러온 구독 포함) 기본값: 1개월 · 오늘 · 웹·직접 결제
   const [cycle, setCycle] = useState(String(init?.cycle ?? 1));
   const [unit, setUnit] = useState(init?.unit ?? '개월');

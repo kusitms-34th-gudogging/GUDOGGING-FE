@@ -1,20 +1,11 @@
+// 사전 등록 서비스 (서비스 목록 API, hooks/useServices)
 export interface Service {
   id: string;
   name: string;
-  nameKo: string;
   category: string;
+  // 사전 등록 요금제 기본 금액 (구독 정보 입력의 결제 금액 기본값)
+  defaultAmount?: number;
 }
-
-// shortcut: 샘플 서비스 목록, 서비스 목록 API 연동 시 API 훅으로 교체
-export const SERVICES: Service[] = [
-  { id: 'netflix', name: 'Netflix', nameKo: '넷플릭스', category: '영상·OTT' },
-  { id: 'chatgpt', name: 'ChatGPT', nameKo: '챗지피티', category: '생산성·AI' },
-  { id: 'youtube', name: 'YouTube Premium', nameKo: '유튜브 프리미엄', category: '영상·OTT' },
-  { id: 'spotify', name: 'Spotify', nameKo: '스포티파이', category: '음악' },
-  { id: 'coupang', name: '쿠팡 와우', nameKo: '쿠팡 와우', category: '쇼핑·멤버십' },
-  { id: 'disney', name: '디즈니+', nameKo: '디즈니 플러스', category: '영상·OTT' },
-  { id: 'tving', name: '티빙', nameKo: '티빙', category: '영상·OTT' },
-];
 
 export const PAID_AT = [
   { value: 'web', label: '웹·직접 결제' },

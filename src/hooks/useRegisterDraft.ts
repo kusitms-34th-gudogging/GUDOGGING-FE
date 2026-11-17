@@ -2,7 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { FOUND_SAMPLE, type PaymentInfo, SERVICES } from '@/constants/services';
+import { FOUND_SAMPLE, type PaymentInfo, type Service } from '@/constants/services';
+import { useServices } from '@/hooks/useServices';
 
 interface RegisterDraft {
   selectedIds: string[];
@@ -45,8 +46,9 @@ export const hasRegisterDraft = ({ selectedIds, payments, foundChecked }: Regist
 // 선택한 사전 등록 서비스 + 직접 입력한 구독 (A-04 목록). 불러온 구독을 수정한 값은 불러온 구독 확인에만 보임
 export const useRegisterServices = (serviceIds: string[]) => {
   const payments = useRegisterDraft((s) => s.payments);
+  const services = useServices().data ?? [];
   return [
-    ...SERVICES.filter((s) => serviceIds.includes(s.id)),
+    ...services.filter((s) => serviceIds.includes(s.id)),
     ...Object.entries(payments)
       .filter(([id]) => id.startsWith('custom-') && !FOUND_SAMPLE.some((f) => f.id === id))
       .map(([id, p]) => ({ id, name: p.name ?? '' })),
@@ -60,9 +62,13 @@ export const getFoundServiceIds = (payments: Record<string, PaymentInfo>) =>
     f.serviceId && (payments[f.id]?.name ?? f.name) === f.name ? [f.serviceId] : [],
   );
 
-// 등록 완료(A-05): 넘겨받은 항목만. 저장한 이름(직접 입력·불러온 구독에서 바꾼 이름)이 있으면 그 이름, 없으면 SERVICES 이름
-export const getRegisteredServices = (ids: string[], payments: Record<string, PaymentInfo>) =>
+// 등록 완료(A-05): 넘겨받은 항목만. 저장한 이름(직접 입력·불러온 구독에서 바꾼 이름)이 있으면 그 이름, 없으면 사전 등록 서비스 이름
+export const getRegisteredServices = (
+  ids: string[],
+  payments: Record<string, PaymentInfo>,
+  services: Service[],
+) =>
   ids.map((id) => ({
     id,
-    name: payments[id]?.name ?? SERVICES.find((s) => s.id === id)?.name ?? '',
+    name: payments[id]?.name ?? services.find((s) => s.id === id)?.name ?? '',
   }));

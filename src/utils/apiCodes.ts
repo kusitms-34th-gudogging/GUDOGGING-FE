@@ -49,3 +49,18 @@ const STAGE_LABEL: Record<ApiStage, string> = {
   CANCEL_RECOMMENDED: '해지 추천',
 };
 export const formatStage = (stage: ApiStage, score: number) => `${STAGE_LABEL[stage]}(${score}%)`;
+
+// 화면 값 → API 코드 (등록·수정 요청)
+const invert = <K extends string, V extends string>(map: Record<K, V>) =>
+  Object.fromEntries(Object.entries(map).map(([k, v]) => [v, k])) as Record<V, K>;
+
+// 등록 화면 카테고리 이름은 '쇼핑·멤버십', 점검 쪽은 '쇼핑·배달 멤버십'이라 둘 다 받음. 모르는 이름은 기타
+const CATEGORY_CODE: Record<string, ApiCategory> = {
+  ...invert(CATEGORY_LABEL),
+  '쇼핑·멤버십': 'SHOPPING_DELIVERY',
+};
+export const toCategoryCode = (label?: string): ApiCategory =>
+  (label && CATEGORY_CODE[label]) || 'ETC';
+export const toCycleUnitCode = (unit: string) =>
+  invert(CYCLE_UNIT)[unit as HomeSubscription['unit']] ?? 'MONTH';
+export const toPaymentMethodCode = (paidAt: PaidAt) => invert(PAID_AT_OF)[paidAt];
