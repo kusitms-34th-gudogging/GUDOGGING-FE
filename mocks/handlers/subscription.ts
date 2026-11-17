@@ -76,8 +76,10 @@ export const subscriptionHandlers = [
     db.draft = null;
     return ok('임시저장을 삭제했습니다.');
   }),
-  http.post('/api/v1/subscriptions/screenshots/analyses', () =>
-    ok('스크린샷을 분석했습니다.', {
+  http.post('/api/v1/subscriptions/screenshots/analyses', async ({ request }) => {
+    // 업로드 본문을 다 읽고 응답 (안 읽으면 큰 이미지 전송 중에 연결이 끊겨 앱에 "network connection was lost")
+    await request.formData();
+    return ok('스크린샷을 분석했습니다.', {
       candidates: [
         {
           serviceId: '5e1c9a07-5a4d-4e7b-9c21-000000000002',
@@ -116,8 +118,8 @@ export const subscriptionHandlers = [
           needsReview: true,
         },
       ],
-    }),
-  ),
+    });
+  }),
 
   http.get('/api/v1/subscriptions', ({ request }) => {
     const params = new URL(request.url).searchParams;
