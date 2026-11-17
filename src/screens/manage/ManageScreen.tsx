@@ -8,58 +8,33 @@ import { FloatingButton } from '@/components/common/FloatingButton';
 import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
 import { MoreMenu } from '@/components/common/MoreMenu';
+import { QueryState } from '@/components/common/QueryState';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
-import { MANAGE_SAMPLE } from '@/constants/manage';
+import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
+import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/cn';
 import { formatWon } from '@/utils/formatPayment';
-import { daysUntil, type HomeSubscription, monthly } from '@/utils/homeSummary';
-
-export interface EndedSubscription extends HomeSubscription {
-  cancelledAt: Date;
-  totalSpent: number;
-}
 
 const LOGO = require('@/assets/images/logo_placeholder.png');
-// shortcut: 구독 목록 API 연동 시 API 훅으로 교체
-const ACTIVE_SAMPLE = MANAGE_SAMPLE.filter((s) => s.status === 'active');
-const ENDED_SAMPLE = MANAGE_SAMPLE.filter((s) => s.status === 'ended');
 
-type Tab = 'active' | 'ended';
+type Tab = 'ACTIVE' | 'ENDED';
 
 const monthDay = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
-// 매월 결제는 '매월 17일', 그 외 주기는 다음 결제일
-const activeSubtitle = (s: HomeSubscription, today: Date) => {
-  if (!s.nextDate) return '';
-  const when =
-    s.unit === '개월' && s.cycle === 1 ? `매월 ${s.nextDate.getDate()}일` : monthDay(s.nextDate);
-  return `${when} · D-${daysUntil(s.nextDate, today)}`;
-};
-const sumMonthly = (subs: HomeSubscription[]) => subs.reduce((sum, s) => sum + monthly(s), 0);
-
-interface ManageScreenProps {
-  // 둘 다 비어 있으면 M-01(등록된 구독 없음)
-  active?: HomeSubscription[];
-  ended?: EndedSubscription[];
-}
 
 // M-01 등록된 구독 없음 · M-02 구독 중 탭(.1 더보기 · .2 삭제 선택 · .3 삭제 모달) · M-04 구독 종료 탭
-export const ManageScreen = ({
-  active = ACTIVE_SAMPLE,
-  ended = ENDED_SAMPLE,
-}: ManageScreenProps) => {
-  // shortcut: 삭제는 화면 안 목록에서만 빠짐, 구독 삭제 API 연동 시 호출 후 목록 다시 불러오기
-  const [lists, setLists] = useState({ active, ended });
-  const [tab, setTab] = useState<Tab>('active');
+export const ManageScreen = () => {
+  const [tab, setTab] = useState<Tab>('ACTIVE');
+  const { data, isError, refetch } = useSubscriptions(tab);
+  const deleteSubscriptions = useDeleteSubscriptions();
   const { show } = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const isEmpty = lists.active.length === 0 && lists.ended.length === 0;
-  const today = new Date();
+  const isEmpty = data?.activeCount === 0 && data.endedCount === 0;
 
   const stopSelecting = () => {
     setSelecting(false);
@@ -67,28 +42,26 @@ export const ManageScreen = ({
   };
   const toggle = (id: string) =>
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
-  const deletePicked = () => {
-    setLists((l) => ({
-      active: tab === 'active' ? l.active.filter((s) => !picked.includes(s.id)) : l.active,
-      ended: tab === 'ended' ? l.ended.filter((s) => !picked.includes(s.id)) : l.ended,
-    }));
-    show({ type: 'success', message: `구독 ${picked.length}개를 삭제했어요` });
-    stopSelecting();
-  };
+  const deletePicked = () =>
+    deleteSubscriptions.mutate(picked, {
+      onSuccess: () => {
+        show({ type: 'success', message: `구독 ${picked.length}개를 삭제했어요` });
+        stopSelecting();
+      },
+      // 임의: 삭제 실패 문구는 디자인에 없음
+      onError: () => show({ type: 'error', message: '구독을 삭제하지 못했어요' }),
+    });
 
-  // 결제일 순 · 해지일 순(최근 해지가 위)
+  // 정렬(결제일 순 · 해지일 순)은 서버 기본값
   // shortcut: 정렬 기준 바꾸는 메뉴는 옵션이 정해지지 않아 고정
-  const items =
-    tab === 'active'
-      ? [...lists.active]
-          .sort((a, b) => (a.nextDate?.getTime() ?? Infinity) - (b.nextDate?.getTime() ?? Infinity))
-          .map((s) => ({ ...s, subtitle: activeSubtitle(s, today) }))
-      : [...lists.ended]
-          .sort((a, b) => b.cancelledAt.getTime() - a.cancelledAt.getTime())
-          .map((s) => ({
-            ...s,
-            subtitle: `${monthDay(s.cancelledAt)} 해지 · 총 지출 ${formatWon(s.totalSpent)}`,
-          }));
+  const items = (data?.subscriptions ?? []).map((s) => ({
+    ...s,
+    subtitle:
+      tab === 'ACTIVE'
+        ? // 매월 결제는 '매월 17일', 그 외 주기는 다음 결제일
+          `${s.unit === '개월' && s.cycle === 1 ? `매월 ${s.nextDate!.getDate()}일` : monthDay(s.nextDate!)} · D-${s.dDay}`
+        : `${monthDay(s.cancelledAt!)} 해지 · 총 지출 ${formatWon(s.totalSpent!)}`,
+  }));
 
   return (
     <View className="pt-safe pb-safe flex-1 bg-bg-default">
@@ -108,7 +81,9 @@ export const ManageScreen = ({
             : { label: '삭제', destructive: true, onSelect: () => setSelecting(true) },
         ]}
       />
-      {isEmpty ? (
+      {!data ? (
+        <QueryState isError={isError} onRetry={refetch} />
+      ) : isEmpty ? (
         // 떠 있는 탭바(52 + 하단 4)를 빼고 남은 영역에서 세로 중앙
         <View className="flex-1 items-center justify-center gap-stack-md px-screen-x pb-[56px]">
           <View className="items-center gap-s2">
@@ -128,8 +103,8 @@ export const ManageScreen = ({
             <View className="w-[164px]">
               <SegmentedControl
                 options={[
-                  { value: 'active', label: '구독 중', count: lists.active.length },
-                  { value: 'ended', label: '구독 종료', count: lists.ended.length },
+                  { value: 'ACTIVE', label: '구독 중', count: data.activeCount },
+                  { value: 'ENDED', label: '구독 종료', count: data.endedCount },
                 ]}
                 selected={tab}
                 onSelect={(next) => {
@@ -164,16 +139,16 @@ export const ManageScreen = ({
                     <Text
                       className={cn(
                         'text-text-primary',
-                        tab === 'active' ? 'text-body2-semibold' : 'text-body1-semibold',
+                        tab === 'ACTIVE' ? 'text-body2-semibold' : 'text-body1-semibold',
                       )}
                     >
-                      {tab === 'active'
-                        ? `월 ${formatWon(sumMonthly(lists.active))}`
-                        : `월 ${formatWon(sumMonthly(lists.ended))} 절약`}
+                      {tab === 'ACTIVE'
+                        ? `월 ${formatWon(data.monthlyTotal)}`
+                        : `월 ${formatWon(data.monthlyTotal)} 절약`}
                     </Text>
                     <View className="flex-row items-center gap-s2 py-inline-xs">
                       <Text className="text-text-secondary text-caption1-regular">
-                        {tab === 'active' ? '결제일 순' : '해지일 순'}
+                        {tab === 'ACTIVE' ? '결제일 순' : '해지일 순'}
                       </Text>
                       <ChevronDownIcon className="size-icon-xs text-icon-secondary" />
                     </View>
@@ -197,7 +172,7 @@ export const ManageScreen = ({
                         showSubtitle
                         logo={LOGO}
                         showLogo
-                        cost={formatWon(tab === 'active' ? s.amount : monthly(s))}
+                        cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
                         showCost
                         showCheckBox
                         checked={picked.includes(s.id)}
@@ -213,7 +188,7 @@ export const ManageScreen = ({
                       showSubtitle
                       logo={LOGO}
                       showLogo
-                      cost={formatWon(tab === 'active' ? s.amount : monthly(s))}
+                      cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
                       showCost
                       iconRightAction={{
                         accessibilityLabel: `${s.name} 상세`,

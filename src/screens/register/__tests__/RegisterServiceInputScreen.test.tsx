@@ -4,8 +4,8 @@ import { router, Stack } from 'expo-router';
 import { act, renderRouter, screen } from 'expo-router/testing-library';
 import { Pressable, Text } from 'react-native';
 
-import { FOUND_SAMPLE } from '@/constants/services';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
 import { RegisterServiceInputScreen } from '@/screens/register/RegisterServiceInputScreen';
 import { RegisterServiceSelectScreen } from '@/screens/register/RegisterServiceSelectScreen';
 
@@ -27,12 +27,13 @@ const renderInput = async () => {
       'register/select': () => <RegisterServiceSelectScreen />,
       'register/input': () => <RegisterServiceInputScreen serviceId="netflix" />,
     },
-    { initialUrl: '/register' },
+    { initialUrl: '/register', wrapper: createQueryWrapper() },
   );
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   await user.press(screen.getByRole('button', { name: '직접 등록하기' }));
-  await user.press(screen.getByRole('checkbox', { name: 'Netflix' }));
+  await user.press(await screen.findByRole('checkbox', { name: 'Netflix' }));
   await act(() => router.push('/register/input'));
+  await screen.findByLabelText('결제 금액');
   return user;
 };
 
@@ -40,8 +41,12 @@ beforeEach(async () => {
   jest.useFakeTimers();
   useRegisterDraft.getState().reset();
   await AsyncStorage.clear();
+  mockApi({ 'GET /api/v1/services': { services: TEST_SERVICES } });
 });
-afterEach(() => jest.useRealTimers());
+afterEach(() => {
+  jest.useRealTimers();
+  jest.restoreAllMocks();
+});
 
 describe('RegisterServiceInputScreen 이탈 팝업', () => {
   it('입력한 게 없으면 뒤로 가기에 팝업 없이 앞 화면으로 간다', async () => {
@@ -79,7 +84,7 @@ describe('RegisterServiceInputScreen 이탈 팝업', () => {
 });
 
 describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
-  const youtube = FOUND_SAMPLE.find((f) => f.id === 'found-youtube');
+  const youtube = TEST_FOUND.find((f) => f.id === 'found-youtube');
 
   const renderFoundEdit = async (found = youtube) => {
     await renderRouter(
@@ -88,9 +93,10 @@ describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
         'register/found': () => null,
         'register/input': () => <RegisterServiceInputScreen serviceId={found?.id} found={found} />,
       },
-      { initialUrl: '/register/found' },
+      { initialUrl: '/register/found', wrapper: createQueryWrapper() },
     );
     await act(() => router.push('/register/input'));
+    await screen.findByLabelText('결제 금액');
     return userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   };
 
@@ -113,14 +119,14 @@ describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
 
   it('분석이 결제일을 못 읽었으면 오늘 날짜로 채워 둔다', async () => {
     jest.setSystemTime(new Date(2026, 10, 10, 15));
-    await renderFoundEdit(FOUND_SAMPLE.find((f) => f.id === 'found-netflix'));
+    await renderFoundEdit(TEST_FOUND.find((f) => f.id === 'found-netflix'));
 
     expect(screen.getByText('2026.11.10')).toBeOnTheScreen();
   });
 
   // 밀리의 서재: 결제일만 빠진 확인 필요 항목
   it('확인 필요 항목은 금액 에러를 켠 채로 열리고, 금액을 고치면 사라진다', async () => {
-    const user = await renderFoundEdit(FOUND_SAMPLE.find((f) => f.id === 'custom-found-millie'));
+    const user = await renderFoundEdit(TEST_FOUND.find((f) => f.id === 'custom-found-millie'));
     const helper = '금액을 정확히 읽지 못했어요. 실제 결제 금액을 확인해 주세요.';
 
     expect(screen.getByText(helper)).toBeOnTheScreen();
@@ -131,7 +137,7 @@ describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
   });
 
   it('금액 에러가 떠 있어도 금액이 있으면 수정 완료를 누를 수 있다', async () => {
-    await renderFoundEdit(FOUND_SAMPLE.find((f) => f.id === 'custom-found-millie'));
+    await renderFoundEdit(TEST_FOUND.find((f) => f.id === 'custom-found-millie'));
 
     expect(
       screen.getByText('금액을 정확히 읽지 못했어요. 실제 결제 금액을 확인해 주세요.'),
@@ -148,13 +154,13 @@ it('불러온 구독 확인에서 직접 입력으로 추가하면 그 화면으
       'register/select': () => null,
       'register/input': () => <RegisterServiceInputScreen more />,
     },
-    { initialUrl: '/register/found' },
+    { initialUrl: '/register/found', wrapper: createQueryWrapper() },
   );
   await act(() => router.push('/register/select'));
   await act(() => router.push('/register/input'));
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-  await user.type(screen.getByLabelText('서비스명'), '왓챠');
+  await user.type(await screen.findByLabelText('서비스명'), '왓챠');
   await user.type(screen.getByLabelText('결제 금액'), '7900');
   await user.press(screen.getByLabelText('다음 결제일'));
   // 시트 mock은 단위·결제일 시트를 둘 다 그려서 뒤의 결제일 시트 확인을 누름
@@ -166,50 +172,159 @@ it('불러온 구독 확인에서 직접 입력으로 추가하면 그 화면으
   expect(useRegisterDraft.getState().payments[id]?.name).toBe('왓챠');
 });
 
-it('사전 등록 서비스는 그 서비스의 카테고리를 기본값으로 채운다', async () => {
+it('사전 등록 서비스는 그 서비스의 카테고리와 요금제 기본 금액을 기본값으로 채운다', async () => {
   await renderRouter(
     { 'register/input': () => <RegisterServiceInputScreen serviceId="spotify" /> },
-    { initialUrl: '/register/input' },
+    { initialUrl: '/register/input', wrapper: createQueryWrapper() },
   );
 
-  expect(screen.getByText('음악')).toBeOnTheScreen();
+  expect(await screen.findByText('음악')).toBeOnTheScreen();
+  expect(screen.getByLabelText('결제 금액')).toHaveDisplayValue('10,900');
 });
 
-it('지난 구독 재등록은 기존 정보로 채운 새 직접 입력으로 열린다', async () => {
-  jest.setSystemTime(new Date(2026, 10, 12, 10));
-  // 기본값(기타 · 1개월 · 웹·직접 결제)과 다른 값이라야 채워졌는지 구분됨
+it('요금제 기본 금액이 없는 서비스는 금액을 비워 둔다', async () => {
   await renderRouter(
-    {
-      'register/input': () => (
-        <RegisterServiceInputScreen
-          prefill={{
-            name: '왓챠',
-            category: '음악',
-            amount: 7900,
-            cycle: 2,
-            unit: '주',
-            paidAt: 'appstore',
-          }}
-        />
-      ),
-    },
-    { initialUrl: '/register/input' },
+    { 'register/input': () => <RegisterServiceInputScreen serviceId="chatgpt" /> },
+    { initialUrl: '/register/input', wrapper: createQueryWrapper() },
   );
 
-  // 사전 등록 서비스가 아니라 서비스명 입력란이 보이고, 기존 이름으로 채워 둠
-  expect(screen.getByLabelText('서비스명')).toHaveDisplayValue('왓챠');
+  expect(await screen.findByLabelText('결제 금액')).toHaveDisplayValue('');
+});
+
+it('지난 구독 재등록은 기존 정보로 채워 잠그고, 다음 결제일만 보내 재등록한 뒤 상세로 돌아간다', async () => {
+  jest.setSystemTime(new Date(2026, 10, 12, 10));
+  mockApi({
+    'GET /api/v1/services': { services: TEST_SERVICES },
+    'GET /api/v1/subscriptions/watcha': {
+      subscriptionId: 'watcha',
+      status: 'ENDED',
+      serviceName: '왓챠',
+      category: 'MUSIC',
+      amount: 7900,
+      billingCycleValue: 2,
+      billingCycleUnit: 'WEEK',
+      nextBillingDate: '2026-10-16',
+      startedAt: '2026-04-16',
+      paymentMethod: 'APP_STORE',
+      isSteady: false,
+      canceledAt: '2026-10-16',
+      totalPaidAmount: 47600,
+      latestCheckup: null,
+      pastCheckupAverage: null,
+    },
+    'PATCH /api/v1/subscriptions/watcha/reactivate': { subscriptionId: 'watcha', status: 'ACTIVE' },
+  });
+  await renderRouter(
+    {
+      'manage/detail': () => null,
+      'register/input': () => <RegisterServiceInputScreen reactivateId="watcha" />,
+    },
+    { initialUrl: '/manage/detail', wrapper: createQueryWrapper() },
+  );
+  await act(() => router.push('/register/input'));
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+  // 기본값(기타 · 1개월 · 웹·직접 결제)과 다른 값이라야 채워졌는지 구분됨. 결제일 말고는 못 바꿈
+  expect(await screen.findByLabelText('서비스명')).toHaveDisplayValue('왓챠');
+  expect(screen.getByLabelText('서비스명')).not.toBeEnabled();
   expect(screen.getByRole('button', { name: '카테고리' })).toHaveAccessibilityValue({
     text: '음악',
   });
   expect(screen.getByLabelText('결제 금액')).toHaveDisplayValue('7,900');
+  expect(screen.getByLabelText('결제 금액')).not.toBeEnabled();
   expect(screen.getByLabelText('결제 주기')).toHaveDisplayValue('2');
   expect(screen.getByRole('button', { name: '결제 주기 단위' })).toHaveAccessibilityValue({
     text: '주',
   });
+  await user.press(screen.getByRole('tab', { name: '웹·직접 결제' }));
   expect(screen.getByRole('tab', { name: 'App Store' })).toBeSelected();
-  // 다음 결제일은 새로 정해야 해서 채우지 않고 오늘
+
+  // 다음 결제일은 새로 정해야 해서 지난 결제일이 아니라 오늘
   expect(screen.getByRole('button', { name: '다음 결제일' })).toHaveAccessibilityValue({
     text: '2026.11.12',
   });
-  expect(screen.getByRole('button', { name: '저장하기' })).toBeEnabled();
+  await user.press(screen.getByRole('button', { name: '저장하기' }));
+
+  expect(screen).toHavePathname('/manage/detail');
+  const patches = jest
+    .mocked(globalThis.fetch)
+    .mock.calls.filter(([, init]) => init?.method === 'PATCH')
+    .map(([url, init]) => [String(url), JSON.parse(String(init?.body))]);
+  expect(patches).toEqual([
+    ['https://api.test/api/v1/subscriptions/watcha/reactivate', { nextBillingDate: '2026-11-12' }],
+  ]);
+  // 재등록은 새 구독 추가가 아니라 등록 중 목록에 넣지 않음
+  expect(useRegisterDraft.getState().payments).toEqual({});
+});
+
+it('구독 편집은 기존 정보로 채우고, 고친 정보를 수정 API로 보낸 뒤 상세로 돌아간다', async () => {
+  jest.setSystemTime(new Date(2026, 10, 12, 10));
+  mockApi({
+    'GET /api/v1/services': { services: TEST_SERVICES },
+    'GET /api/v1/subscriptions/watcha': {
+      subscriptionId: 'watcha',
+      status: 'ACTIVE',
+      serviceName: '왓챠',
+      category: 'MUSIC',
+      amount: 7900,
+      billingCycleValue: 2,
+      billingCycleUnit: 'WEEK',
+      nextBillingDate: '2026-11-20',
+      startedAt: '2026-04-16',
+      paymentMethod: 'APP_STORE',
+      isSteady: false,
+      canceledAt: null,
+      totalPaidAmount: 47600,
+      latestCheckup: null,
+      pastCheckupAverage: null,
+    },
+    'PATCH /api/v1/subscriptions/watcha': {
+      subscriptionId: 'watcha',
+      yearlyAmount: 107800,
+      nextBillingDate: '2026-11-20',
+    },
+  });
+  await renderRouter(
+    {
+      'manage/detail': () => null,
+      'register/input': () => <RegisterServiceInputScreen editId="watcha" />,
+    },
+    { initialUrl: '/manage/detail', wrapper: createQueryWrapper() },
+  );
+  await act(() => router.push('/register/input'));
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+  // 기본값(기타 · 1개월 · 오늘 · 웹·직접 결제)과 다른 값이라야 채워졌는지 구분됨
+  // 서비스명은 사전 등록 서비스(A-03)처럼 보여 주기만 하고 입력란은 없음
+  expect(await screen.findByText('왓챠')).toBeOnTheScreen();
+  expect(screen.queryByLabelText('서비스명')).not.toBeOnTheScreen();
+  expect(screen.getByText('구독 정보 편집')).toBeOnTheScreen();
+  expect(screen.getByRole('button', { name: '다음 결제일' })).toHaveAccessibilityValue({
+    text: '2026.11.20',
+  });
+  await user.clear(screen.getByLabelText('결제 금액'));
+  await user.type(screen.getByLabelText('결제 금액'), '9900');
+  await user.press(screen.getByRole('tab', { name: '웹·직접 결제' }));
+  await user.press(screen.getByRole('button', { name: '저장하기' }));
+
+  expect(screen).toHavePathname('/manage/detail');
+  const patches = jest
+    .mocked(globalThis.fetch)
+    .mock.calls.filter(([, init]) => init?.method === 'PATCH')
+    .map(([url, init]) => [String(url), JSON.parse(String(init?.body))]);
+  expect(patches).toEqual([
+    [
+      'https://api.test/api/v1/subscriptions/watcha',
+      {
+        serviceName: '왓챠',
+        category: 'MUSIC',
+        amount: 9900,
+        billingCycleValue: 2,
+        billingCycleUnit: 'WEEK',
+        nextBillingDate: '2026-11-20',
+        paymentMethod: 'WEB_DIRECT',
+      },
+    ],
+  ]);
+  expect(useRegisterDraft.getState().payments).toEqual({});
 });

@@ -5,86 +5,48 @@ import { BellDotIcon, BellIcon } from '@/assets/icons';
 import { Badge } from '@/components/common/Badge';
 import { FloatingButton } from '@/components/common/FloatingButton';
 import { ListItem } from '@/components/common/ListItem';
+import { QueryState } from '@/components/common/QueryState';
 import { TopBar } from '@/components/common/TopBar';
 import { CheckupPromptCard } from '@/components/home/CheckupPromptCard';
 import { CostCard } from '@/components/home/CostCard';
 import { HomeEmptyState } from '@/components/home/HomeEmptyState';
 import { SectionHeader } from '@/components/home/SectionHeader';
 import { ServiceCard } from '@/components/home/ServiceCard';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useHome } from '@/hooks/useHome';
 import { cn } from '@/utils/cn';
+import { parseDate } from '@/utils/date';
 import { formatWon } from '@/utils/formatPayment';
-import {
-  daysUntil,
-  type HomeSubscription,
-  lowUsage,
-  monthDue,
-  nextCheckupTarget,
-  upcomingPayments,
-  yearTotal,
-} from '@/utils/homeSummary';
-import { groupNotifications } from '@/utils/notification';
 
+// shortcut: 목서버 로고 URL이 실제 이미지가 아니라 placeholder, 실제 로고 URL이 오면 { uri: logoUrl }로
 const LOGO = require('@/assets/images/logo_placeholder.png');
-const inDays = (n: number) => {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+
+const dateLabel = (date: string) => {
+  const d = parseDate(date);
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 결제`;
 };
-// shortcut: 구독 API 없이 오늘 기준 샘플, 구독 목록 API 연동 시 API 훅으로 교체 (usage·checked는 점검 결과)
-// 점검 화면이 점검 샘플에서 서비스를 찾으므로 같은 id를 씀
-const SAMPLE: HomeSubscription[] = [
-  {
-    id: 'netflix',
-    name: '넷플릭스',
-    amount: 13500,
-    cycle: 1,
-    unit: '개월',
-    nextDate: inDays(1),
-    usage: 45,
-  },
-  {
-    id: 'melon',
-    name: '멜론',
-    amount: 10900,
-    cycle: 1,
-    unit: '개월',
-    nextDate: inDays(3),
-    usage: 30,
-  },
-  {
-    id: 'chatgpt',
-    name: 'ChatGPT',
-    amount: 29000,
-    cycle: 1,
-    unit: '개월',
-    nextDate: inDays(5),
-    usage: 80,
-  },
-  { id: 'coupang', name: '쿠팡 와우', amount: 7890, cycle: 1, unit: '개월', nextDate: inDays(12) },
-  { id: 'millie', name: '밀리의 서재', amount: 9900, cycle: 1, unit: '개월', nextDate: inDays(20) },
-  { id: 'duolingo', name: '듀오링고', amount: 1100, cycle: 1, unit: '개월', nextDate: inDays(25) },
-];
-
-const dateLabel = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일 결제`;
-
-interface HomeScreenProps {
-  // 비어 있으면 H-01(등록된 구독 없음)
-  subscriptions?: HomeSubscription[];
-}
 
 // H-01 홈 (등록된 구독 없음) · H-02 홈 (구독 있음) · H-03 홈 (예정 결제 없음 · 점검 유도)
-export const HomeScreen = ({ subscriptions = SAMPLE }: HomeScreenProps) => {
+export const HomeScreen = () => {
+  const { data, isError, refetch } = useHome();
   const today = new Date();
-  const isEmpty = subscriptions.length === 0;
-  const upcoming = upcomingPayments(subscriptions, today);
-  const usage = lowUsage(subscriptions);
-  // 점검 기록이 한 건도 없으면 사용 현황 대신 점검 유도 카드 (H-03)
-  const hasCheckup = subscriptions.some((s) => s.usage !== undefined);
-  const checkupTarget = nextCheckupTarget(subscriptions, today);
-  // 목록에 보이는(최근 30일) 알림 중 안 읽은 게 있으면 종에 점
-  const notifications = useNotifications((s) => s.notifications);
-  const { today: todayAlerts, previous } = groupNotifications(notifications, today);
-  const hasUnread = [...todayAlerts, ...previous].some((n) => !n.read);
+
+  if (!data) {
+    return (
+      <View className="pt-safe flex-1 bg-bg-default">
+        <QueryState isError={isError} onRetry={refetch} />
+      </View>
+    );
+  }
+
+  const { summary, upcomingPayments, nearestPayment, usage } = data;
+  const isEmpty = summary.subscriptionCount === 0;
+  // 7일 안 결제가 없으면 가장 가까운 1건 (H-03)
+  const within7 = upcomingPayments.length > 0;
+  const upcoming = within7
+    ? upcomingPayments
+    : nearestPayment
+      ? [{ ...nearestPayment, needsCheckup: false }]
+      : [];
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -94,7 +56,7 @@ export const HomeScreen = ({ subscriptions = SAMPLE }: HomeScreenProps) => {
         showBack={false}
         showAction2={false}
         action1={{
-          icon: hasUnread ? BellDotIcon : BellIcon,
+          icon: data.hasUnreadNotification ? BellDotIcon : BellIcon,
           accessibilityLabel: '알림',
           onPress: () => router.push('/notification'),
         }}
@@ -110,15 +72,13 @@ export const HomeScreen = ({ subscriptions = SAMPLE }: HomeScreenProps) => {
           <View className="flex-row gap-[15px]">
             <CostCard
               label={`${today.getMonth() + 1}월 결제 예정`}
-              amount={formatWon(monthDue(subscriptions, today))}
-              yearAmount={`연 ${formatWon(yearTotal(subscriptions, today))}`}
+              amount={formatWon(summary.expectedAmount)}
+              yearAmount={`연 ${formatWon(summary.yearlyAmount)}`}
               className="flex-1"
             />
             <ServiceCard
-              label={`${subscriptions.length}개 구독 중이에요`}
-              subscriptions={subscriptions.flatMap((s) =>
-                s.nextDate ? [{ id: s.id, nextDate: s.nextDate }] : [],
-              )}
+              label={`${summary.subscriptionCount}개 구독 중이에요`}
+              logos={summary.logos.map((url, i) => ({ id: `${i}-${url}`, logo: LOGO }))}
               className="flex-1"
             />
           </View>
@@ -133,20 +93,20 @@ export const HomeScreen = ({ subscriptions = SAMPLE }: HomeScreenProps) => {
                 showChevron
                 onPress={() => router.navigate('/calendar')}
               />
-              {!upcoming.within7 && (
+              {!within7 && (
                 <Text className="px-s2 text-text-primary text-body1-semibold">
                   7일 안에 결제 예정인 구독이 없어요
                 </Text>
               )}
               <View className="gap-stack-sm">
-                {upcoming.items.map((s) => (
+                {upcoming.map((s) => (
                   <ListItem
-                    key={s.id}
-                    title={s.name}
+                    key={s.subscriptionId}
+                    title={s.serviceName}
                     subtitle={
-                      upcoming.within7
-                        ? `${dateLabel(s.nextDate!)} · D-${daysUntil(s.nextDate!, today)}`
-                        : dateLabel(s.nextDate!)
+                      within7
+                        ? `${dateLabel(s.nextBillingDate)} · D-${s.dDay}`
+                        : dateLabel(s.nextBillingDate)
                     }
                     showSubtitle
                     logo={LOGO}
@@ -156,12 +116,12 @@ export const HomeScreen = ({ subscriptions = SAMPLE }: HomeScreenProps) => {
                     // 행 전체가 터치 영역. 이번 주기에 점검 안 한 구독은 점검으로
                     // shortcut: 점검한 구독은 구독 상세(M-03) 화면이 없어 이동 없음, 생기면 연결
                     iconRightAction={
-                      s.checked
-                        ? undefined
-                        : {
-                            accessibilityLabel: `${s.name} 점검하기`,
-                            onPress: () => router.push(`/checkup/${s.id}?restart=1`),
+                      s.needsCheckup
+                        ? {
+                            accessibilityLabel: `${s.serviceName} 점검하기`,
+                            onPress: () => router.push(`/checkup/${s.subscriptionId}?restart=1`),
                           }
+                        : undefined
                     }
                   />
                 ))}
@@ -169,7 +129,7 @@ export const HomeScreen = ({ subscriptions = SAMPLE }: HomeScreenProps) => {
             </View>
             <View className="h-[2px] bg-bg-subtle" />
             <View className="gap-stack-md px-screen-x">
-              {hasCheckup ? (
+              {usage.hasCheckup ? (
                 <>
                   <View className="flex-row items-center justify-between">
                     <SectionHeader
@@ -177,15 +137,16 @@ export const HomeScreen = ({ subscriptions = SAMPLE }: HomeScreenProps) => {
                       showChevron
                       onPress={() => router.navigate('/manage')}
                     />
-                    <Badge variant="tonal" label={`월 ${formatWon(usage.monthTotal)} 결제`} />
+                    <Badge variant="tonal" label={`월 ${formatWon(usage.monthlyAmount)} 결제`} />
                   </View>
                   {/* shortcut: 항목을 누르면 구독 상세(M-03)로 가야 하는데 화면이 없어 이동 없음 */}
                   <View className="gap-stack-sm">
                     {usage.items.map((s) => (
                       <ListItem
-                        key={s.id}
-                        title={s.name}
-                        subtitle={`유지 추천 ${s.usage}%`}
+                        key={s.subscriptionId}
+                        title={s.serviceName}
+                        // shortcut: 명세 usage.items에 활용도가 없어 결제일 표시, 백엔드에 활용도 추가 요청 후 '유지 추천 n%'로
+                        subtitle={dateLabel(s.nextBillingDate)}
                         showSubtitle
                         logo={LOGO}
                         showLogo
@@ -200,7 +161,8 @@ export const HomeScreen = ({ subscriptions = SAMPLE }: HomeScreenProps) => {
                   <SectionHeader title="내 구독 사용 현황" />
                   <CheckupPromptCard
                     onPress={() =>
-                      checkupTarget && router.push(`/checkup/${checkupTarget.id}?restart=1`)
+                      usage.nudgeSubscriptionId &&
+                      router.push(`/checkup/${usage.nudgeSubscriptionId}?restart=1`)
                     }
                   />
                 </>

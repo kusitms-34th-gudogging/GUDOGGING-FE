@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CheckIcon, Step1Icon, Step2Icon, Step3Icon } from '@/assets/icons';
+import { Button } from '@/components/common/Button';
 import { Cta } from '@/components/common/Cta';
 import { GuideStep } from '@/components/common/GuideStep';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
@@ -58,14 +60,19 @@ interface AddSubscriptionScreenProps {
   onSkip?: () => void;
   /** 하단 CTA: Apple은 App Store 구독 관리, Google은 Gmail 연동 */
   onConfirm?: () => void;
+  /** Apple: 구독 관리를 열고 돌아온 뒤 스크린샷 고르기로 (A-06과 같은 두 버튼 상태) */
+  onAddScreenshots?: () => void;
 }
 
 export const AddSubscriptionScreen = ({
   provider,
   onSkip,
   onConfirm,
+  onAddScreenshots,
 }: AddSubscriptionScreenProps) => {
   const { title, description, guides, cta } = CONTENT[provider];
+  // 구독 관리를 한 번 열었으면 다시 열기 + 스크린샷 등록하기 (A-06과 같음)
+  const [opened, setOpened] = useState(false);
 
   return (
     <SafeAreaView className="flex-1 bg-bg-default">
@@ -95,7 +102,21 @@ export const AddSubscriptionScreen = ({
       </View>
 
       <View className="px-screen-x">
-        <Cta label={cta} onPress={onConfirm} className="mb-[14px]" />
+        {opened && onAddScreenshots ? (
+          <View className="mb-[14px] flex-row gap-inline-sm">
+            <Button variant="tonal" label="구독 목록 열기" onPress={onConfirm} className="flex-1" />
+            <Button label="스크린샷 등록하기" onPress={onAddScreenshots} className="flex-1" />
+          </View>
+        ) : (
+          <Cta
+            label={cta}
+            onPress={() => {
+              onConfirm?.();
+              setOpened(true);
+            }}
+            className="mb-[14px]"
+          />
+        )}
       </View>
     </SafeAreaView>
   );

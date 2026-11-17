@@ -4,7 +4,8 @@ import { AccessibilityInfo, Text, View } from 'react-native';
 
 import { TopBar } from '@/components/common/TopBar';
 import { CategoryPullBackground } from '@/components/register/CategoryPullBackground';
-import { FOUND_SAMPLE } from '@/constants/services';
+import type { FoundSubscription } from '@/constants/services';
+import { useAnalyzeGmail, useAnalyzeScreenshots } from '@/hooks/useAnalyzeSubscriptions';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 
 const COPY = {
@@ -14,29 +15,47 @@ const COPY = {
 
 interface RegisterAnalyzeScreenProps {
   source: keyof typeof COPY;
+  // 스크린샷 분석이면 고른 이미지 (A-07)
+  images?: string[];
 }
 const MIN_VISIBLE_MS = 1500;
 
-export const RegisterAnalyzeScreen = ({ source }: RegisterAnalyzeScreenProps) => {
+export const RegisterAnalyzeScreen = ({ source, images = [] }: RegisterAnalyzeScreenProps) => {
   const { title, message } = COPY[source];
+  const screenshots = useAnalyzeScreenshots();
+  const gmail = useAnalyzeGmail();
 
   useEffect(() => {
     AccessibilityInfo.announceForAccessibility(message);
-    // shortcut: 분석 API 없이 최소 노출 시간 1.5초 뒤 이동, API 연동 시 응답과 1.5초 중 늦은 쪽에 이동
-    // 확인 필요 항목이 없으면 인식 실패(A-08e)로
-    const timer = setTimeout(() => {
-      if (!FOUND_SAMPLE.some((f) => f.issue)) {
+    let left = false;
+    const done = (found: FoundSubscription[]) => {
+      // 찾은 구독이 없으면 인식 실패(A-08e·A-12e)로
+      if (found.length === 0) {
         // 실패 화면에서 뒤로가기·스와이프 모두 안내(A-06·A-11)로 가게 사이의 스크린샷 확인(A-07)까지 걷어 냄 (기획 답변)
         router.dismissTo(source === 'gmail' ? '/register/gmail' : '/register/screenshot');
         return router.push({ pathname: '/register/failed', params: { source } });
       }
       // 분석 결과가 나온 시점부터 이어서 등록할 수 있게 저장 (분석 중에 나가면 처음부터)
-      // 등록 가능 항목은 처음부터 전부 체크 (기획 답변). 확인 필요 항목도 수정해 등록 가능이 되면 체크된 채로
-      useRegisterDraft.getState().setFoundChecked(FOUND_SAMPLE.map((f) => f.id));
+      useRegisterDraft.getState().setFound(source === 'gmail' ? 'GMAIL' : 'SCREENSHOT', found);
       router.replace('/register/found');
-    }, MIN_VISIBLE_MS);
-    return () => clearTimeout(timer);
-  }, [message, source]);
+    };
+    // 분석 응답과 최소 노출 시간(1.5초) 중 늦은 쪽에 이동. 분석 중에 나가면 결과를 버림
+    const minVisible = new Promise((resolve) => setTimeout(resolve, MIN_VISIBLE_MS));
+    const analysis = source === 'gmail' ? gmail.mutateAsync() : screenshots.mutateAsync(images);
+    Promise.all([analysis, minVisible])
+      .then(([found]) => !left && done(found as FoundSubscription[]))
+      // 읽기 실패·연동 실패도 인식 실패 안내로. 개발 중엔 원인을 Metro에 남김
+      .catch((error: unknown) => {
+        if (__DEV__) console.warn('구독 분석 실패', error);
+        if (!left) done([]);
+      });
+
+    return () => {
+      left = true;
+    };
+    // 화면에 들어올 때 한 번만 분석
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -44,7 +63,7 @@ export const RegisterAnalyzeScreen = ({ source }: RegisterAnalyzeScreenProps) =>
       <TopBar
         variant="detail"
         title={title}
-        // shortcut: Gmail 연동 없음, 연동 작업 시 분석 중 뒤로가기면 연동 해제 후 A-11 처음 상태로 (기획 답변)
+        // shortcut: 분석 중 뒤로가기면 Gmail 연동 해제 후 A-11 처음 상태로 (기획 답변), 마이페이지 Gmail 해제 연결 때 같은 훅으로
         onBack={() => router.back()}
         showAction1={false}
         showAction2={false}

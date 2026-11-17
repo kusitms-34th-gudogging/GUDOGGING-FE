@@ -1,0 +1,17 @@
+# 목서버(mocks/) Render 배포 설정 (Blueprint). 실서버로 바꾸면 이 파일도 삭제
+# 무료 플랜: 15분간 요청이 없으면 잠들고 첫 요청에 깨어남(수십 초), 다시 켜지면 메모리 상태(등록한 구독 등) 초기화
+services:
+  - type: web
+    name: gudogging-mock
+    runtime: node
+    plan: free
+    buildCommand: pnpm install --frozen-lockfile
+    startCommand: pnpm mock
+    healthCheckPath: /api/v1/services
+    envVars:
+      # mocks/는 .ts를 Node 타입 제거로 바로 실행 (22.18 이상)
+      - key: NODE_VERSION
+        value: 22.22.0
+      # 서버엔 git 훅이 필요 없음
+      - key: HUSKY
+        value: '0'

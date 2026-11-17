@@ -15,7 +15,8 @@ import { ChevronRightIcon } from '@/assets/icons';
 import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
 import { TopBar } from '@/components/common/TopBar';
-import { useGmailLink } from '@/hooks/useGmailLink';
+import { useLogout } from '@/hooks/useLogout';
+import { useMe } from '@/hooks/useMe';
 
 const PROFILE = require('@/assets/images/logo_placeholder.png');
 
@@ -72,24 +73,17 @@ const getSections = (openLogout: () => void): { title: string; items: MenuItem[]
   },
 ];
 
-interface MypageScreenProps {
-  email?: string;
-  loginProvider?: string;
-}
-
-// shortcut: 계정 정보·약관 행 이동은 아직 없음, 로그인 API·하위 화면 연동 시 props와 onPress 연결
-export const MypageScreen = ({
-  email = 'suum.user@icloud.com',
-  loginProvider = 'Apple로 로그인',
-}: MypageScreenProps) => {
+// shortcut: 약관 행 이동은 아직 없음, 약관 화면 생기면 onPress 연결
+// 계정 정보를 못 불러와도 메뉴는 쓸 수 있게 계정 칸만 비워 둠
+export const MypageScreen = () => {
+  const { data: me } = useMe();
+  const logoutMutation = useLogout();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const sections = getSections(() => setLogoutOpen(true));
 
-  // shortcut: 로그아웃 API 없음, 계정에 묶인 Gmail 연결만 비우고 로그인 화면으로. 인증 연동 시 토큰 삭제 추가
-  const logout = () => {
-    useGmailLink.getState().setGmail(null);
-    router.replace('/login');
-  };
+  // 서버 세션을 끝내고 기기 토큰·계정 데이터 캐시를 비운 뒤 로그인 화면으로 (실패해도 기기에선 로그아웃)
+  const logout = () =>
+    logoutMutation.mutate(undefined, { onSettled: () => router.replace('/login') });
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -98,8 +92,8 @@ export const MypageScreen = ({
         <View className="w-[279px] flex-row items-center gap-inline-sm">
           <Image source={PROFILE} className="size-logo-card rounded-full" />
           <View className="flex-1">
-            <Text className="text-text-primary text-body1-semibold">{email}</Text>
-            <Text className="text-text-secondary text-caption1-regular">{loginProvider}</Text>
+            {me?.email && <Text className="text-text-primary text-body1-semibold">{me.email}</Text>}
+            <Text className="text-text-secondary text-caption1-regular">{me?.loginProvider}</Text>
           </View>
         </View>
         <View className="w-full gap-stack-md">

@@ -8,14 +8,17 @@ import { Button } from '@/components/common/Button';
 import { Chip } from '@/components/common/Chip';
 import { Cta } from '@/components/common/Cta';
 import { OptionCard } from '@/components/common/OptionCard';
+import { QueryState } from '@/components/common/QueryState';
 import { TextArea } from '@/components/common/TextArea';
 import { TopBar } from '@/components/common/TopBar';
 import {
-  CHECKUP_CATEGORIES,
+  type CheckupQuestion,
   type CheckupSubscription,
   toCheckupCategory,
 } from '@/constants/checkup';
 import { getCheckupScores, useCheckupDraft } from '@/hooks/useCheckupDraft';
+import { useCheckupForm } from '@/hooks/useCheckups';
+import { useSubmitCheckup } from '@/hooks/useSubmitCheckup';
 import { formatWon } from '@/utils/formatPayment';
 import { fillName } from '@/utils/josa';
 
@@ -25,33 +28,56 @@ const MEMO_STEP = QUESTION_COUNT;
 const MEMO_MAX = 100;
 
 interface CheckupScreenProps {
-  subscription: CheckupSubscription;
+  // 구독 id
+  id: string;
   // 홈에서 들어오면 저장된 답과 상관없이 1/4부터 (화면설계서 HOM-001)
   restart?: boolean;
 }
 
-// 임시 저장을 다 읽은 뒤에 시작 문항을 정함
-export const CheckupScreen = ({ subscription, restart }: CheckupScreenProps) => {
+// 점검 문항 조회(구독 이름·금액·다음 결제일)와 임시 저장 복원이 끝난 뒤에 시작 문항을 정함
+export const CheckupScreen = ({ id, restart }: CheckupScreenProps) => {
+  const { data, isError, refetch } = useCheckupForm(id);
   // useSyncExternalStore는 구독 직후 값을 다시 읽어서, 렌더~구독 사이에 복원이 끝나도 놓치지 않음
   const { onFinishHydration, hasHydrated } = useCheckupDraft.persist;
   const hydrated = useSyncExternalStore(onFinishHydration, hasHydrated);
-  return hydrated ? <CheckupQuestions subscription={subscription} restart={restart} /> : null;
+  if (!data) {
+    return (
+      <View className="pt-safe flex-1 bg-bg-default">
+        <QueryState isError={isError} onRetry={refetch} />
+      </View>
+    );
+  }
+  return hydrated ? <CheckupQuestions {...data} restart={restart} /> : null;
 };
 
+interface CheckupQuestionsProps {
+  subscription: CheckupSubscription;
+  // 서버가 카테고리에 맞춰 준 문항 3개와 메모 예시
+  questions: CheckupQuestion[];
+  memo: { placeholder: string; chips: string[] };
+  restart?: boolean;
+}
+
 // K-11~K-66: 카테고리마다 문항·선택지·에셋만 다르고 레이아웃은 같음
-const CheckupQuestions = ({ subscription, restart }: CheckupScreenProps) => {
-  const { id, name, nameKo = name, amount, nextDate } = subscription;
+const CheckupQuestions = ({
+  subscription,
+  questions,
+  memo: memoConfig,
+  restart,
+}: CheckupQuestionsProps) => {
+  const { id, name, amount, nextDate } = subscription;
   const category = toCheckupCategory(subscription.category);
   // 같은 결제 주기 안에서만 이어 하기. 주기가 바뀌면 1/4부터
   const cycle = nextDate.toISOString();
   const setScore = useCheckupDraft((s) => s.setScore);
+  const clearDraft = useCheckupDraft((s) => s.clear);
+  const submit = useSubmitCheckup(id);
   // 임시 저장된 다음 문항부터 (3문항 다 답했으면 4/4 메모)
   const [step, setStep] = useState(() => (restart ? 0 : getCheckupScores(id, cycle).length));
   const [selected, setSelected] = useState(() => getCheckupScores(id, cycle).at(step));
   // 이전으로 3/4에 갔다 와도 유지. 앱 종료 시엔 임시 저장 안 함 (설계서: 답한 문항까지만)
   const [memo, setMemo] = useState('');
 
-  const { questions, memo: memoConfig } = CHECKUP_CATEGORIES[category];
   const isMemo = step === MEMO_STEP;
   const question = isMemo
     ? { title: '{name}에 대해\n남기고 싶은 말이 있나요?', hint: '다음 점검 때 다시 보여드려요' }
@@ -82,9 +108,18 @@ const CheckupQuestions = ({ subscription, restart }: CheckupScreenProps) => {
     setMemo((m) => (m.trim() ? `${m.trimEnd()} ${text}` : text).slice(0, MEMO_MAX));
 
   // 공백만 입력했으면 빈 메모. 메모는 점수에 반영하지 않음
-  // 결과로 넘어가면 뒤로 가기로 메모에 돌아오지 않게 replace
-  // ponytail: 점검 기록 저장 API가 생기면 점수 + 메모 저장 후 이동하고 임시 저장 삭제
-  const finish = (_memo: string) => router.replace(`/checkup/${id}/result`);
+  // 제출하면 임시 저장을 지우고, 뒤로 가기로 메모에 돌아오지 않게 replace
+  // shortcut: 제출 실패 안내는 디자인에 없어 화면에 그대로 남음, 디자인 나오면 안내 추가
+  const finish = (memo: string) =>
+    submit.mutate(
+      { scores: getCheckupScores(id, cycle), memo },
+      {
+        onSuccess: ({ checkupId }) => {
+          clearDraft(id);
+          router.replace(`/checkup/${id}/result?checkupId=${checkupId}`);
+        },
+      },
+    );
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -98,7 +133,7 @@ const CheckupQuestions = ({ subscription, restart }: CheckupScreenProps) => {
         // 건너뛰기: 메모 없이 결과로
         showTextAction={isMemo}
         textAction="건너뛰기"
-        onTextActionPress={() => finish('')}
+        onTextActionPress={() => !submit.isPending && finish('')}
       />
       <View className="flex-1 gap-stack-lg px-screen-x pt-stack-md">
         <View className="flex-row items-center justify-between">
@@ -121,7 +156,7 @@ const CheckupQuestions = ({ subscription, restart }: CheckupScreenProps) => {
               lineBreakStrategyIOS="hangul-word"
               className="text-text-primary text-head2-bold"
             >
-              {fillName(question.title, nameKo)}
+              {fillName(question.title, name)}
             </Text>
             <Text className="text-text-primary text-body2-regular">{hint}</Text>
           </View>
@@ -179,7 +214,12 @@ const CheckupQuestions = ({ subscription, restart }: CheckupScreenProps) => {
               className="flex-1"
             />
             {isMemo ? (
-              <Button label="결과 보기" onPress={() => finish(memo.trim())} className="flex-1" />
+              <Button
+                label="결과 보기"
+                disabled={submit.isPending}
+                onPress={() => finish(memo.trim())}
+                className="flex-1"
+              />
             ) : (
               <Button
                 label="다음"
