@@ -28,8 +28,9 @@ export const request = async <T>(path: string, { body, headers, ...init }: Reque
   });
 
   const text = await res.text();
-  const data: unknown = text ? JSON.parse(text) : undefined;
+  const json: unknown = text ? JSON.parse(text) : undefined;
 
-  if (!res.ok) throw new ApiError(res.status, data);
-  return data as T;
+  if (!res.ok) throw new ApiError(res.status, json);
+  // 서버 응답은 { code, message, data }, 훅에는 data만 넘김
+  return (json as { data: T } | undefined)?.data as T;
 };
