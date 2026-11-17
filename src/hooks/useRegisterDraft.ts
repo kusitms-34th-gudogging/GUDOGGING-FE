@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -6,6 +8,8 @@ import type { FoundSubscription, PaymentInfo, Service } from '@/constants/servic
 import { useServices } from '@/hooks/useServices';
 
 type FoundSource = 'SCREENSHOT' | 'GMAIL';
+// 직접 등록 중 마지막으로 머문 화면 (서버 임시저장 lastStep, 불러오기로 그 화면에 복원)
+export type RegisterStep = 'A-02' | 'A-03' | 'A-04';
 
 interface RegisterDraft {
   selectedIds: string[];
@@ -14,6 +18,10 @@ interface RegisterDraft {
   found: FoundSubscription[];
   foundSource?: FoundSource;
   foundChecked?: string[];
+  lastStep?: RegisterStep;
+  setLastStep: (step: RegisterStep) => void;
+  // 서버 임시저장으로 채움 (다른 기기에서 등록하던 걸 불러올 때)
+  restore: (draft: Pick<RegisterDraft, 'selectedIds' | 'payments' | 'lastStep'>) => void;
   // 분석 결과를 받으면 등록 가능 항목을 처음부터 전부 체크 (기획 답변)
   setFound: (source: FoundSource, found: FoundSubscription[]) => void;
   setSelectedIds: (ids: string[]) => void;
@@ -30,6 +38,7 @@ const EMPTY = {
   found: [],
   foundSource: undefined,
   foundChecked: undefined,
+  lastStep: undefined,
 };
 
 export const useRegisterDraft = create<RegisterDraft>()(
@@ -43,6 +52,8 @@ export const useRegisterDraft = create<RegisterDraft>()(
       setFoundChecked: (foundChecked) => set({ foundChecked }),
       addFoundChecked: (ids) =>
         set((s) => ({ foundChecked: [...new Set([...(s.foundChecked ?? []), ...ids])] })),
+      setLastStep: (lastStep) => set({ lastStep }),
+      restore: (draft) => set({ ...EMPTY, ...draft }),
       reset: () => set(EMPTY),
     }),
     {
@@ -91,3 +102,12 @@ export const getRegisteredServices = (
     id,
     name: payments[id]?.name ?? services.find((s) => s.id === id)?.name ?? '',
   }));
+
+// 직접 등록 화면이 보일 때 머문 화면으로 기록 (서버 임시저장 lastStep)
+// persist의 set은 저장 Promise를 돌려줘서 그대로 반환하면 effect 정리 함수 자리에 Promise가 들어감 → 블록으로 감쌈
+export const useRegisterStep = (step: RegisterStep) =>
+  useFocusEffect(
+    useCallback(() => {
+      useRegisterDraft.getState().setLastStep(step);
+    }, [step]),
+  );

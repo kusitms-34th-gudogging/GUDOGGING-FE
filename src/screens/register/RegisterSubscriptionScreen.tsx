@@ -14,7 +14,9 @@ import { Modal } from '@/components/common/Modal';
 import { OptionCard } from '@/components/common/OptionCard';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { TopBar } from '@/components/common/TopBar';
+import { useDeleteSubscriptionDraft } from '@/hooks/useDeleteSubscriptionDraft';
 import { hasRegisterDraft, useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { fromDraft, useSubscriptionDraft } from '@/hooks/useSubscriptionDraft';
 
 export type RegisterMethod = 'screenshot' | 'gmail' | 'manual';
 
@@ -50,9 +52,12 @@ const FIRST_SCREEN = {
 
 const hasDraft = () => hasRegisterDraft(useRegisterDraft.getState());
 
-// 등록 중이던 화면으로 이어감. 스크린샷·Gmail은 분석 결과(A-09), 직접 등록은 선택한 구독(A-04)
+// 등록 중이던 화면으로 이어감. 스크린샷·Gmail은 분석 결과(A-09), 직접 등록은 머문 화면(lastStep)
+// 정보 입력(A-03)은 어느 서비스를 입력하던 건지 알 수 없어 그 목록인 선택한 구독(A-04)으로
 const resume = () => {
-  router.push(useRegisterDraft.getState().foundChecked ? '/register/found' : '/register/selected');
+  const { foundChecked, lastStep } = useRegisterDraft.getState();
+  if (foundChecked) return router.push('/register/found');
+  router.push(lastStep === 'A-02' ? '/register/select' : '/register/selected');
 };
 
 export const RegisterSubscriptionScreen = () => {
@@ -64,6 +69,12 @@ export const RegisterSubscriptionScreen = () => {
     () => useRegisterDraft.persist.hasHydrated() && hasDraft(),
   );
   useEffect(() => useRegisterDraft.persist.onFinishHydration(() => setAskResume(hasDraft())), []);
+  // 기기에 없어도 서버에 임시저장이 있으면 (다른 기기에서 등록하던 것) 불러오기 팝업
+  const { data: serverDraft } = useSubscriptionDraft();
+  const deleteDraft = useDeleteSubscriptionDraft();
+  const [dismissed, setDismissed] = useState(false);
+  const askServer =
+    !!serverDraft && !dismissed && useRegisterDraft.persist.hasHydrated() && !hasDraft();
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -97,14 +108,25 @@ export const RegisterSubscriptionScreen = () => {
         </View>
       </View>
       <Modal
-        visible={askResume}
-        onClose={() => setAskResume(false)}
+        visible={askResume || askServer}
+        onClose={() => {
+          setAskResume(false);
+          setDismissed(true);
+        }}
         buttons="both"
         title="등록 중이던 구독을 불러올까요?"
         cancelLabel="새로 등록하기"
-        onCancel={() => useRegisterDraft.getState().reset()}
+        onCancel={() => {
+          useRegisterDraft.getState().reset();
+          deleteDraft.mutate();
+        }}
         confirmLabel="불러오기"
-        onConfirm={resume}
+        onConfirm={() => {
+          // 기기에 없으면 서버 임시저장으로 채움
+          if (!hasDraft() && serverDraft)
+            useRegisterDraft.getState().restore(fromDraft(serverDraft));
+          resume();
+        }}
       />
     </View>
   );

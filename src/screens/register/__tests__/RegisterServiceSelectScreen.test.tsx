@@ -202,3 +202,12 @@ it('불러온 구독의 이름을 바꿨으면 그 서비스는 잠기지 않아
 
   expect(useRegisterDraft.getState().selectedIds).toEqual(['netflix']);
 });
+
+it('보이면 머문 화면을 서비스 선택(A-02)으로 기록하고, 화면 효과가 정리 함수 말고 다른 값을 돌려주지 않는다', async () => {
+  const consoleError = jest.spyOn(console, 'error');
+  await renderSelect();
+
+  expect(useRegisterDraft.getState().lastStep).toBe('A-02');
+  // effect가 Promise를 돌려주면 React가 console.error로 알림
+  expect(consoleError.mock.calls.flat().join(' ')).not.toContain('must not return anything');
+});

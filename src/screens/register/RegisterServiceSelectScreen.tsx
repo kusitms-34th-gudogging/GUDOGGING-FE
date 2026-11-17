@@ -11,7 +11,7 @@ import { SearchBar } from '@/components/common/SearchBar';
 import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
-import { getFoundServiceIds, useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { getFoundServiceIds, useRegisterDraft, useRegisterStep } from '@/hooks/useRegisterDraft';
 import { useServices } from '@/hooks/useServices';
 
 interface RegisterServiceSelectScreenProps {
@@ -20,6 +20,7 @@ interface RegisterServiceSelectScreenProps {
 }
 
 export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScreenProps) => {
+  useRegisterStep('A-02');
   const [query, setQuery] = useState('');
   // 불러오기 팝업으로 이어서 등록할 수 있게 저장소에 둠
   const selectedIds = useRegisterDraft((s) => s.selectedIds);

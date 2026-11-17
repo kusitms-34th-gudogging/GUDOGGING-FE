@@ -21,7 +21,7 @@ import {
   type Service,
 } from '@/constants/services';
 import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
-import { useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { useRegisterDraft, useRegisterStep } from '@/hooks/useRegisterDraft';
 import { useServices } from '@/hooks/useServices';
 
 const CATEGORIES = [
@@ -75,6 +75,7 @@ const ServiceInputForm = ({
   more = false,
   prefill,
 }: RegisterServiceInputScreenProps & { service?: Service }) => {
+  useRegisterStep('A-03');
   // 사전 등록 서비스(A-03)만 서비스명 잠금, 직접 입력·불러온 구독은 서비스명도 입력·수정
   const isCustom = !service;
   const payments = useRegisterDraft((s) => s.payments);
