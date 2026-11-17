@@ -14,6 +14,8 @@ import { Toggle } from '@/components/common/Toggle';
 import { TopBar } from '@/components/common/TopBar';
 import type { ActiveSubscriptionDetail } from '@/constants/manage';
 import { PAID_AT } from '@/constants/services';
+import { useCancelSubscription } from '@/hooks/useCancelSubscription';
+import { useSetSteadySubscription } from '@/hooks/useSetSteadySubscription';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
 import { monthly } from '@/utils/homeSummary';
 import { fillName } from '@/utils/josa';
@@ -34,8 +36,15 @@ export const SubscriptionDetailScreen = ({
 }: SubscriptionDetailScreenProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(confirmCancel);
-  // shortcut: 화면 안에서만 바뀜, 구독 수정 API 연동 시 저장
+  // 토글은 바로 바뀌고 저장 실패하면 되돌림
+  // shortcut: 실패 안내(토스트)는 디자인에 없어 되돌리기만, 디자인 나오면 안내 추가
   const [steady, setSteady] = useState(s.steady);
+  const setSteadySubscription = useSetSteadySubscription(s.id);
+  const cancelSubscription = useCancelSubscription();
+  const changeSteady = (next: boolean) => {
+    setSteady(next);
+    setSteadySubscription.mutate(next, { onError: () => setSteady(!next) });
+  };
 
   return (
     <View className="pt-safe pb-safe flex-1 bg-bg-default">
@@ -76,7 +85,7 @@ export const SubscriptionDetailScreen = ({
             </View>
             <Toggle
               value={steady}
-              onValueChange={setSteady}
+              onValueChange={changeSteady}
               accessibilityLabel="꾸준히 쓰는 구독"
             />
           </View>
@@ -179,7 +188,7 @@ export const SubscriptionDetailScreen = ({
           className="flex-1"
         />
       </View>
-      {/* shortcut: 해지 API 없어 모달만 닫음, 연동 시 구독 종료 처리 후 구독 종료(M-05)로 */}
+      {/* 해지 완료하면 상세를 다시 불러와 같은 경로가 구독 종료(M-05) 화면으로 바뀜 */}
       <Modal
         visible={confirmOpen}
         onClose={() => setConfirmOpen(false)}
@@ -188,6 +197,7 @@ export const SubscriptionDetailScreen = ({
         description={'해지 완료를 누르면 점검 알림이\n더 이상 오지 않아요.'}
         cancelLabel="취소"
         confirmLabel="해지 완료"
+        onConfirm={() => cancelSubscription.mutate(s.id)}
       />
     </View>
   );

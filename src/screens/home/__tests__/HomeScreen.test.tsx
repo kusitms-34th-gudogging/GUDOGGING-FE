@@ -2,7 +2,7 @@ import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
 import type { Home } from '@/hooks/useHome';
-import { createQueryWrapper, mockApi } from '@/lib/testing';
+import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
 import { HomeScreen } from '@/screens/home/HomeScreen';
 
 const payment = (id: string, name: string, date: string, dDay: number) => ({
@@ -61,7 +61,7 @@ describe('HomeScreen', () => {
   });
 
   it('불러오지 못하면 다시 시도로 다시 요청한다', async () => {
-    const user = await renderHome({ status: 500 });
+    const user = await renderHome(apiError(500));
 
     await user.press(await screen.findByRole('button', { name: '다시 시도' }));
 
