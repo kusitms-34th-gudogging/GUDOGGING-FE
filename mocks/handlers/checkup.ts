@@ -1,5 +1,6 @@
 import { http } from 'msw';
 
+import { checkupForm } from '../checkupQuestions.ts';
 import {
   type AnswerType,
   db,
@@ -14,34 +15,9 @@ import {
 } from '../db.ts';
 import { notFound, ok } from '../response.ts';
 
-const options = (texts: string[]) => texts.map((text, i) => ({ score: i + 1, text }));
-
-// ponytail: 카테고리와 상관없이 OTT 문항 고정, 카테고리별 문항은 서버 (화면설계서 K-11~K-66)
-const QUESTIONS = [
-  {
-    type: 'USAGE',
-    label: '최근 한 달 동안 얼마나 봤나요?',
-    hint: '에피소드, 영화 모두 1편으로 세어 주세요',
-    // 임의: 명세 mock은 선택지 2개('안 봤어요', '1~2편')뿐, 나머지 3개 문구
-    options: options(['안 봤어요', '1~2편', '3~5편', '6~10편', '10편 넘게']),
-  },
-  // 임의: 명세 mock은 USAGE 문항만 있음, SATISFACTION·PLAN 문항 문구·선택지
-  {
-    type: 'SATISFACTION',
-    label: '볼 만한 콘텐츠가 충분했나요?',
-    hint: null,
-    options: options(['전혀 아니에요', '별로예요', '보통이에요', '만족해요', '아주 만족해요']),
-  },
-  {
-    type: 'PLAN',
-    label: '다음 달에도 볼 계획이 있나요?',
-    hint: null,
-    options: options(['없어요', '아마 없어요', '모르겠어요', '아마 있어요', '확실히 있어요']),
-  },
-] as const;
-
-const optionText = (type: AnswerType, score: number) =>
-  QUESTIONS.find((q) => q.type === type)!.options[score - 1].text;
+// 고른 점수의 선택지 문구 (상세·결과의 usageAnswer 등)
+const optionText = (category: string, type: AnswerType, score: number) =>
+  checkupForm(category).questions.find((q) => q.type === type)!.options[score - 1].text;
 
 export const checkupHandlers = [
   http.get('/api/v1/subscriptions/:subscriptionId/checkups/form', ({ params }) => {
@@ -49,15 +25,12 @@ export const checkupHandlers = [
     if (!s) return notFound();
     return ok('점검 문항을 조회했습니다.', {
       category: s.category,
-      questions: QUESTIONS,
+      ...checkupForm(s.category),
       lastMemo: latestCheckup(s.subscriptionId)?.memo ?? null,
       serviceName: s.serviceName,
       amount: s.amount,
       yearlyAmount: monthlyAmount(s) * 12,
       nextBillingDate: toIso(nextBilling(s)),
-      // 임의: 메모 예시 문구·칩은 명세 mock에 없음
-      memoPlaceholder: '예) 보고 싶은 시리즈가 끝나면 해지',
-      memoChips: ['볼 작품 있음', '가족과 같이 봄', '요즘 잘 안 봄'],
     });
   }),
   http.post('/api/v1/subscriptions/:subscriptionId/checkups', async ({ params, request }) => {
@@ -77,9 +50,9 @@ export const checkupHandlers = [
       checkedAt: toIso(today()),
       answers,
       answerTexts: {
-        USAGE: optionText('USAGE', answers.USAGE),
-        SATISFACTION: optionText('SATISFACTION', answers.SATISFACTION),
-        PLAN: optionText('PLAN', answers.PLAN),
+        USAGE: optionText(s.category, 'USAGE', answers.USAGE),
+        SATISFACTION: optionText(s.category, 'SATISFACTION', answers.SATISFACTION),
+        PLAN: optionText(s.category, 'PLAN', answers.PLAN),
       },
       memo: body.memo || null,
       ...scoreCheckup(answers),
