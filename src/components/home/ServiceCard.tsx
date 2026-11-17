@@ -13,9 +13,8 @@ import Animated, {
 import { EmptyMonoAsset } from '@/assets/graphics';
 import { cn } from '@/utils/cn';
 
-export interface ServiceCardSubscription {
+export interface ServiceCardLogo {
   id: string;
-  nextDate: Date;
   logo?: ImageSourcePropType;
 }
 
@@ -104,11 +103,9 @@ const FLOAT_PX = 2;
 // Figma 카드 안쪽 그림자. NativeWind shadow 클래스는 inset을 버려서 RN boxShadow로 (토큰 없음)
 const CARD_INSET_SHADOW = { boxShadow: '0px 3px 3px 0px rgba(183, 183, 183, 0.08) inset' };
 
-// 결제일이 가까운 순으로 최대 10개, 가까울수록 크게. 반환 x·y는 로고 왼쪽 위
-export const placeLogos = (subscriptions: ServiceCardSubscription[]) => {
-  const ranked = [...subscriptions]
-    .sort((a, b) => a.nextDate.getTime() - b.nextDate.getTime())
-    .slice(0, MAX_LOGOS);
+// 받은 순서(서버가 결제일 가까운 순으로 줌)대로 최대 10개, 앞일수록 크게. 반환 x·y는 로고 왼쪽 위
+export const placeLogos = (logos: ServiceCardLogo[]) => {
+  const ranked = logos.slice(0, MAX_LOGOS);
   const layout = LAYOUTS[ranked.length - 1] ?? [];
   return ranked.map((s, i) => ({
     ...s,
@@ -163,16 +160,16 @@ const FloatingLogo = ({ logo, size, x, y, index }: FloatingLogoProps) => {
 
 interface ServiceCardProps {
   label: string;
-  // 없으면 '구독 등록 x' 모양
-  subscriptions: ServiceCardSubscription[];
+  // 결제일 가까운 순. 없으면 '구독 등록 x' 모양
+  logos: ServiceCardLogo[];
   onPress?: () => void;
   className?: string;
 }
 
 // Figma service card: 정사각(375 기준 160), 폭은 사용처가 정함
 // 등록한 구독이 있으면 로고가 떠다니고, 없으면 빈 상자 그래픽
-export const ServiceCard = ({ label, subscriptions, onPress, className }: ServiceCardProps) => {
-  const logos = placeLogos(subscriptions);
+export const ServiceCard = ({ label, logos: items, onPress, className }: ServiceCardProps) => {
+  const logos = placeLogos(items);
 
   return (
     <Pressable

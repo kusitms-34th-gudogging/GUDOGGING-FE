@@ -2,18 +2,18 @@ import { render, screen, userEvent } from '@testing-library/react-native';
 
 import { placeLogos, ServiceCard } from '@/components/home/ServiceCard';
 
-const sub = (id: string, day: number) => ({ id, nextDate: new Date(2026, 10, day) });
+const sub = (id: string) => ({ id });
 
 describe('placeLogos', () => {
-  it('결제일이 가까운 순으로 놓고, 가까울수록 크게', () => {
-    const logos = placeLogos([sub('late', 20), sub('soon', 12), sub('mid', 15)]);
+  it('받은 순서대로 놓고, 앞일수록 크게', () => {
+    const logos = placeLogos([sub('soon'), sub('mid'), sub('late')]);
 
     expect(logos.map((l) => l.id)).toEqual(['soon', 'mid', 'late']);
     expect(logos.map((l) => l.size)).toEqual([36, 30, 29]);
   });
 
   it('최대 10개까지만 놓는다', () => {
-    const subs = Array.from({ length: 12 }, (_, i) => sub(`s${i}`, i + 1));
+    const subs = Array.from({ length: 12 }, (_, i) => sub(`s${i}`));
 
     const logos = placeLogos(subs);
 
@@ -23,7 +23,7 @@ describe('placeLogos', () => {
 
   it('1~10개 어느 개수에서도 로고끼리 겹치지 않고 로고 영역(128×98) 안에 있다', () => {
     for (let n = 1; n <= 10; n++) {
-      const logos = placeLogos(Array.from({ length: n }, (_, i) => sub(`s${i}`, i + 1)));
+      const logos = placeLogos(Array.from({ length: n }, (_, i) => sub(`s${i}`)));
       for (const a of logos) {
         expect(a.x).toBeGreaterThanOrEqual(0);
         expect(a.x + a.size).toBeLessThanOrEqual(128);
@@ -55,7 +55,7 @@ describe('ServiceCard', () => {
 
   it('누르면 onPress가 호출된다', async () => {
     const onPress = jest.fn();
-    await render(<ServiceCard label="구독 3개" subscriptions={[sub('a', 12)]} onPress={onPress} />);
+    await render(<ServiceCard label="구독 3개" logos={[sub('a')]} onPress={onPress} />);
 
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     await user.press(screen.getByRole('button', { name: '구독 3개' }));
