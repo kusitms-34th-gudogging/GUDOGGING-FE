@@ -3,7 +3,6 @@ import { router } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
 import { useGmailLink } from '@/hooks/useGmailLink';
-import { useNotificationSettings } from '@/hooks/useNotificationSettings';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { MypageWithdrawScreen } from '@/screens/mypage/MypageWithdrawScreen';
 
@@ -20,7 +19,6 @@ const renderFromMypage = async (props: Parameters<typeof MypageWithdrawScreen>[0
 test('최종 확인에서 탈퇴하기를 누르면 기기의 계정 데이터를 비우고 탈퇴 완료 화면으로 간다', async () => {
   useGmailLink.setState({ gmail: 'suum.mail@gmail.com' });
   useRegisterDraft.setState({ selectedIds: ['netflix'] });
-  useNotificationSettings.setState({ checkupReminder: true });
   await renderFromMypage();
 
   await userEvent.press(screen.getByRole('button', { name: '탈퇴하기' }));
@@ -30,7 +28,6 @@ test('최종 확인에서 탈퇴하기를 누르면 기기의 계정 데이터�
   expect(screen).toHavePathname('/mypage/withdraw-done');
   expect(useGmailLink.getState().gmail).toBeNull();
   expect(useRegisterDraft.getState().selectedIds).toEqual([]);
-  expect(useNotificationSettings.getState().checkupReminder).toBe(false);
 });
 
 test('취소를 누르면 마이페이지로 돌아간다', async () => {

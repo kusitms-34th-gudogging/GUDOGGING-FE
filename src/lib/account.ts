@@ -1,6 +1,5 @@
 import { useCheckupDraft } from '@/hooks/useCheckupDraft';
 import { useGmailLink } from '@/hooks/useGmailLink';
-import { useNotificationSettings } from '@/hooks/useNotificationSettings';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 
 // 마이페이지 계정 요청. 화면과 실패 화면의 다시 시도하기가 같은 요청을 씀
@@ -18,5 +17,4 @@ export const clearAccountData = () => {
   useGmailLink.getState().setGmail(null);
   useRegisterDraft.getState().reset();
   useCheckupDraft.getState().reset();
-  useNotificationSettings.getState().setCheckupReminder(false);
 };
