@@ -97,69 +97,10 @@ export const toCheckupCategory = (label?: string): CheckupCategory =>
 export interface CheckupSubscription {
   id: string;
   name: string;
-  // 문항 속 이름 (Netflix → 넷플릭스). 없으면 name
-  nameKo?: string;
   category?: string;
   amount: number;
   nextDate: Date;
 }
-
-// shortcut: 구독 상세 API 없이 Figma 화면과 같은 샘플, API 연동 시 구독 조회 훅으로 교체
-export const CHECKUP_SAMPLE: CheckupSubscription[] = [
-  {
-    id: 'netflix',
-    name: 'Netflix',
-    nameKo: '넷플릭스',
-    category: '영상·OTT',
-    amount: 13500,
-    nextDate: new Date(2026, 10, 17),
-  },
-  { id: 'melon', name: '멜론', category: '음악', amount: 10900, nextDate: new Date(2026, 10, 5) },
-  {
-    id: 'coupang',
-    name: '쿠팡 와우',
-    category: '쇼핑·배달 멤버십',
-    amount: 7890,
-    nextDate: new Date(2026, 10, 22),
-  },
-  {
-    id: 'duolingo',
-    name: '듀오링고',
-    category: '교육·학습',
-    amount: 1100,
-    nextDate: new Date(2026, 10, 2),
-  },
-  {
-    id: 'chatgpt',
-    name: 'ChatGPT',
-    category: '생산성·AI',
-    amount: 29000,
-    nextDate: new Date(2026, 10, 12),
-  },
-  {
-    id: 'millie',
-    name: '밀리의 서재',
-    category: '엔터테인먼트',
-    amount: 9900,
-    nextDate: new Date(2026, 9, 28),
-  },
-  { id: 'icloud', name: 'iCloud+', amount: 1100, nextDate: new Date(2026, 10, 2) },
-  // 알림 목록(H-04) 샘플이 가리키는 구독
-  {
-    id: 'youtube',
-    name: '유튜브 프리미엄',
-    category: '영상·OTT',
-    amount: 14900,
-    nextDate: new Date(2026, 10, 20),
-  },
-  {
-    id: 'claude',
-    name: 'Claude',
-    category: '생산성·AI',
-    amount: 29000,
-    nextDate: new Date(2026, 10, 18),
-  },
-];
 
 // K-80 "같은 {서비스명}, 더 싸게" 추천 카드
 export interface CheckupRecommendation {

@@ -46,7 +46,6 @@ const inDays = (n: number) => {
 const monthly = { cycle: 1, unit: '개월' } as const;
 
 // shortcut: 구독 API 없이 오늘 기준 샘플, 구독 목록·상세 API 연동 시 API 훅으로 교체
-// 점검 화면이 점검 샘플(CHECKUP_SAMPLE)에서 서비스를 찾으므로 같은 id를 씀
 export const MANAGE_SAMPLE: SubscriptionDetail[] = [
   {
     status: 'active',

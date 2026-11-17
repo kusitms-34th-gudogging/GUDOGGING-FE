@@ -65,7 +65,7 @@ const CheckupQuestions = ({
   memo: memoConfig,
   restart,
 }: CheckupQuestionsProps) => {
-  const { id, name, nameKo = name, amount, nextDate } = subscription;
+  const { id, name, amount, nextDate } = subscription;
   const category = toCheckupCategory(subscription.category);
   // 같은 결제 주기 안에서만 이어 하기. 주기가 바뀌면 1/4부터
   const cycle = nextDate.toISOString();
@@ -156,7 +156,7 @@ const CheckupQuestions = ({
               lineBreakStrategyIOS="hangul-word"
               className="text-text-primary text-head2-bold"
             >
-              {fillName(question.title, nameKo)}
+              {fillName(question.title, name)}
             </Text>
             <Text className="text-text-primary text-body2-regular">{hint}</Text>
           </View>
