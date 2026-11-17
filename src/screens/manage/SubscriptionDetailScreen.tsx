@@ -55,11 +55,15 @@ export const SubscriptionDetailScreen = ({
         showAction2={false}
         action1={{ icon: MoreIcon, accessibilityLabel: '더보기', onPress: () => setMenuOpen(true) }}
       />
-      {/* shortcut: 구독 편집 화면이 아직 없어 이동 없음 */}
       <MoreMenu
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
-        options={[{ label: '편집', onSelect: () => {} }]}
+        options={[
+          {
+            label: '편집',
+            onSelect: () => router.push({ pathname: '/register/input', params: { edit: s.id } }),
+          },
+        ]}
       />
       <ScrollView contentContainerClassName="gap-s20 pb-stack-md pt-stack-md">
         <View className="gap-stack-md px-screen-x">

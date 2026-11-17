@@ -256,3 +256,75 @@ it('지난 구독 재등록은 기존 정보로 채워 잠그고, 다음 결제�
   // 재등록은 새 구독 추가가 아니라 등록 중 목록에 넣지 않음
   expect(useRegisterDraft.getState().payments).toEqual({});
 });
+
+it('구독 편집은 기존 정보로 채우고, 고친 정보를 수정 API로 보낸 뒤 상세로 돌아간다', async () => {
+  jest.setSystemTime(new Date(2026, 10, 12, 10));
+  mockApi({
+    'GET /api/v1/services': { services: TEST_SERVICES },
+    'GET /api/v1/subscriptions/watcha': {
+      subscriptionId: 'watcha',
+      status: 'ACTIVE',
+      serviceName: '왓챠',
+      category: 'MUSIC',
+      amount: 7900,
+      billingCycleValue: 2,
+      billingCycleUnit: 'WEEK',
+      nextBillingDate: '2026-11-20',
+      startedAt: '2026-04-16',
+      paymentMethod: 'APP_STORE',
+      isSteady: false,
+      canceledAt: null,
+      totalPaidAmount: 47600,
+      latestCheckup: null,
+      pastCheckupAverage: null,
+    },
+    'PATCH /api/v1/subscriptions/watcha': {
+      subscriptionId: 'watcha',
+      yearlyAmount: 107800,
+      nextBillingDate: '2026-11-20',
+    },
+  });
+  await renderRouter(
+    {
+      'manage/detail': () => null,
+      'register/input': () => <RegisterServiceInputScreen editId="watcha" />,
+    },
+    { initialUrl: '/manage/detail', wrapper: createQueryWrapper() },
+  );
+  await act(() => router.push('/register/input'));
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+  // 기본값(기타 · 1개월 · 오늘 · 웹·직접 결제)과 다른 값이라야 채워졌는지 구분됨
+  // 서비스명은 사전 등록 서비스(A-03)처럼 보여 주기만 하고 입력란은 없음
+  expect(await screen.findByText('왓챠')).toBeOnTheScreen();
+  expect(screen.queryByLabelText('서비스명')).not.toBeOnTheScreen();
+  expect(screen.getByText('구독 정보 편집')).toBeOnTheScreen();
+  expect(screen.getByRole('button', { name: '다음 결제일' })).toHaveAccessibilityValue({
+    text: '2026.11.20',
+  });
+  await user.clear(screen.getByLabelText('결제 금액'));
+  await user.type(screen.getByLabelText('결제 금액'), '9900');
+  await user.press(screen.getByRole('tab', { name: '웹·직접 결제' }));
+  await user.press(screen.getByRole('button', { name: '저장하기' }));
+
+  expect(screen).toHavePathname('/manage/detail');
+  const patches = jest
+    .mocked(globalThis.fetch)
+    .mock.calls.filter(([, init]) => init?.method === 'PATCH')
+    .map(([url, init]) => [String(url), JSON.parse(String(init?.body))]);
+  expect(patches).toEqual([
+    [
+      'https://api.test/api/v1/subscriptions/watcha',
+      {
+        serviceName: '왓챠',
+        category: 'MUSIC',
+        amount: 9900,
+        billingCycleValue: 2,
+        billingCycleUnit: 'WEEK',
+        nextBillingDate: '2026-11-20',
+        paymentMethod: 'WEB_DIRECT',
+      },
+    ],
+  ]);
+  expect(useRegisterDraft.getState().payments).toEqual({});
+});

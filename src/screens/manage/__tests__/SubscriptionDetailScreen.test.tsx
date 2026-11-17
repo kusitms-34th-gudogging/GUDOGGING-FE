@@ -28,6 +28,7 @@ const renderDetail = async (confirmCancel = false, routes: Record<string, unknow
       ),
       'checkup/[id]/index': () => null,
       'checkup/[id]/cancel': () => null,
+      'register/input': () => null,
     },
     { initialUrl: '/', wrapper: createQueryWrapper() },
   );
@@ -50,6 +51,15 @@ describe('SubscriptionDetailScreen', () => {
     await renderDetail();
 
     expect(screen.getByText('연 환산 162,000원')).toBeOnTheScreen();
+  });
+
+  it('더보기 → 편집은 이 구독의 정보 수정 화면으로 간다', async () => {
+    const user = await renderDetail();
+
+    await user.press(screen.getByRole('button', { name: '더보기' }));
+    await user.press(screen.getByRole('menuitem', { name: '편집' }));
+    expect(screen).toHavePathname('/register/input');
+    expect(screen).toHaveSearchParams({ edit: 'netflix' });
   });
 
   it('구독 점검은 점검 화면으로 간다', async () => {
