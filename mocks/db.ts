@@ -93,11 +93,9 @@ export const billingDates = (s: Subscription, from: Date, to: Date) => {
 };
 
 // 오늘 이후 첫 결제일
-export const nextBilling = (s: Subscription) => {
-  const from = today();
-  // 오늘부터 한 주기 안에 결제일이 반드시 하나 있음
-  return billingDates(s, from, shift(from, s, 1))[0];
-};
+// from 이후(포함) 첫 결제일. from부터 한 주기 안에 결제일이 반드시 하나 있음
+export const nextBilling = (s: Subscription, from = today()) =>
+  billingDates(s, from, shift(from, s, 1))[0];
 
 export const monthlyAmount = (s: Subscription) => {
   const perMonth = { DAY: 365 / 12, WEEK: 52 / 12, MONTH: 1, YEAR: 1 / 12 }[s.billingCycleUnit];

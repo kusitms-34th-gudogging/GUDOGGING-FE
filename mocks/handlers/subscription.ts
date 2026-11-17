@@ -181,11 +181,15 @@ export const subscriptionHandlers = [
     return ok('구독을 삭제했습니다.', { deletedCount: subscriptionIds.length });
   }),
 
-  // ponytail: baseDate(캘린더 C-03 기준일) 무시하고 오늘 기준, 캘린더 상세 연동 때 필요하면 반영
-  http.get('/api/v1/subscriptions/:subscriptionId', ({ params }) => {
+  // baseDate(캘린더 C-03에서 고른 날짜)가 있으면 그날 다음(그날 제외) 결제일, 없으면 오늘 이후
+  http.get('/api/v1/subscriptions/:subscriptionId', ({ params, request }) => {
     const s = findSubscription(params.subscriptionId as string);
     if (!s) return notFound();
-    const next = nextBilling(s);
+    const baseDate = new URL(request.url).searchParams.get('baseDate');
+    const base = baseDate && toDate(baseDate);
+    const next = base
+      ? nextBilling(s, new Date(base.getFullYear(), base.getMonth(), base.getDate() + 1))
+      : nextBilling(s);
     const checkups = db.checkups.filter((c) => c.subscriptionId === s.subscriptionId);
     const latest = checkups.at(-1);
     return ok('구독 상세를 조회했습니다.', {
