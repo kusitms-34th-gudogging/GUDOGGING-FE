@@ -11,6 +11,8 @@ interface CheckupDraftEntry {
 interface CheckupDraft {
   drafts: Record<string, CheckupDraftEntry>;
   setScore: (id: string, cycle: string, step: number, score: number) => void;
+  // 제출하면 그 구독의 임시 저장을 지움
+  clear: (id: string) => void;
   reset: () => void;
 }
 
@@ -25,6 +27,11 @@ export const useCheckupDraft = create<CheckupDraft>()(
           // 해당 문항만 교체. 이전으로 갔다 와도 뒤 문항 답은 유지
           const scores = [...prev.slice(0, step), score, ...prev.slice(step + 1)];
           return { drafts: { ...s.drafts, [id]: { cycle, scores } } };
+        }),
+      clear: (id) =>
+        set((s) => {
+          const { [id]: _, ...rest } = s.drafts;
+          return { drafts: rest };
         }),
       reset: () => set({ drafts: {} }),
     }),
