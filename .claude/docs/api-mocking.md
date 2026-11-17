@@ -6,12 +6,14 @@
 
 1. `.env.example`을 `.env.local`로 복사하고 `EXPO_PUBLIC_API_URL=http://localhost:9090` 채움
 2. 터미널 하나에서 `pnpm mock`, 다른 하나에서 `pnpm start -c` (환경변수 바꾼 뒤엔 캐시 초기화)
-3. 명세 보고 `mocks/handlers.ts`에 추가. 경로는 base URL 뒤에 붙는 부분, 응답 형태는 명세 그대로
+3. 노션 API 명세서의 mock data를 도메인별 `mocks/handlers/{도메인}.ts`에 옮김. 경로는 base URL 뒤 부분(`/api/v1/...`), 응답은 `ok()`로 명세 공통 형태 `{ code, message, data }`
 
 ```ts
-http.get('/subscriptions', () => HttpResponse.json([{ id: 1, name: '넷플릭스' }])),
-http.post('/subscriptions', () => HttpResponse.json({ message: '중복' }, { status: 409 })),
+http.get('/api/v1/home', () => ok('홈 정보를 조회했습니다.', { summary: { ... } })),
+http.post('/api/v1/subscriptions', () => ok('구독을 등록했습니다.', { ... }, 201)),
 ```
+
+- 고정 경로(`/subscriptions/drafts`)는 `/:subscriptionId`보다 먼저 등록 (MSW는 먼저 맞는 핸들러로 응답)
 
 ## 주의
 
