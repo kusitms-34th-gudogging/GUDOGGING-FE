@@ -22,7 +22,7 @@ export const gmailHandlers = [
   }),
   http.post('/api/v1/gmail/analyses', () =>
     ok('결제 메일을 분석했습니다.', {
-      // 임의: 명세 mock은 Netflix인데 기본 구독(Netflix)과 겹쳐 중복 등록 에러가 나서 Spotify로
+      // 임의: 명세 mock은 Netflix인데 기본 구독(Netflix)과 겹치지 않게 Spotify로
       candidates: [
         {
           serviceId: '5e1c9a07-5a4d-4e7b-9c21-000000000004',

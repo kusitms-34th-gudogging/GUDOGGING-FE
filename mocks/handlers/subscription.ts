@@ -137,14 +137,8 @@ export const subscriptionHandlers = [
     });
   }),
   http.post('/api/v1/subscriptions', async ({ request }) => {
+    // 같은 서비스 중복 등록도 받음 (명세에 막는 규칙 없음)
     const body = (await request.json()) as { subscriptions: NewSubscription[] };
-    const taken = new Set(
-      db.subscriptions.filter((s) => s.status === 'ACTIVE').map((s) => s.serviceName),
-    );
-    // 임의: 중복 등록 에러 코드·문구는 명세에 없음
-    if (body.subscriptions.some((s) => taken.has(s.serviceName))) {
-      return fail(409, '이미 등록한 서비스예요.');
-    }
     const created = body.subscriptions.map((s): Subscription => ({
       ...s,
       subscriptionId: uuid(),
