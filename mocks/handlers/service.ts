@@ -3,7 +3,7 @@ import { http } from 'msw';
 import { ok } from '../response.ts';
 
 // 임의: defaultAmount는 명세 mock에 없어 채움
-const services = [
+export const services = [
   {
     serviceId: '5e1c9a07-5a4d-4e7b-9c21-000000000001',
     serviceName: 'Netflix',

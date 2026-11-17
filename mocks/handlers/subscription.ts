@@ -1,52 +1,80 @@
 import { http } from 'msw';
 
-import { ok, SUBSCRIPTION_ID } from '../response.ts';
+import {
+  billingDates,
+  type Checkup,
+  type CycleUnit,
+  daysBetween,
+  db,
+  findSubscription,
+  monthlyAmount,
+  nextBilling,
+  nowIso,
+  type Subscription,
+  toDate,
+  today,
+  toIso,
+  uuid,
+} from '../db.ts';
+import { fail, notFound, ok } from '../response.ts';
+import { services } from './service.ts';
 
-const netflix = {
-  subscriptionId: SUBSCRIPTION_ID,
-  serviceName: '넷플릭스',
-  logoUrl: 'https://.../netflix.png',
-  amount: 13500,
-  billingCycleValue: 1,
-  billingCycleUnit: 'MONTH',
+interface NewSubscription {
+  serviceId: string | null;
+  serviceName: string;
+  category: string;
+  amount: number;
+  billingCycleValue: number;
+  billingCycleUnit: CycleUnit;
+  nextBillingDate: string;
+  paymentMethod: string;
+}
+
+// 해지 전까지(구독 중이면 오늘까지) 시작일 이후 결제 횟수
+const paidCount = (s: Subscription) =>
+  billingDates(s, toDate(s.startedAt), s.canceledAt ? toDate(s.canceledAt) : today()).length;
+
+const listItem = (s: Subscription) => {
+  const next = s.status === 'ACTIVE' ? nextBilling(s) : null;
+  return {
+    subscriptionId: s.subscriptionId,
+    serviceName: s.serviceName,
+    logoUrl: s.logoUrl,
+    amount: s.amount,
+    billingCycleValue: s.billingCycleValue,
+    billingCycleUnit: s.billingCycleUnit,
+    // 임의: 명세에 구독 종료 항목의 다음 결제일 값이 없어 null (백엔드 확인 필요)
+    nextBillingDate: next ? toIso(next) : null,
+    dDay: next ? daysBetween(today(), next) : null,
+    canceledAt: s.canceledAt,
+    totalPaidAmount: s.status === 'ENDED' ? s.amount * paidCount(s) : null,
+  };
 };
 
-const draftItems = [
-  {
-    serviceId: '5e1c9a07-5a4d-4e7b-9c21-000000000001',
-    serviceName: 'Netflix',
-    category: 'VIDEO_OTT',
-    amount: 17000,
-    billingCycleValue: 1,
-    billingCycleUnit: 'MONTH',
-    nextBillingDate: '2026-12-01',
-    paymentMethod: 'WEB_DIRECT',
-  },
-  {
-    serviceId: null,
-    serviceName: '동네 헬스장',
-    category: 'ETC',
-    amount: null,
-    billingCycleValue: null,
-    billingCycleUnit: null,
-    nextBillingDate: null,
-    paymentMethod: null,
-  },
-];
+const SORTS: Record<string, (a: Subscription, b: Subscription) => number> = {
+  NEXT_BILLING_DATE: (a, b) => nextBilling(a).getTime() - nextBilling(b).getTime(),
+  CANCELED_AT: (a, b) => (b.canceledAt ?? '').localeCompare(a.canceledAt ?? ''),
+  AMOUNT_DESC: (a, b) => b.amount - a.amount,
+};
+
+const answersOf = (c: Checkup) => ({
+  usageAnswer: c.answerTexts.USAGE,
+  satisfactionAnswer: c.answerTexts.SATISFACTION,
+  planAnswer: c.answerTexts.PLAN,
+});
 
 // /drafts·/screenshots는 /:subscriptionId보다 먼저 (MSW는 먼저 등록한 핸들러로 응답)
 export const subscriptionHandlers = [
-  http.get('/api/v1/subscriptions/drafts', () =>
-    ok('임시저장을 조회했습니다.', {
-      savedAt: '2026-11-07T16:30:00',
-      lastStep: 'INPUT_INFO',
-      items: draftItems,
-    }),
-  ),
-  http.put('/api/v1/subscriptions/drafts', () =>
-    ok('임시저장했습니다.', { savedAt: '2026-11-07T16:30:00' }),
-  ),
-  http.delete('/api/v1/subscriptions/drafts', () => ok('임시저장을 삭제했습니다.')),
+  http.get('/api/v1/subscriptions/drafts', () => ok('임시저장을 조회했습니다.', db.draft)),
+  http.put('/api/v1/subscriptions/drafts', async ({ request }) => {
+    const { items, lastStep } = (await request.json()) as { items: unknown[]; lastStep: string };
+    db.draft = { savedAt: nowIso(), lastStep, items };
+    return ok('임시저장했습니다.', { savedAt: db.draft.savedAt });
+  }),
+  http.delete('/api/v1/subscriptions/drafts', () => {
+    db.draft = null;
+    return ok('임시저장을 삭제했습니다.');
+  }),
   http.post('/api/v1/subscriptions/screenshots/analyses', () =>
     ok('스크린샷을 분석했습니다.', {
       candidates: [
@@ -91,145 +119,166 @@ export const subscriptionHandlers = [
   ),
 
   http.get('/api/v1/subscriptions', ({ request }) => {
-    const ended = new URL(request.url).searchParams.get('status') === 'ENDED';
+    const params = new URL(request.url).searchParams;
+    const status = params.get('status') ?? 'ACTIVE';
+    const sort = params.get('sort') ?? (status === 'ENDED' ? 'CANCELED_AT' : 'NEXT_BILLING_DATE');
+    const active = db.subscriptions.filter((s) => s.status === 'ACTIVE');
+    const ended = db.subscriptions.filter((s) => s.status === 'ENDED');
+    const tab = (status === 'ENDED' ? ended : active).toSorted(SORTS[sort]);
     return ok('구독 목록을 조회했습니다.', {
-      count: 1,
-      activeCount: 1,
-      // 임의: 명세 mock은 endedCount 0, 구독 종료 탭 확인용으로 1
-      endedCount: 1,
-      monthlyTotal: 13500,
-      subscriptions: [
-        ended
-          ? // 임의: 명세 mock엔 구독 종료 항목이 없음. 종료 항목의 nextBillingDate·dDay가 null인지 백엔드 확인 필요
-            {
-              ...netflix,
-              nextBillingDate: null,
-              dDay: null,
-              canceledAt: '2026-11-04',
-              totalPaidAmount: 202500,
-            }
-          : {
-              ...netflix,
-              nextBillingDate: '2026-12-01',
-              dDay: 27,
-              canceledAt: null,
-              totalPaidAmount: null,
-            },
-      ],
+      count: tab.length,
+      activeCount: active.length,
+      endedCount: ended.length,
+      monthlyTotal: tab.reduce((sum, s) => sum + monthlyAmount(s), 0),
+      subscriptions: tab.map(listItem),
     });
   }),
-  http.post('/api/v1/subscriptions', () =>
-    ok(
+  http.post('/api/v1/subscriptions', async ({ request }) => {
+    const body = (await request.json()) as { subscriptions: NewSubscription[] };
+    const taken = new Set(
+      db.subscriptions.filter((s) => s.status === 'ACTIVE').map((s) => s.serviceName),
+    );
+    // 임의: 중복 등록 에러 코드·문구는 명세에 없음
+    if (body.subscriptions.some((s) => taken.has(s.serviceName))) {
+      return fail(409, '이미 등록한 서비스예요.');
+    }
+    const created = body.subscriptions.map((s): Subscription => ({
+      ...s,
+      subscriptionId: uuid(),
+      logoUrl: services.find((v) => v.serviceId === s.serviceId)?.logoUrl ?? null,
+      // 임의: 명세에 이용 시작일을 받는 필드가 없어 등록일로
+      startedAt: toIso(today()),
+      status: 'ACTIVE',
+      canceledAt: null,
+      isSteady: false,
+    }));
+    db.subscriptions.push(...created);
+    db.draft = null;
+    return ok(
       '구독을 등록했습니다.',
       {
-        createdCount: 1,
-        subscriptions: [
-          {
-            subscriptionId: SUBSCRIPTION_ID,
-            serviceName: 'Netflix',
-            logoUrl: 'https://cdn.gudogging.com/logos/netflix.png',
-            amount: 13500,
-            billingCycleValue: 1,
-            billingCycleUnit: 'MONTH',
-            nextBillingDate: '2026-12-01',
-            paymentMethod: 'WEB_DIRECT',
-          },
-        ],
+        createdCount: created.length,
+        subscriptions: created.map((s) => ({
+          subscriptionId: s.subscriptionId,
+          serviceName: s.serviceName,
+          logoUrl: s.logoUrl,
+          amount: s.amount,
+          billingCycleValue: s.billingCycleValue,
+          billingCycleUnit: s.billingCycleUnit,
+          nextBillingDate: s.nextBillingDate,
+          paymentMethod: s.paymentMethod,
+        })),
       },
       201,
-    ),
-  ),
+    );
+  }),
   http.delete('/api/v1/subscriptions', async ({ request }) => {
     const { subscriptionIds } = (await request.json()) as { subscriptionIds: string[] };
+    // 명세: 하나라도 없으면 전체 실패 (부분 삭제 없음)
+    if (!subscriptionIds.every(findSubscription)) return notFound();
+    db.subscriptions = db.subscriptions.filter((s) => !subscriptionIds.includes(s.subscriptionId));
+    db.checkups = db.checkups.filter((c) => !subscriptionIds.includes(c.subscriptionId));
     return ok('구독을 삭제했습니다.', { deletedCount: subscriptionIds.length });
   }),
 
-  http.get('/api/v1/subscriptions/:subscriptionId', () =>
-    ok('구독 상세를 조회했습니다.', {
-      subscriptionId: SUBSCRIPTION_ID,
-      status: 'ACTIVE',
-      serviceName: '넷플릭스',
-      logoUrl: 'https://cdn.gudogging.app/logos/netflix.png',
-      category: 'VIDEO_OTT',
-      amount: 17000,
-      billingCycleValue: 1,
-      billingCycleUnit: 'MONTH',
-      startedAt: '2025-03-15',
-      nextBillingDate: '2026-12-15',
-      paymentMethod: 'WEB_DIRECT',
-      isSteady: false,
-      canceledAt: null,
-      yearlyAmount: 204000,
-      totalPaidAmount: 255000,
-      paidCount: 15,
-      dDay: 41,
-      latestCheckup: {
-        checkupId: 'b1d7a2c4-5a4d-4e7b-9c21-000000000012',
-        checkedAt: '2026-11-10',
-        decision: 'KEEP',
-        // 임의: 명세 mock은 KEEP_RECOMMENDED인데 구간(60~79)상 KEEP_CONSIDER, 백엔드 확인 필요
-        stage: 'KEEP_CONSIDER',
-        score: 72,
-        usageAnswer: '주 3~4회',
-        satisfactionAnswer: '만족',
-        planAnswer: '적당함',
-        memo: '가족과 같이 봄',
-        // 임의: cancelReasons·cancelReasonText는 명세 mock에 없음
-        cancelReasons: [],
-        cancelReasonText: null,
+  // ponytail: baseDate(캘린더 C-03 기준일) 무시하고 오늘 기준, 캘린더 상세 연동 때 필요하면 반영
+  http.get('/api/v1/subscriptions/:subscriptionId', ({ params }) => {
+    const s = findSubscription(params.subscriptionId as string);
+    if (!s) return notFound();
+    const next = nextBilling(s);
+    const checkups = db.checkups.filter((c) => c.subscriptionId === s.subscriptionId);
+    const latest = checkups.at(-1);
+    return ok('구독 상세를 조회했습니다.', {
+      subscriptionId: s.subscriptionId,
+      status: s.status,
+      serviceName: s.serviceName,
+      logoUrl: s.logoUrl,
+      category: s.category,
+      amount: s.amount,
+      billingCycleValue: s.billingCycleValue,
+      billingCycleUnit: s.billingCycleUnit,
+      nextBillingDate: toIso(next),
+      startedAt: s.startedAt,
+      paymentMethod: s.paymentMethod,
+      isSteady: s.isSteady,
+      canceledAt: s.canceledAt,
+      yearlyAmount: monthlyAmount(s) * 12,
+      totalPaidAmount: s.amount * paidCount(s),
+      paidCount: paidCount(s),
+      dDay: daysBetween(today(), next),
+      latestCheckup: latest && {
+        checkupId: latest.checkupId,
+        checkedAt: latest.checkedAt,
+        decision: latest.decision,
+        stage: latest.stage,
+        score: latest.score,
+        ...answersOf(latest),
+        memo: latest.memo,
+        cancelReasons: latest.cancelReasons,
+        cancelReasonText: latest.cancelReasonText,
       },
-      pastCheckups: [
-        {
-          checkedAt: '2026-05-10',
-          usageAnswer: '주 1~2회',
-          satisfactionAnswer: '보통',
-          planAnswer: '비쌈',
-          decision: 'KEEP',
-        },
-      ],
-      // 임의: pastCheckupAverage는 명세 mock에 없어 필드 표 보고 채움
-      pastCheckupAverage: {
-        periodFrom: '2026-08-01',
-        periodTo: '2026-11-10',
-        usageAnswer: '주 3~4회',
-        satisfactionAnswer: '만족',
-        planAnswer: '적당함',
-        score: 72,
-        stage: 'KEEP_CONSIDER',
+      pastCheckups: checkups.toReversed().map((c) => ({
+        checkedAt: c.checkedAt,
+        ...answersOf(c),
+        decision: c.decision,
+      })),
+      // ponytail: 3개월 평균 대신 최근 점검 1건 그대로, 평균 화면 확인이 필요해지면 계산
+      pastCheckupAverage: latest && {
+        periodFrom: latest.checkedAt,
+        periodTo: latest.checkedAt,
+        ...answersOf(latest),
+        score: latest.score,
+        stage: latest.stage,
       },
-    }),
-  ),
-  http.patch('/api/v1/subscriptions/:subscriptionId', () =>
-    ok('구독 정보를 수정했습니다.', {
-      subscriptionId: SUBSCRIPTION_ID,
-      yearlyAmount: 162000,
-      nextBillingDate: '2026-12-01',
-    }),
-  ),
-  http.get('/api/v1/subscriptions/:subscriptionId/cancel-guide', () =>
-    ok('해지 안내를 조회했습니다.', {
-      serviceName: '넷플릭스',
-      paymentMethod: 'WEB_DIRECT',
-      steps: ['넷플릭스 접속', '멤버십 관리', '멤버십 해지'],
+    });
+  }),
+  http.patch('/api/v1/subscriptions/:subscriptionId', async ({ params, request }) => {
+    const s = findSubscription(params.subscriptionId as string);
+    if (!s) return notFound();
+    Object.assign(s, (await request.json()) as Partial<NewSubscription>);
+    return ok('구독 정보를 수정했습니다.', {
+      subscriptionId: s.subscriptionId,
+      yearlyAmount: monthlyAmount(s) * 12,
+      nextBillingDate: toIso(nextBilling(s)),
+    });
+  }),
+  http.get('/api/v1/subscriptions/:subscriptionId/cancel-guide', ({ params }) => {
+    const s = findSubscription(params.subscriptionId as string);
+    if (!s) return notFound();
+    // ponytail: 해지 경로는 넷플릭스 예시 고정, 서비스별 안내는 서버 DB
+    return ok('해지 안내를 조회했습니다.', {
+      serviceName: s.serviceName,
+      paymentMethod: s.paymentMethod,
+      steps: [`${s.serviceName} 접속`, '멤버십 관리', '멤버십 해지'],
       cancelUrl: 'https://www.netflix.com/cancelplan',
       caution: '해지해도 결제 기간 끝까지 이용 가능',
       // 임의: guideMessage는 명세 mock에 없음 (steps가 있으면 null이라는 설명대로)
       guideMessage: null,
       lastVerifiedAt: '2026-10-20',
-    }),
-  ),
-  http.patch('/api/v1/subscriptions/:subscriptionId/cancel', () =>
-    ok('구독을 해지 완료 처리했습니다.', {
-      subscriptionId: SUBSCRIPTION_ID,
-      status: 'ENDED',
-      canceledAt: '2026-11-04',
-    }),
-  ),
-  http.patch('/api/v1/subscriptions/:subscriptionId/reactivate', () =>
-    ok('구독을 재등록했습니다.', { subscriptionId: SUBSCRIPTION_ID, status: 'ACTIVE' }),
-  ),
-  http.patch('/api/v1/subscriptions/:subscriptionId/steady', async ({ request }) => {
-    const { isSteady } = (await request.json()) as { isSteady: boolean };
-    return ok('설정을 변경했습니다.', { subscriptionId: SUBSCRIPTION_ID, isSteady });
+    });
+  }),
+  http.patch('/api/v1/subscriptions/:subscriptionId/cancel', ({ params }) => {
+    const s = findSubscription(params.subscriptionId as string);
+    if (!s) return notFound();
+    s.status = 'ENDED';
+    s.canceledAt = toIso(today());
+    return ok('구독을 해지 완료 처리했습니다.', {
+      subscriptionId: s.subscriptionId,
+      status: s.status,
+      canceledAt: s.canceledAt,
+    });
+  }),
+  http.patch('/api/v1/subscriptions/:subscriptionId/reactivate', async ({ params, request }) => {
+    const s = findSubscription(params.subscriptionId as string);
+    if (!s) return notFound();
+    const { nextBillingDate } = (await request.json()) as { nextBillingDate: string };
+    Object.assign(s, { status: 'ACTIVE', canceledAt: null, nextBillingDate });
+    return ok('구독을 재등록했습니다.', { subscriptionId: s.subscriptionId, status: s.status });
+  }),
+  http.patch('/api/v1/subscriptions/:subscriptionId/steady', async ({ params, request }) => {
+    const s = findSubscription(params.subscriptionId as string);
+    if (!s) return notFound();
+    s.isSteady = ((await request.json()) as { isSteady: boolean }).isSteady;
+    return ok('설정을 변경했습니다.', { subscriptionId: s.subscriptionId, isSteady: s.isSteady });
   }),
 ];

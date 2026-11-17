@@ -5,5 +5,8 @@ import { HttpResponse } from 'msw';
 export const ok = (message: string, data: unknown = null, code = 200) =>
   HttpResponse.json({ code, message, data }, { status: code });
 
-export const SUBSCRIPTION_ID = '3f2b8c1e-5a4d-4e7b-9c21-000000000001';
-export const CHECKUP_ID = 'b1d7a2c4-5a4d-4e7b-9c21-000000000001';
+// 임의: 명세에 에러 응답 형태가 없어 성공과 같은 형태로 (백엔드 확인 필요)
+export const fail = (code: number, message: string) =>
+  HttpResponse.json({ code, message, data: null }, { status: code });
+
+export const notFound = () => fail(404, '구독을 찾을 수 없어요.');
