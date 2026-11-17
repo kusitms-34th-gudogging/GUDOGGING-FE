@@ -1,5 +1,6 @@
 import { http } from 'msw';
 
+import { cancelGuide, DEFAULT_GUIDE } from '../cancelGuides.ts';
 import {
   billingDates,
   type Checkup,
@@ -249,15 +250,15 @@ export const subscriptionHandlers = [
   http.get('/api/v1/subscriptions/:subscriptionId/cancel-guide', ({ params }) => {
     const s = findSubscription(params.subscriptionId as string);
     if (!s) return notFound();
-    // ponytail: 해지 경로는 넷플릭스 예시 고정, 서비스별 안내는 서버 DB
+    const guide = cancelGuide(s.paymentMethod, s.serviceId);
     return ok('해지 안내를 조회했습니다.', {
       serviceName: s.serviceName,
       paymentMethod: s.paymentMethod,
-      steps: [`${s.serviceName} 접속`, '멤버십 관리', '멤버십 해지'],
-      cancelUrl: 'https://www.netflix.com/cancelplan',
-      caution: '해지해도 결제 기간 끝까지 이용 가능',
-      // 임의: guideMessage는 명세 mock에 없음 (steps가 있으면 null이라는 설명대로)
-      guideMessage: null,
+      steps: guide?.steps ?? [],
+      cancelUrl: guide?.cancelUrl ?? null,
+      caution: guide?.caution ?? null,
+      // 해지 경로가 없을 때만 기본 안내 (명세)
+      guideMessage: guide ? null : DEFAULT_GUIDE,
       lastVerifiedAt: '2026-10-20',
     });
   }),
