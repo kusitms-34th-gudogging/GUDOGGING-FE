@@ -5,7 +5,7 @@ import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import { Pressable, Text } from 'react-native';
 
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { createQueryWrapper, TEST_SERVICES } from '@/lib/testing';
+import { createQueryWrapper, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
 import { RegisterServiceSelectScreen } from '@/screens/register/RegisterServiceSelectScreen';
 
 // 검색어별 서버 응답 (검색·순위는 서버가 함). 검색어가 없으면 전체
@@ -170,6 +170,7 @@ it('검색어를 서버에 보내고, 서버가 준 순서대로 보여 준다',
 });
 
 it('구독 추가하기로 왔으면 이미 불러온 서비스는 체크된 채로 풀리지 않는다', async () => {
+  useRegisterDraft.getState().setFound('SCREENSHOT', TEST_FOUND);
   const user = await renderSelect({ more: true });
   const netflix = screen.getByRole('checkbox', { name: 'Netflix' });
 
@@ -182,6 +183,7 @@ it('구독 추가하기로 왔으면 이미 불러온 서비스는 체크된 채
 });
 
 it('불러온 구독의 이름을 바꿨으면 그 서비스는 잠기지 않아 새로 고를 수 있다', async () => {
+  useRegisterDraft.getState().setFound('SCREENSHOT', TEST_FOUND);
   useRegisterDraft.getState().setPayment('found-netflix', {
     name: '넷플 가족',
     category: '영상·OTT',

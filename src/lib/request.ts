@@ -17,14 +17,16 @@ export const request = async <T>(path: string, { body, headers, ...init }: Reque
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   if (!baseUrl) throw new Error('EXPO_PUBLIC_API_URL이 없음 → .env.local 확인');
 
+  // 파일 업로드(FormData)는 그대로 보내고 Content-Type은 fetch가 경계값까지 붙이게 둠
+  const isForm = body instanceof FormData;
   const res = await fetch(`${baseUrl}${path}`, {
     ...init,
     headers: {
       Accept: 'application/json',
-      ...(body !== undefined && { 'Content-Type': 'application/json' }),
+      ...(body !== undefined && !isForm && { 'Content-Type': 'application/json' }),
       ...headers,
     },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
   });
 
   const text = await res.text();

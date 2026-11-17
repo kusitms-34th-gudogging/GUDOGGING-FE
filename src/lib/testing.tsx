@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
+import type { FoundSubscription } from '@/constants/services';
+
 // API 쓰는 화면 테스트 공통 (.claude/docs/testing/api-hooks.md)
 
 // 테스트마다 새 QueryClient. 재시도 없이 바로 에러
@@ -56,3 +58,48 @@ export const TEST_SERVICES = [
   logoUrl: '',
   defaultAmount,
 }));
+
+// 분석으로 불러온 구독 (draft의 found). 등록 화면 테스트 공통
+// ChatGPT Plus·Netflix는 사전 등록 서비스로 인식됐지만 확인 필요, 밀리의 서재는 직접 입력처럼 다루는 확인 필요, YouTube Premium은 바로 등록 가능
+export const TEST_FOUND: FoundSubscription[] = [
+  {
+    id: 'found-chatgpt',
+    serviceId: 'chatgpt',
+    name: 'ChatGPT Plus',
+    payment: {
+      category: '생산성·AI',
+      amount: 29000,
+      cycle: 1,
+      unit: '개월',
+      nextDate: new Date(2026, 10, 12),
+      paidAt: 'appstore',
+    },
+    needsReview: true,
+  },
+  {
+    id: 'custom-found-millie',
+    name: '밀리의 서재',
+    payment: { category: '교육·학습', amount: 9900, cycle: 1, unit: '개월', paidAt: 'web' },
+    needsReview: true,
+  },
+  {
+    id: 'found-netflix',
+    serviceId: 'netflix',
+    name: 'Netflix',
+    payment: { category: '영상·OTT', amount: 13500, cycle: 1, unit: '개월', paidAt: 'web' },
+    needsReview: true,
+  },
+  {
+    id: 'found-youtube',
+    serviceId: 'youtube',
+    name: 'YouTube Premium',
+    payment: {
+      category: '영상·OTT',
+      amount: 17000,
+      cycle: 1,
+      unit: '개월',
+      nextDate: new Date(2026, 10, 12),
+      paidAt: 'appstore',
+    },
+  },
+];

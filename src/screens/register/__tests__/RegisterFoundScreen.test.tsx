@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { createQueryWrapper, mockApi, TEST_SERVICES } from '@/lib/testing';
+import { apiError, createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
 import { RegisterFoundScreen } from '@/screens/register/RegisterFoundScreen';
 
 const CTA = { name: '선택한 구독 등록하기' };
@@ -25,7 +25,12 @@ beforeEach(async () => {
   jest.useFakeTimers();
   useRegisterDraft.getState().reset();
   await AsyncStorage.clear();
-  mockApi({ 'GET /api/v1/services': { services: TEST_SERVICES } });
+  mockApi({
+    'GET /api/v1/services': { services: TEST_SERVICES },
+    'POST /api/v1/subscriptions': { createdCount: 1 },
+  });
+  // 분석 결과를 받은 상태 (setFound가 전부 체크하므로 각 테스트가 체크를 다시 정함)
+  useRegisterDraft.getState().setFound('SCREENSHOT', TEST_FOUND);
 });
 afterEach(() => {
   jest.useRealTimers();
@@ -121,5 +126,53 @@ describe('RegisterFoundScreen', () => {
 
     expect(screen.getByText('넷플 가족')).toBeOnTheScreen();
     expect(await screen.findByText('Netflix')).toBeOnTheScreen();
+  });
+
+  it('체크한 구독을 분석 출처와 함께 일괄 등록한다. 이름을 바꾼 불러온 구독은 사전 등록 서비스로 보내지 않는다', async () => {
+    useRegisterDraft.getState().setFound('GMAIL', TEST_FOUND);
+    // 분석이 Netflix로 알아본 항목을 수정 화면에서 다른 이름으로 바꿔 저장
+    useRegisterDraft.getState().setPayment('found-netflix', {
+      name: '넷플 가족',
+      category: '영상·OTT',
+      amount: 13500,
+      cycle: 1,
+      unit: '개월',
+      nextDate: new Date(2026, 10, 20),
+      paidAt: 'web',
+    });
+    useRegisterDraft.getState().setFoundChecked(['found-youtube', 'found-netflix']);
+    const user = await renderFound();
+
+    await user.press(screen.getByRole('button', CTA));
+
+    await waitFor(() => expect(screen).toHavePathname('/register/done'));
+    const post = jest.mocked(globalThis.fetch).mock.calls.find(([, i]) => i?.method === 'POST');
+    const body = JSON.parse(String(post?.[1]?.body));
+    expect(body.source).toBe('GMAIL');
+    const sent = body.subscriptions.map((s: { serviceId: string | null; serviceName: string }) => [
+      s.serviceId,
+      s.serviceName,
+    ]);
+    expect(sent).toHaveLength(2);
+    expect(sent).toEqual(
+      expect.arrayContaining([
+        [null, '넷플 가족'],
+        ['youtube', 'YouTube Premium'],
+      ]),
+    );
+  });
+
+  it('등록에 실패하면 불러온 구독 확인에 남는다', async () => {
+    mockApi({
+      'GET /api/v1/services': { services: TEST_SERVICES },
+      'POST /api/v1/subscriptions': apiError(409),
+    });
+    useRegisterDraft.getState().setFoundChecked(['found-youtube']);
+    const user = await renderFound();
+
+    await user.press(screen.getByRole('button', CTA));
+
+    await waitFor(() => expect(screen.getByRole('button', CTA)).toBeEnabled());
+    expect(screen).toHavePathname('/register/found');
   });
 });

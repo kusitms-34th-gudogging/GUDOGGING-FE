@@ -8,7 +8,7 @@ import {
   useRegisterDraft,
   useRegisterServices,
 } from '@/hooks/useRegisterDraft';
-import { createQueryWrapper, mockApi, TEST_SERVICES } from '@/lib/testing';
+import { createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
 
 const CATALOG = [{ id: 'netflix', name: 'Netflix', category: '영상·OTT' }];
 
@@ -87,6 +87,7 @@ describe('useRegisterDraft', () => {
       paidAt: 'web' as const,
     };
     mockApi({ 'GET /api/v1/services': { services: TEST_SERVICES } });
+    useRegisterDraft.getState().setFound('SCREENSHOT', TEST_FOUND);
     const { result } = await renderHook(() => useRegisterServices(['netflix']), {
       wrapper: createQueryWrapper(),
     });
@@ -106,9 +107,9 @@ describe('useRegisterDraft', () => {
 });
 
 describe('getFoundServiceIds', () => {
-  // 샘플: ChatGPT Plus·Netflix·YouTube Premium은 사전 등록 서비스로 인식, 밀리의 서재는 아님
+  // ChatGPT Plus·Netflix·YouTube Premium은 사전 등록 서비스로 인식, 밀리의 서재는 아님
   it('불러온 구독이 가리키는 사전 등록 서비스를 돌려준다', () => {
-    expect(getFoundServiceIds({})).toEqual(['chatgpt', 'netflix', 'youtube']);
+    expect(getFoundServiceIds(TEST_FOUND, {})).toEqual(['chatgpt', 'netflix', 'youtube']);
   });
 
   it('수정 화면에서 이름을 바꾼 구독은 다른 서비스로 보고 뺀다', () => {
@@ -121,7 +122,7 @@ describe('getFoundServiceIds', () => {
       paidAt: 'web' as const,
     };
     expect(
-      getFoundServiceIds({
+      getFoundServiceIds(TEST_FOUND, {
         'found-netflix': { ...payment, name: '넷플 가족' },
         'found-youtube': { ...payment, name: 'YouTube Premium' },
       }),

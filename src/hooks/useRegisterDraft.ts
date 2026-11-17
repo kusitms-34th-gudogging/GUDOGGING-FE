@@ -2,13 +2,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { FOUND_SAMPLE, type PaymentInfo, type Service } from '@/constants/services';
+import type { FoundSubscription, PaymentInfo, Service } from '@/constants/services';
 import { useServices } from '@/hooks/useServices';
+
+type FoundSource = 'SCREENSHOT' | 'GMAIL';
 
 interface RegisterDraft {
   selectedIds: string[];
   payments: Record<string, PaymentInfo>;
+  // 스크린샷·Gmail 분석으로 불러온 구독과 그 출처 (등록 요청의 source)
+  found: FoundSubscription[];
+  foundSource?: FoundSource;
   foundChecked?: string[];
+  // 분석 결과를 받으면 등록 가능 항목을 처음부터 전부 체크 (기획 답변)
+  setFound: (source: FoundSource, found: FoundSubscription[]) => void;
   setSelectedIds: (ids: string[]) => void;
   setPayment: (serviceId: string, info: PaymentInfo) => void;
   setFoundChecked: (ids: string[]) => void;
@@ -17,7 +24,13 @@ interface RegisterDraft {
   reset: () => void;
 }
 
-const EMPTY = { selectedIds: [], payments: {}, foundChecked: undefined };
+const EMPTY = {
+  selectedIds: [],
+  payments: {},
+  found: [],
+  foundSource: undefined,
+  foundChecked: undefined,
+};
 
 export const useRegisterDraft = create<RegisterDraft>()(
   persist(
@@ -25,6 +38,8 @@ export const useRegisterDraft = create<RegisterDraft>()(
       ...EMPTY,
       setSelectedIds: (selectedIds) => set({ selectedIds }),
       setPayment: (id, info) => set((s) => ({ payments: { ...s.payments, [id]: info } })),
+      setFound: (foundSource, found) =>
+        set({ foundSource, found, foundChecked: found.map((f) => f.id) }),
       setFoundChecked: (foundChecked) => set({ foundChecked }),
       addFoundChecked: (ids) =>
         set((s) => ({ foundChecked: [...new Set([...(s.foundChecked ?? []), ...ids])] })),
@@ -46,19 +61,23 @@ export const hasRegisterDraft = ({ selectedIds, payments, foundChecked }: Regist
 // 선택한 사전 등록 서비스 + 직접 입력한 구독 (A-04 목록). 불러온 구독을 수정한 값은 불러온 구독 확인에만 보임
 export const useRegisterServices = (serviceIds: string[]) => {
   const payments = useRegisterDraft((s) => s.payments);
+  const found = useRegisterDraft((s) => s.found);
   const services = useServices().data ?? [];
   return [
     ...services.filter((s) => serviceIds.includes(s.id)),
     ...Object.entries(payments)
-      .filter(([id]) => id.startsWith('custom-') && !FOUND_SAMPLE.some((f) => f.id === id))
+      .filter(([id]) => id.startsWith('custom-') && !found.some((f) => f.id === id))
       .map(([id, p]) => ({ id, name: p.name ?? '' })),
   ];
 };
 
 // 분석으로 불러온 구독이 가리키는 사전 등록 서비스 (A-02에서 잠그고, 같은 서비스를 또 추가하지 않게)
 // 수정 화면(A-15)에서 이름을 바꿨으면 분석이 잘못 알아본 다른 서비스로 보고 뺌 → A-02에서 그 서비스를 새로 추가 가능
-export const getFoundServiceIds = (payments: Record<string, PaymentInfo>) =>
-  FOUND_SAMPLE.flatMap((f) =>
+export const getFoundServiceIds = (
+  found: FoundSubscription[],
+  payments: Record<string, PaymentInfo>,
+) =>
+  found.flatMap((f) =>
     f.serviceId && (payments[f.id]?.name ?? f.name) === f.name ? [f.serviceId] : [],
   );
 

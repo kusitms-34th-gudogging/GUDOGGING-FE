@@ -35,6 +35,18 @@ describe('request', () => {
     expect(init?.headers).toMatchObject({ 'Content-Type': 'application/json' });
   });
 
+  it('FormData는 그대로 보내고 Content-Type을 붙이지 않는다 (multipart 경계값은 fetch가 정함)', async () => {
+    const fetchSpy = mockFetch(200, '{}');
+    const form = new FormData();
+    form.append('images', 'a');
+
+    await request('/upload', { method: 'POST', body: form });
+
+    const init = fetchSpy.mock.calls[0][1];
+    expect(init?.body).toBe(form);
+    expect(init?.headers).not.toHaveProperty('Content-Type');
+  });
+
   it('응답 body가 비어 있으면(204) undefined를 돌려준다', async () => {
     mockFetch(204);
 

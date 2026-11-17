@@ -97,7 +97,7 @@ const ServiceInputForm = ({
   const [nextDate, setNextDate] = useState(init?.nextDate ?? startOfToday());
   const [paidAt, setPaidAt] = useState<PaidAt>(init?.paidAt ?? 'web');
   // 확인 필요(결제 정보 입력 필요)로 들어오면 금액 에러를 켜 두고, 금액을 고치면 끔 (Figma A-15)
-  const [amountChecked, setAmountChecked] = useState(!!saved || !found?.issue);
+  const [amountChecked, setAmountChecked] = useState(!!saved || !found?.needsReview);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [unitSheet, setUnitSheet] = useState(false);
   const [draftUnit, setDraftUnit] = useState<string>();

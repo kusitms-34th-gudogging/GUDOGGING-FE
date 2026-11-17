@@ -28,7 +28,8 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
   const [initialIds] = useState(selectedIds);
   // 분석으로 불러온 서비스는 체크된 채로 잠금. 해제는 불러온 구독 확인에서만 (기획 답변)
   const payments = useRegisterDraft((s) => s.payments);
-  const lockedIds = more ? getFoundServiceIds(payments) : [];
+  const found = useRegisterDraft((s) => s.found);
+  const lockedIds = more ? getFoundServiceIds(found, payments) : [];
 
   const toggle = (id: string) =>
     setSelectedIds(

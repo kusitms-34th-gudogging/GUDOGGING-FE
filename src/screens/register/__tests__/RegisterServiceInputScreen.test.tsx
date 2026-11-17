@@ -4,9 +4,8 @@ import { router, Stack } from 'expo-router';
 import { act, renderRouter, screen } from 'expo-router/testing-library';
 import { Pressable, Text } from 'react-native';
 
-import { FOUND_SAMPLE } from '@/constants/services';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { createQueryWrapper, mockApi, TEST_SERVICES } from '@/lib/testing';
+import { createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
 import { RegisterServiceInputScreen } from '@/screens/register/RegisterServiceInputScreen';
 import { RegisterServiceSelectScreen } from '@/screens/register/RegisterServiceSelectScreen';
 
@@ -85,7 +84,7 @@ describe('RegisterServiceInputScreen 이탈 팝업', () => {
 });
 
 describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
-  const youtube = FOUND_SAMPLE.find((f) => f.id === 'found-youtube');
+  const youtube = TEST_FOUND.find((f) => f.id === 'found-youtube');
 
   const renderFoundEdit = async (found = youtube) => {
     await renderRouter(
@@ -120,14 +119,14 @@ describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
 
   it('분석이 결제일을 못 읽었으면 오늘 날짜로 채워 둔다', async () => {
     jest.setSystemTime(new Date(2026, 10, 10, 15));
-    await renderFoundEdit(FOUND_SAMPLE.find((f) => f.id === 'found-netflix'));
+    await renderFoundEdit(TEST_FOUND.find((f) => f.id === 'found-netflix'));
 
     expect(screen.getByText('2026.11.10')).toBeOnTheScreen();
   });
 
   // 밀리의 서재: 결제일만 빠진 확인 필요 항목
   it('확인 필요 항목은 금액 에러를 켠 채로 열리고, 금액을 고치면 사라진다', async () => {
-    const user = await renderFoundEdit(FOUND_SAMPLE.find((f) => f.id === 'custom-found-millie'));
+    const user = await renderFoundEdit(TEST_FOUND.find((f) => f.id === 'custom-found-millie'));
     const helper = '금액을 정확히 읽지 못했어요. 실제 결제 금액을 확인해 주세요.';
 
     expect(screen.getByText(helper)).toBeOnTheScreen();
@@ -138,7 +137,7 @@ describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
   });
 
   it('금액 에러가 떠 있어도 금액이 있으면 수정 완료를 누를 수 있다', async () => {
-    await renderFoundEdit(FOUND_SAMPLE.find((f) => f.id === 'custom-found-millie'));
+    await renderFoundEdit(TEST_FOUND.find((f) => f.id === 'custom-found-millie'));
 
     expect(
       screen.getByText('금액을 정확히 읽지 못했어요. 실제 결제 금액을 확인해 주세요.'),

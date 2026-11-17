@@ -22,13 +22,14 @@ export const gmailHandlers = [
   }),
   http.post('/api/v1/gmail/analyses', () =>
     ok('결제 메일을 분석했습니다.', {
+      // 임의: 명세 mock은 Netflix인데 기본 구독(Netflix)과 겹쳐 중복 등록 에러가 나서 Spotify로
       candidates: [
         {
-          serviceId: '5e1c9a07-5a4d-4e7b-9c21-000000000001',
-          serviceName: 'Netflix',
-          logoUrl: 'https://cdn.gudogging.com/logos/netflix.png',
-          category: 'VIDEO_OTT',
-          amount: 13500,
+          serviceId: '5e1c9a07-5a4d-4e7b-9c21-000000000004',
+          serviceName: 'Spotify',
+          logoUrl: 'https://cdn.gudogging.com/logos/4.png',
+          category: 'MUSIC',
+          amount: 10900,
           billingCycleValue: 1,
           billingCycleUnit: 'MONTH',
           nextBillingDate: '2026-12-01',
