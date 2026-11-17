@@ -128,3 +128,26 @@ export const scoreCheckup = ({
           : 'CANCEL_RECOMMENDED';
   return { score, stage };
 };
+
+// 서버를 켜면 기본으로 있는 구독 1건. 결제일은 오늘 기준이라 언제 켜도 '다가오는 결제'에 보임
+// id는 고정 알림의 subscriptionId와 같아서 알림을 누르면 이 구독으로 감
+const seedDate = (days: number, months = 0) => {
+  const d = today();
+  return toIso(new Date(d.getFullYear(), d.getMonth() + months, d.getDate() + days));
+};
+db.subscriptions.push({
+  subscriptionId: '3f2b8c1e-5a4d-4e7b-9c21-000000000001',
+  serviceId: '5e1c9a07-5a4d-4e7b-9c21-000000000001',
+  serviceName: 'Netflix',
+  logoUrl: 'https://cdn.gudogging.com/logos/netflix.png',
+  category: 'VIDEO_OTT',
+  amount: 13500,
+  billingCycleValue: 1,
+  billingCycleUnit: 'MONTH',
+  nextBillingDate: seedDate(3),
+  paymentMethod: 'APP_STORE',
+  startedAt: seedDate(3, -6),
+  status: 'ACTIVE',
+  canceledAt: null,
+  isSteady: false,
+});
