@@ -110,7 +110,8 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
               결제
             </Text>
             <View>
-              <InfoRow title="다음 결제일" value={monthDay(p.nextDate)} />
+              {/* 구독 종료면 다음 결제일이 없음 (명세 null) */}
+              {p.nextDate && <InfoRow title="다음 결제일" value={monthDay(p.nextDate)} />}
               <InfoRow title="결제 주기" value={formatCycle(p.cycle, p.unit)} />
               <InfoRow
                 title="결제한 곳"

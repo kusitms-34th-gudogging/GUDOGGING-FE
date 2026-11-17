@@ -31,6 +31,7 @@ const ACTIVE = list(
       subscriptionId: 'a',
       serviceName: '빠른 결제',
       amount: 29000,
+      monthlyAmount: 29000,
       nextBillingDate: '2026-10-17',
       dDay: 1,
     }),
@@ -38,6 +39,8 @@ const ACTIVE = list(
       subscriptionId: 'b',
       serviceName: '늦은 결제',
       amount: 10000,
+      // 구독 중 탭은 결제 금액 그대로 (월 환산이 아님)
+      monthlyAmount: 3333,
       nextBillingDate: '2026-10-20',
       dDay: 4,
       billingCycleValue: 3,
@@ -47,11 +50,12 @@ const ACTIVE = list(
 );
 const ENDED = list(
   [
-    // 연 결제: 목록 금액은 월 환산(94,800 / 12 = 7,900)
+    // 연 결제: 구독 종료 탭 금액은 서버가 준 월 환산 금액(monthlyAmount)
     item({
       subscriptionId: 'c',
       serviceName: '왓챠',
       amount: 94800,
+      monthlyAmount: 7900,
       billingCycleUnit: 'YEAR',
       canceledAt: '2026-10-10',
       totalPaidAmount: 47400,

@@ -42,9 +42,10 @@ const listItem = (s: Subscription) => {
     serviceName: s.serviceName,
     logoUrl: s.logoUrl,
     amount: s.amount,
+    monthlyAmount: monthlyAmount(s),
     billingCycleValue: s.billingCycleValue,
     billingCycleUnit: s.billingCycleUnit,
-    // 임의: 명세에 구독 종료 항목의 다음 결제일 값이 없어 null (백엔드 확인 필요)
+    // 구독 종료면 다음 결제일·dDay null (명세)
     nextBillingDate: next ? toIso(next) : null,
     dDay: next ? daysBetween(today(), next) : null,
     canceledAt: s.canceledAt,
@@ -55,7 +56,14 @@ const listItem = (s: Subscription) => {
 const SORTS: Record<string, (a: Subscription, b: Subscription) => number> = {
   NEXT_BILLING_DATE: (a, b) => nextBilling(a).getTime() - nextBilling(b).getTime(),
   CANCELED_AT: (a, b) => (b.canceledAt ?? '').localeCompare(a.canceledAt ?? ''),
-  AMOUNT_DESC: (a, b) => b.amount - a.amount,
+  // 금액 높은 순은 탭 우측 금액 기준: 구독 중 amount, 구독 종료 monthlyAmount (명세)
+  AMOUNT_DESC: (a, b) =>
+    a.status === 'ENDED' ? monthlyAmount(b) - monthlyAmount(a) : b.amount - a.amount,
+};
+// 탭과 맞지 않는 정렬은 400 (명세)
+const SORT_OF_TAB: Record<string, string[]> = {
+  ACTIVE: ['NEXT_BILLING_DATE', 'AMOUNT_DESC'],
+  ENDED: ['CANCELED_AT', 'AMOUNT_DESC'],
 };
 
 const answersOf = (c: Checkup) => ({
@@ -125,6 +133,9 @@ export const subscriptionHandlers = [
     const params = new URL(request.url).searchParams;
     const status = params.get('status') ?? 'ACTIVE';
     const sort = params.get('sort') ?? (status === 'ENDED' ? 'CANCELED_AT' : 'NEXT_BILLING_DATE');
+    if (!SORT_OF_TAB[status]?.includes(sort)) {
+      return fail(400, 40403, '구독 상태에 맞지 않는 정렬 기준입니다.');
+    }
     const active = db.subscriptions.filter((s) => s.status === 'ACTIVE');
     const ended = db.subscriptions.filter((s) => s.status === 'ENDED');
     const tab = (status === 'ENDED' ? ended : active).toSorted(SORTS[sort]);
@@ -170,8 +181,9 @@ export const subscriptionHandlers = [
     );
   }),
   http.delete('/api/v1/subscriptions', async ({ request }) => {
-    const { subscriptionIds } = (await request.json()) as { subscriptionIds: string[] };
-    // 명세: 하나라도 없으면 전체 실패 (부분 삭제 없음)
+    const body = (await request.json()) as { subscriptionIds: string[] };
+    // 명세: 중복 ID는 한 번으로, 하나라도 없으면 전체 실패 (부분 삭제 없음)
+    const subscriptionIds = [...new Set(body.subscriptionIds)];
     if (!subscriptionIds.every(findSubscription)) return notFound();
     db.subscriptions = db.subscriptions.filter((s) => !subscriptionIds.includes(s.subscriptionId));
     db.checkups = db.checkups.filter((c) => !subscriptionIds.includes(c.subscriptionId));
@@ -189,6 +201,11 @@ export const subscriptionHandlers = [
       : nextBilling(s);
     const checkups = db.checkups.filter((c) => c.subscriptionId === s.subscriptionId);
     const latest = checkups.at(-1);
+    // 지난 점검은 오늘 기준 최근 90일 (baseDate와 무관, 명세)
+    const t = today();
+    const from = new Date(t.getFullYear(), t.getMonth(), t.getDate() - 90);
+    const recent = checkups.filter((c) => toDate(c.checkedAt) >= from);
+    const ended = s.status === 'ENDED';
     return ok('구독 상세를 조회했습니다.', {
       subscriptionId: s.subscriptionId,
       status: s.status,
@@ -198,7 +215,8 @@ export const subscriptionHandlers = [
       amount: s.amount,
       billingCycleValue: s.billingCycleValue,
       billingCycleUnit: s.billingCycleUnit,
-      nextBillingDate: toIso(next),
+      // 구독 종료면 다음 결제일·dDay null (명세)
+      nextBillingDate: ended ? null : toIso(next),
       startedAt: s.startedAt,
       paymentMethod: s.paymentMethod,
       isSteady: s.isSteady,
@@ -206,7 +224,7 @@ export const subscriptionHandlers = [
       yearlyAmount: monthlyAmount(s) * 12,
       totalPaidAmount: s.amount * paidCount(s),
       paidCount: paidCount(s),
-      dDay: daysBetween(today(), next),
+      dDay: ended ? null : daysBetween(today(), next),
       latestCheckup: latest && {
         checkupId: latest.checkupId,
         checkedAt: latest.checkedAt,
@@ -215,28 +233,32 @@ export const subscriptionHandlers = [
         score: latest.score,
         ...answersOf(latest),
         memo: latest.memo,
-        cancelReasons: latest.cancelReasons,
         cancelReasonText: latest.cancelReasonText,
       },
-      pastCheckups: checkups.toReversed().map((c) => ({
+      pastCheckups: recent.toReversed().map((c) => ({
         checkedAt: c.checkedAt,
         ...answersOf(c),
         decision: c.decision,
       })),
-      // ponytail: 3개월 평균 대신 최근 점검 1건 그대로, 평균 화면 확인이 필요해지면 계산
-      pastCheckupAverage: latest && {
-        periodFrom: latest.checkedAt,
-        periodTo: latest.checkedAt,
-        ...answersOf(latest),
-        score: latest.score,
-        stage: latest.stage,
-      },
+      // ponytail: 90일 평균 대신 그 안의 최근 점검 1건 그대로, 평균 화면 확인이 필요해지면 계산
+      pastCheckupAverage: recent.length
+        ? {
+            periodFrom: toIso(from),
+            periodTo: toIso(today()),
+            ...answersOf(recent.at(-1)!),
+            score: recent.at(-1)!.score,
+            stage: recent.at(-1)!.stage,
+          }
+        : null,
     });
   }),
   http.patch('/api/v1/subscriptions/:subscriptionId', async ({ params, request }) => {
     const s = findSubscription(params.subscriptionId as string);
     if (!s) return notFound();
-    Object.assign(s, (await request.json()) as Partial<NewSubscription>);
+    if (s.status === 'ENDED') return fail(409, 40405, '구독 중인 구독만 수정할 수 있습니다.');
+    // serviceName만 선택, 사전 등록 서비스면 무시 (명세)
+    const { serviceName, ...rest } = (await request.json()) as Partial<NewSubscription>;
+    Object.assign(s, rest, serviceName && !s.serviceId && { serviceName });
     return ok('구독 정보를 수정했습니다.', {
       subscriptionId: s.subscriptionId,
       yearlyAmount: monthlyAmount(s) * 12,

@@ -75,6 +75,19 @@ it('고른 날짜를 기준일로 보내고, 서버가 준 다음 결제일을 �
   expect(screen.getByText('12월 17일')).toBeOnTheScreen();
 });
 
+it('구독 종료라 다음 결제일이 null이면 다음 결제일 줄을 빼고 보여준다', async () => {
+  await renderDetail({
+    'GET /api/v1/subscriptions/netflix': detail({
+      status: 'ENDED',
+      nextBillingDate: null,
+      canceledAt: '2026-11-20',
+    }),
+  });
+
+  expect(screen.queryByText('다음 결제일')).not.toBeOnTheScreen();
+  expect(screen.getByText('결제 주기')).toBeOnTheScreen();
+});
+
 it('최근 점검이 있으면 점검 결과와 메모를 보여준다', async () => {
   await renderDetail();
 

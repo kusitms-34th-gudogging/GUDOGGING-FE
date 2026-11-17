@@ -17,7 +17,6 @@ import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/cn';
 import { formatWon } from '@/utils/formatPayment';
-import { monthly } from '@/utils/homeSummary';
 
 const LOGO = require('@/assets/images/logo_placeholder.png');
 
@@ -173,7 +172,7 @@ export const ManageScreen = () => {
                         showSubtitle
                         logo={LOGO}
                         showLogo
-                        cost={formatWon(tab === 'ACTIVE' ? s.amount : monthly(s))}
+                        cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
                         showCost
                         showCheckBox
                         checked={picked.includes(s.id)}
@@ -189,7 +188,7 @@ export const ManageScreen = () => {
                       showSubtitle
                       logo={LOGO}
                       showLogo
-                      cost={formatWon(tab === 'ACTIVE' ? s.amount : monthly(s))}
+                      cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
                       showCost
                       iconRightAction={{
                         accessibilityLabel: `${s.name} 상세`,

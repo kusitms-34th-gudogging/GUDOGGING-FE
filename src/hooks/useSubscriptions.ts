@@ -29,8 +29,11 @@ interface SubscriptionListResponse {
     serviceName: string;
     logoUrl: string | null;
     amount: number;
+    // 월 환산 금액 (구독 종료 탭 우측 금액)
+    monthlyAmount: number;
     billingCycleValue: number;
     billingCycleUnit: ApiCycleUnit;
+    // 구독 종료면 null
     nextBillingDate: string | null;
     dDay: number | null;
     canceledAt: string | null;
@@ -52,7 +55,8 @@ interface SubscriptionDetailResponse {
   amount: number;
   billingCycleValue: number;
   billingCycleUnit: ApiCycleUnit;
-  nextBillingDate: string;
+  // 구독 종료면 null
+  nextBillingDate: string | null;
   startedAt: string;
   paymentMethod: ApiPaymentMethod;
   isSteady: boolean;
@@ -97,6 +101,7 @@ export const useSubscriptions = (status: SubscriptionStatus) =>
         id: s.subscriptionId,
         name: s.serviceName,
         amount: s.amount,
+        monthlyAmount: s.monthlyAmount,
         cycle: s.billingCycleValue,
         unit: CYCLE_UNIT[s.billingCycleUnit],
         nextDate: s.nextBillingDate ? parseDate(s.nextBillingDate) : undefined,
@@ -121,7 +126,7 @@ const toDetail = (s: SubscriptionDetailResponse): SubscriptionDetail => {
     amount: s.amount,
     cycle: s.billingCycleValue,
     unit: CYCLE_UNIT[s.billingCycleUnit],
-    nextDate: parseDate(s.nextBillingDate),
+    nextDate: s.nextBillingDate ? parseDate(s.nextBillingDate) : undefined,
     category: CATEGORY_LABEL[s.category],
     paidAt: PAID_AT_OF[s.paymentMethod],
     startedAt: parseDate(s.startedAt),
@@ -138,7 +143,7 @@ const toDetail = (s: SubscriptionDetailResponse): SubscriptionDetail => {
       status: 'ended',
       cancelledAt: parseDate(s.canceledAt!),
       totalSpent: s.totalPaidAmount,
-      // shortcut: 해지 이유 코드(cancelReasons)는 카테고리별 문구라 직접 입력한 이유만 표시, 코드 문구 정해지면 같이
+      // 해지 이유는 직접 입력한 문구만 (명세: 선택지 코드는 내려주지 않음)
       lastCheckup: c
         ? {
             checkedAt: parseDate(c.checkedAt),
@@ -182,7 +187,8 @@ export interface CalendarPaymentDetail extends Pick<
   categoryLabel: string;
   paidAt: SubscriptionDetail['paidAt'];
   startedAt: Date;
-  nextDate: Date;
+  // 구독 종료면 없음
+  nextDate?: Date;
   lastCheckup?: {
     checkedAt: Date;
     result: string;
@@ -212,7 +218,7 @@ export const useCalendarPaymentDetail = (id: string, date: Date) => {
         categoryLabel: CATEGORY_LABEL[s.category],
         paidAt: PAID_AT_OF[s.paymentMethod],
         startedAt: parseDate(s.startedAt),
-        nextDate: parseDate(s.nextBillingDate),
+        nextDate: s.nextBillingDate ? parseDate(s.nextBillingDate) : undefined,
         lastCheckup: c
           ? {
               checkedAt: parseDate(c.checkedAt),
