@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { type ComponentType, Fragment, useState } from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
@@ -15,7 +16,7 @@ import { ChevronRightIcon } from '@/assets/icons';
 import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
 import { TopBar } from '@/components/common/TopBar';
-import { useGmailLink } from '@/hooks/useGmailLink';
+import { useMe } from '@/hooks/useMe';
 
 const PROFILE = require('@/assets/images/logo_placeholder.png');
 
@@ -72,22 +73,17 @@ const getSections = (openLogout: () => void): { title: string; items: MenuItem[]
   },
 ];
 
-interface MypageScreenProps {
-  email?: string;
-  loginProvider?: string;
-}
-
-// shortcut: 계정 정보·약관 행 이동은 아직 없음, 로그인 API·하위 화면 연동 시 props와 onPress 연결
-export const MypageScreen = ({
-  email = 'suum.user@icloud.com',
-  loginProvider = 'Apple로 로그인',
-}: MypageScreenProps) => {
+// shortcut: 약관 행 이동은 아직 없음, 약관 화면 생기면 onPress 연결
+// 계정 정보를 못 불러와도 메뉴는 쓸 수 있게 계정 칸만 비워 둠
+export const MypageScreen = () => {
+  const { data: me } = useMe();
+  const client = useQueryClient();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const sections = getSections(() => setLogoutOpen(true));
 
-  // shortcut: 로그아웃 API 없음, 계정에 묶인 Gmail 연결만 비우고 로그인 화면으로. 인증 연동 시 토큰 삭제 추가
+  // shortcut: 로그아웃 API는 토큰 저장과 함께 붙임, 지금은 계정 데이터 캐시만 비우고 로그인 화면으로
   const logout = () => {
-    useGmailLink.getState().setGmail(null);
+    client.clear();
     router.replace('/login');
   };
 
@@ -98,8 +94,8 @@ export const MypageScreen = ({
         <View className="w-[279px] flex-row items-center gap-inline-sm">
           <Image source={PROFILE} className="size-logo-card rounded-full" />
           <View className="flex-1">
-            <Text className="text-text-primary text-body1-semibold">{email}</Text>
-            <Text className="text-text-secondary text-caption1-regular">{loginProvider}</Text>
+            {me?.email && <Text className="text-text-primary text-body1-semibold">{me.email}</Text>}
+            <Text className="text-text-secondary text-caption1-regular">{me?.loginProvider}</Text>
           </View>
         </View>
         <View className="w-full gap-stack-md">

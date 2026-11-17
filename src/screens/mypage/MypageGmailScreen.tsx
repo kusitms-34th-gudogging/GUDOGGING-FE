@@ -5,56 +5,68 @@ import { Text, View } from 'react-native';
 import { CheckCircleIcon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
 import { Modal } from '@/components/common/Modal';
+import { QueryState } from '@/components/common/QueryState';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
-import { useGmailLink } from '@/hooks/useGmailLink';
+import { useConnectGmail } from '@/hooks/useConnectGmail';
+import { useDisconnectGmail } from '@/hooks/useDisconnectGmail';
+import { useGmailConnection } from '@/hooks/useGmailConnection';
 import { useToast } from '@/hooks/useToast';
-import { connectGmailAccount, disconnectGmailAccount } from '@/lib/account';
+import { requestGmailAuthCode } from '@/lib/account';
 
 interface MypageGmailScreenProps {
-  connectGmail?: typeof connectGmailAccount;
-  disconnectGmail?: typeof disconnectGmailAccount;
+  requestAuthCode?: typeof requestGmailAuthCode;
 }
 
 // E-02 미연결 · E-03 연결됨 · 연결 실패 시 E-04, 해제 실패 시 E-03 유지 + 토스트
 export const MypageGmailScreen = ({
-  connectGmail = connectGmailAccount,
-  disconnectGmail = disconnectGmailAccount,
+  requestAuthCode = requestGmailAuthCode,
 }: MypageGmailScreenProps) => {
-  const { gmail, setGmail } = useGmailLink();
+  const { data: gmail, isError, refetch } = useGmailConnection();
+  const connectGmail = useConnectGmail();
+  const disconnectGmail = useDisconnectGmail();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { show } = useToast();
 
   const connect = async () => {
     try {
-      const connected = await connectGmail();
+      const authCode = await requestAuthCode();
       // 취소하면 연동하지 않고 마이페이지로 (화면설계서 E-02 4-2)
-      if (connected) setGmail(connected);
-      else router.back();
+      if (!authCode) return router.back();
+      await connectGmail.mutateAsync(authCode);
     } catch {
       router.push('/mypage/gmail-failed');
     }
   };
 
-  const disconnect = async () => {
-    try {
-      await disconnectGmail();
-      setGmail(null);
-    } catch {
+  const disconnect = () =>
+    disconnectGmail.mutate(undefined, {
       // 연결 상태 유지 (화면설계서 E-03b). shortcut: 안내 문구·방식 미정, 정해지면 교체
-      show({ type: 'error', message: '연결을 해제하지 못했어요. 다시 시도해 주세요.' });
-    }
-  };
+      onError: () =>
+        show({ type: 'error', message: '연결을 해제하지 못했어요. 다시 시도해 주세요.' }),
+    });
+
+  const topBar = (
+    <TopBar
+      variant="detail"
+      title="Gmail 연동"
+      onBack={() => router.back()}
+      showAction1={false}
+      showAction2={false}
+    />
+  );
+  if (gmail === undefined) {
+    return (
+      <View className="pt-safe flex-1 bg-bg-default">
+        {topBar}
+        <QueryState isError={isError} onRetry={refetch} />
+      </View>
+    );
+  }
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
-      <TopBar
-        variant="detail"
-        title="Gmail 연동"
-        onBack={() => router.back()}
-        showAction1={false}
-        showAction2={false}
-      />
+      {topBar}
       <View className="flex-1 gap-section px-screen-x pt-stack-md">
         <View className="gap-inline-sm">
           <Text className="text-text-primary text-head1-bold">
