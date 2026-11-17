@@ -1,6 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
 
-import { MANAGE_SAMPLE } from '@/constants/manage';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { RegisterServiceInputScreen } from '@/screens/register/RegisterServiceInputScreen';
 
@@ -9,28 +8,17 @@ export default function RegisterServiceInputRoute() {
     id?: string;
     found?: string;
     more?: string;
+    // 지난 구독 재등록(M-05)이면 그 구독 id
     reregister?: string;
   }>();
   // 불러온 구독 수정(A-15)은 분석 결과에서 찾음
   const foundItem = useRegisterDraft((s) => s.found.find((f) => f.id === id));
-  // shortcut: 지난 구독을 샘플에서 찾음, 구독 상세 API 연동 시 훅으로 교체
-  const prev = reregister ? MANAGE_SAMPLE.find((s) => s.id === reregister) : undefined;
   return (
     <RegisterServiceInputScreen
       serviceId={id}
       found={found ? foundItem : undefined}
       more={!!more}
-      // 다음 결제일은 새로 정해야 해서 채우지 않음 (오늘이 기본값)
-      prefill={
-        prev && {
-          name: prev.name,
-          category: prev.category,
-          amount: prev.amount,
-          cycle: prev.cycle,
-          unit: prev.unit,
-          paidAt: prev.paidAt,
-        }
-      }
+      reactivateId={reregister}
     />
   );
 }

@@ -159,7 +159,7 @@ export const EndedSubscriptionDetailScreen = ({
           )}
         </View>
       </ScrollView>
-      {/* 기존 정보를 채운 구독 정보 입력으로. 저장하면 새 직접 입력처럼 선택한 구독(A-04)에 들어감 */}
+      {/* 기존 정보를 채운 구독 정보 입력으로. 다음 결제일만 바꿔 같은 구독을 재등록 (명세 reactivate) */}
       <View className="px-screen-x pb-[14px] pt-stack-md">
         <Cta
           label="재등록하기"

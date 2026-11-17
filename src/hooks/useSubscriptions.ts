@@ -164,9 +164,11 @@ const toDetail = (s: SubscriptionDetailResponse): SubscriptionDetail => {
   };
 };
 
-export const useSubscription = (id: string) =>
+// id가 없으면 부르지 않음 (재등록이 아닌 구독 정보 입력)
+export const useSubscription = (id?: string) =>
   useQuery({
-    queryKey: subscriptionKeys.detail(id),
+    queryKey: subscriptionKeys.detail(id ?? ''),
+    enabled: !!id,
     queryFn: ({ signal }) =>
       request<SubscriptionDetailResponse>(`/api/v1/subscriptions/${id}`, { signal }),
     select: toDetail,
