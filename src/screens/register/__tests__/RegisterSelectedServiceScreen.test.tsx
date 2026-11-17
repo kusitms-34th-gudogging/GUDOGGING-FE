@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { userEvent } from '@testing-library/react-native';
-import { renderRouter, screen } from 'expo-router/testing-library';
+import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import type { PaymentInfo } from '@/constants/services';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { apiError, createQueryWrapper, mockApi, TEST_SERVICES } from '@/lib/testing';
 import { RegisterSelectedServiceScreen } from '@/screens/register/RegisterSelectedServiceScreen';
 
 const PAYMENT: PaymentInfo = {
@@ -15,15 +16,18 @@ const PAYMENT: PaymentInfo = {
   paidAt: 'web',
 };
 
-const renderSelected = async () => {
+const renderSelected = async (routes: Record<string, unknown> = {}) => {
+  mockApi({ 'GET /api/v1/services': { services: TEST_SERVICES }, ...routes });
   await renderRouter(
     {
       'register/selected': () => <RegisterSelectedServiceScreen />,
       'register/done': () => null,
       'register/select': () => null,
     },
-    { initialUrl: '/register/selected' },
+    { initialUrl: '/register/selected', wrapper: createQueryWrapper() },
   );
+  // 서비스 이름은 서비스 목록 응답에서
+  await screen.findByText('YouTube Premium');
   return userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 };
 
@@ -33,7 +37,14 @@ beforeEach(async () => {
   await AsyncStorage.clear();
   useRegisterDraft.getState().setSelectedIds(['netflix', 'youtube']);
 });
-afterEach(() => jest.useRealTimers());
+afterEach(() => {
+  jest.useRealTimers();
+  jest.restoreAllMocks();
+});
+const postBody = () => {
+  const call = jest.mocked(globalThis.fetch).mock.calls.find(([, i]) => i?.method === 'POST');
+  return call && JSON.parse(String(call[1]?.body));
+};
 
 describe('RegisterSelectedServiceScreen', () => {
   it('결제 정보를 입력하지 않은 서비스가 있으면 등록할 수 없다', async () => {
@@ -43,15 +54,72 @@ describe('RegisterSelectedServiceScreen', () => {
     expect(screen.getByRole('button', { name: '2개 구독 등록하기' })).toBeDisabled();
   });
 
-  it('모든 서비스의 결제 정보를 입력하면 고른 서비스 전부를 완료 화면으로 넘긴다', async () => {
+  it('모든 서비스의 결제 정보를 입력하면 일괄 등록하고, 고른 서비스 전부를 완료 화면으로 넘긴다', async () => {
+    useRegisterDraft.getState().setPayment('netflix', PAYMENT);
+    useRegisterDraft.getState().setPayment('youtube', { ...PAYMENT, paidAt: 'appstore' });
+    useRegisterDraft.getState().setPayment('custom-1', {
+      ...PAYMENT,
+      name: '동네 헬스장',
+      category: '쇼핑·멤버십',
+      cycle: 3,
+      unit: '주',
+    });
+    const user = await renderSelected({ 'POST /api/v1/subscriptions': { createdCount: 3 } });
+
+    await user.press(screen.getByRole('button', { name: '3개 구독 등록하기' }));
+
+    await waitFor(() => expect(screen).toHavePathname('/register/done'));
+    expect(screen).toHaveSearchParams({ ids: 'netflix,youtube,custom-1' });
+    const base = {
+      amount: 13500,
+      nextBillingDate: '2026-11-12',
+    };
+    expect(postBody()).toEqual({
+      source: 'MANUAL',
+      subscriptions: [
+        {
+          ...base,
+          serviceId: 'netflix',
+          serviceName: 'Netflix',
+          category: 'VIDEO_OTT',
+          billingCycleValue: 1,
+          billingCycleUnit: 'MONTH',
+          paymentMethod: 'WEB_DIRECT',
+        },
+        {
+          ...base,
+          serviceId: 'youtube',
+          serviceName: 'YouTube Premium',
+          category: 'VIDEO_OTT',
+          billingCycleValue: 1,
+          billingCycleUnit: 'MONTH',
+          paymentMethod: 'APP_STORE',
+        },
+        // 직접 입력은 사전 등록 서비스 id 없이 입력한 이름으로
+        {
+          ...base,
+          serviceId: null,
+          serviceName: '동네 헬스장',
+          category: 'SHOPPING_DELIVERY',
+          billingCycleValue: 3,
+          billingCycleUnit: 'WEEK',
+          paymentMethod: 'WEB_DIRECT',
+        },
+      ],
+    });
+  });
+
+  it('등록에 실패하면 선택한 구독 화면에 남는다', async () => {
     useRegisterDraft.getState().setPayment('netflix', PAYMENT);
     useRegisterDraft.getState().setPayment('youtube', PAYMENT);
-    const user = await renderSelected();
+    const user = await renderSelected({ 'POST /api/v1/subscriptions': apiError(409) });
 
     await user.press(screen.getByRole('button', { name: '2개 구독 등록하기' }));
 
-    expect(screen).toHavePathname('/register/done');
-    expect(screen).toHaveSearchParams({ ids: 'netflix,youtube' });
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '2개 구독 등록하기' })).toBeEnabled(),
+    );
+    expect(screen).toHavePathname('/register/selected');
   });
 
   // 이어서 등록은 선택한 구독 화면으로 바로 들어와 앞 화면이 서비스 선택이 아님

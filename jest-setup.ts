@@ -11,3 +11,5 @@ jest.mock(
   'react-native-gesture-handler/lib/module/handlers/gestures/installUIRuntimeBindings',
   () => ({ installUIRuntimeBindings: () => {} }),
 );
+// request()가 base URL 없으면 에러. API 테스트는 fetch를 mock해서 실제로 나가지 않음
+process.env.EXPO_PUBLIC_API_URL = 'https://api.test';

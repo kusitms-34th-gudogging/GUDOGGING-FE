@@ -6,29 +6,18 @@ import { AlertCircleIcon } from '@/assets/icons';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
 import { TopBar } from '@/components/common/TopBar';
-import { clearAccountData, withdrawAccount } from '@/lib/account';
-
-interface MypageWithdrawScreenProps {
-  withdraw?: typeof withdrawAccount;
-}
+import { useWithdraw } from '@/hooks/useWithdraw';
 
 // E-07 회원 탈퇴 안내 · E-08 최종 확인 팝업 · 성공 시 E-9, 실패 시 E-10
-export const MypageWithdrawScreen = ({
-  withdraw: requestWithdraw = withdrawAccount,
-}: MypageWithdrawScreenProps) => {
+export const MypageWithdrawScreen = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const withdrawAccount = useWithdraw();
 
-  const withdraw = async () => {
-    try {
-      await requestWithdraw();
-    } catch {
-      router.push('/mypage/withdraw-failed');
-      return;
-    }
-    // 탈퇴가 끝난 뒤에만 기기에 남은 계정 데이터를 비움
-    clearAccountData();
-    router.replace('/mypage/withdraw-done');
-  };
+  const withdraw = () =>
+    withdrawAccount.mutate(undefined, {
+      onSuccess: () => router.replace('/mypage/withdraw-done'),
+      onError: () => router.push('/mypage/withdraw-failed'),
+    });
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">

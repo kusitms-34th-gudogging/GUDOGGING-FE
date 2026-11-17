@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { act, renderHook } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import {
   getFoundServiceIds,
@@ -8,11 +8,15 @@ import {
   useRegisterDraft,
   useRegisterServices,
 } from '@/hooks/useRegisterDraft';
+import { createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
+
+const CATALOG = [{ id: 'netflix', name: 'Netflix', category: '영상·OTT' }];
 
 beforeEach(async () => {
   useRegisterDraft.getState().reset();
   await AsyncStorage.clear();
 });
+afterEach(() => jest.restoreAllMocks());
 
 describe('useRegisterDraft', () => {
   it('저장소에서 다시 읽으면 결제일이 Date로 돌아온다', async () => {
@@ -67,7 +71,7 @@ describe('useRegisterDraft', () => {
       'custom-b': { ...payment, name: '체크 해제한 구독' },
     };
 
-    expect(getRegisteredServices(['netflix', 'custom-a'], payments)).toEqual([
+    expect(getRegisteredServices(['netflix', 'custom-a'], payments, CATALOG)).toEqual([
       { id: 'netflix', name: 'Netflix' },
       { id: 'custom-a', name: '밀리의 서재' },
     ]);
@@ -82,7 +86,11 @@ describe('useRegisterDraft', () => {
       nextDate: new Date(2026, 10, 12),
       paidAt: 'web' as const,
     };
-    const { result } = await renderHook(() => useRegisterServices(['netflix']));
+    mockApi({ 'GET /api/v1/services': { services: TEST_SERVICES } });
+    useRegisterDraft.getState().setFound('SCREENSHOT', TEST_FOUND);
+    const { result } = await renderHook(() => useRegisterServices(['netflix']), {
+      wrapper: createQueryWrapper(),
+    });
 
     await act(() => {
       useRegisterDraft.getState().setPayment('custom-1', { ...payment, name: '직접 입력 구독' });
@@ -92,14 +100,16 @@ describe('useRegisterDraft', () => {
         .setPayment('custom-found-millie', { ...payment, name: '밀리의 서재' });
     });
 
-    expect(result.current.map((s) => s.name)).toEqual(['Netflix', '직접 입력 구독']);
+    await waitFor(() =>
+      expect(result.current.map((s) => s.name)).toEqual(['Netflix', '직접 입력 구독']),
+    );
   });
 });
 
 describe('getFoundServiceIds', () => {
-  // 샘플: ChatGPT Plus·Netflix·YouTube Premium은 사전 등록 서비스로 인식, 밀리의 서재는 아님
+  // ChatGPT Plus·Netflix·YouTube Premium은 사전 등록 서비스로 인식, 밀리의 서재는 아님
   it('불러온 구독이 가리키는 사전 등록 서비스를 돌려준다', () => {
-    expect(getFoundServiceIds({})).toEqual(['chatgpt', 'netflix', 'youtube']);
+    expect(getFoundServiceIds(TEST_FOUND, {})).toEqual(['chatgpt', 'netflix', 'youtube']);
   });
 
   it('수정 화면에서 이름을 바꾼 구독은 다른 서비스로 보고 뺀다', () => {
@@ -112,7 +122,7 @@ describe('getFoundServiceIds', () => {
       paidAt: 'web' as const,
     };
     expect(
-      getFoundServiceIds({
+      getFoundServiceIds(TEST_FOUND, {
         'found-netflix': { ...payment, name: '넷플 가족' },
         'found-youtube': { ...payment, name: 'YouTube Premium' },
       }),

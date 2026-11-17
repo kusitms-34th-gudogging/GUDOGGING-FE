@@ -7,32 +7,48 @@ import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { PaymentListItem } from '@/components/register/PaymentListItem';
-import { FOUND_SAMPLE, type PaymentInfo, SERVICES } from '@/constants/services';
+import type { PaymentInfo } from '@/constants/services';
+import { useCreateSubscriptions } from '@/hooks/useCreateSubscriptions';
 import {
   getFoundServiceIds,
   useRegisterDraft,
   useRegisterServices,
 } from '@/hooks/useRegisterDraft';
+import { useServices } from '@/hooks/useServices';
 
 export const RegisterFoundScreen = () => {
   const payments = useRegisterDraft((s) => s.payments);
+  const found = useRegisterDraft((s) => s.found);
+  const foundSource = useRegisterDraft((s) => s.foundSource);
+  const create = useCreateSubscriptions();
+  const catalog = useServices().data ?? [];
   const setPayment = useRegisterDraft((s) => s.setPayment);
   const foundChecked = useRegisterDraft((s) => s.foundChecked);
   const setFoundChecked = useRegisterDraft((s) => s.setFoundChecked);
   const checked = new Set(foundChecked);
   // 구독 추가하기로 추가한 구독. 결제 정보를 넣기 전엔 확인 필요에 보임. 불러온 것과 같은 서비스는 불러온 쪽만 보여 줌 (이름을 바꾼 불러온 구독은 다른 서비스로 봄)
   const added = useRegisterServices(useRegisterDraft((s) => s.selectedIds)).filter(
-    (s) => !getFoundServiceIds(payments).includes(s.id),
+    (s) => !getFoundServiceIds(found, payments).includes(s.id),
   );
   const items = [
-    // 수정 화면에서 저장한 값이 분석 값보다 우선. issue 없는 분석 값은 모든 칸이 채워져 있음
-    ...FOUND_SAMPLE.map((f) => ({
-      id: f.id,
-      // 수정 화면에서 바꾼 이름이 있으면 그 이름
-      name: payments[f.id]?.name ?? f.name,
-      payment: payments[f.id] ?? (f.issue ? undefined : (f.payment as PaymentInfo)),
+    // 수정 화면에서 저장한 값이 분석 값보다 우선. 확인 필요가 아닌 분석 값은 모든 칸이 채워져 있음
+    ...found.map((f) => {
+      // 수정 화면에서 바꾼 이름이 있으면 그 이름. 이름을 바꿨으면 분석이 잘못 알아본 다른 서비스로 봄
+      const name = payments[f.id]?.name ?? f.name;
+      return {
+        id: f.id,
+        serviceId: name === f.name ? f.serviceId : undefined,
+        name,
+        payment: payments[f.id] ?? (f.needsReview ? undefined : (f.payment as PaymentInfo)),
+      };
+    }),
+    ...added.map((s) => ({
+      id: s.id,
+      // 직접 입력(custom-)은 사전 등록 서비스가 아님
+      serviceId: s.id.startsWith('custom-') ? undefined : s.id,
+      name: s.name,
+      payment: payments[s.id],
     })),
-    ...added.map((s) => ({ id: s.id, name: s.name, payment: payments[s.id] })),
   ];
   const needCheck = items.filter((f) => !f.payment);
   const ready = items.filter((f) => f.payment);
@@ -109,27 +125,42 @@ export const RegisterFoundScreen = () => {
         </FadeScrollView>
       </View>
       <View className="pb-safe px-screen-x">
-        {/* 등록 가능에서 체크한 구독이 있으면 활성화 (등록 가능은 결제 정보가 다 있음). shortcut: 등록 API 없이 완료 화면으로만 이동, API 연동 시 저장 성공 후 이동 */}
+        {/* 등록 가능에서 체크한 구독이 있으면 활성화 (등록 가능은 결제 정보가 다 있음). 등록 성공 후 완료 화면으로
+            shortcut: 실패 안내(중복 등록 등)는 디자인에 없어 화면에 남음, 디자인·에러 코드 정해지면 안내 추가 */}
         <Cta
           label="선택한 구독 등록하기"
-          disabled={selected.length === 0}
-          onPress={() => {
-            // 완료 화면은 draft의 결제 정보를 읽고, 체크한 항목만 받음
-            // 사전 등록 서비스가 아닌 항목(불러온 구독·직접 입력)은 완료 화면이 저장한 이름을 쓰므로 찾은 이름을 같이 저장
-            selected.forEach(
-              (f) =>
-                f.payment &&
-                !payments[f.id] &&
-                setPayment(f.id, {
-                  ...f.payment,
-                  name: SERVICES.some((s) => s.id === f.id) ? undefined : f.name,
-                }),
-            );
-            router.push({
-              pathname: '/register/done',
-              params: { ids: selected.map((f) => f.id).join(',') },
-            });
-          }}
+          disabled={selected.length === 0 || create.isPending}
+          onPress={() =>
+            create.mutate(
+              {
+                source: foundSource ?? 'SCREENSHOT',
+                subscriptions: selected.map((f) => ({
+                  serviceId: f.serviceId,
+                  name: f.name,
+                  payment: f.payment!,
+                })),
+              },
+              {
+                onSuccess: () => {
+                  // 완료 화면은 draft의 결제 정보를 읽고, 체크한 항목만 받음
+                  // 사전 등록 서비스가 아닌 항목(불러온 구독·직접 입력)은 완료 화면이 저장한 이름을 쓰므로 찾은 이름을 같이 저장
+                  selected.forEach(
+                    (f) =>
+                      f.payment &&
+                      !payments[f.id] &&
+                      setPayment(f.id, {
+                        ...f.payment,
+                        name: catalog.some((s) => s.id === f.id) ? undefined : f.name,
+                      }),
+                  );
+                  router.push({
+                    pathname: '/register/done',
+                    params: { ids: selected.map((f) => f.id).join(',') },
+                  });
+                },
+              },
+            )
+          }
           className="mb-[14px]"
         />
       </View>

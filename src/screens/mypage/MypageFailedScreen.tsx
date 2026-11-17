@@ -6,8 +6,9 @@ import { Button } from '@/components/common/Button';
 import { ShakingAlertIcon } from '@/components/common/ShakingAlertIcon';
 import { StatusBlurBackground } from '@/components/common/StatusBlurBackground';
 import { TopBar } from '@/components/common/TopBar';
-import { useGmailLink } from '@/hooks/useGmailLink';
-import { clearAccountData, connectGmailAccount, withdrawAccount } from '@/lib/account';
+import { useConnectGmail } from '@/hooks/useConnectGmail';
+import { useWithdraw } from '@/hooks/useWithdraw';
+import { requestGmailAuthCode } from '@/lib/account';
 
 // E-04 Gmail 연동 실패 · E-10 회원 탈퇴 실패: 배치·모션은 같고 문구·버튼만 다름
 // 취소(확인·취소하기)는 직전 화면(E-02·E-07)으로, 다시 시도하기는 같은 요청을 다시 보냄
@@ -18,16 +19,12 @@ const COPY = {
 
 interface MypageFailedScreenProps {
   kind: keyof typeof COPY;
-  connectGmail?: typeof connectGmailAccount;
-  withdraw?: typeof withdrawAccount;
 }
 
-export const MypageFailedScreen = ({
-  kind,
-  connectGmail = connectGmailAccount,
-  withdraw = withdrawAccount,
-}: MypageFailedScreenProps) => {
+export const MypageFailedScreen = ({ kind }: MypageFailedScreenProps) => {
   const { header, title, cancelLabel } = COPY[kind];
+  const connectGmail = useConnectGmail();
+  const withdraw = useWithdraw();
   const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
@@ -39,13 +36,12 @@ export const MypageFailedScreen = ({
     setRetrying(true);
     try {
       if (kind === 'gmail') {
-        const gmail = await connectGmail();
+        const authCode = await requestGmailAuthCode();
         // 연결되면 E-03, 계정 선택을 취소하면 E-02 (둘 다 직전 Gmail 연동 화면이 상태대로 보여 줌)
-        if (gmail) useGmailLink.getState().setGmail(gmail);
+        if (authCode) await connectGmail.mutateAsync(authCode);
         router.back();
       } else {
-        await withdraw();
-        clearAccountData();
+        await withdraw.mutateAsync();
         router.replace('/mypage/withdraw-done');
       }
     } catch {

@@ -6,34 +6,34 @@ import { UsageBreath } from '@/components/checkup/UsageBreath';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
 import { ListItem } from '@/components/common/ListItem';
+import { QueryState } from '@/components/common/QueryState';
 import { TopBar } from '@/components/common/TopBar';
-import type { CheckupRecommendation, CheckupSubscription } from '@/constants/checkup';
-import { categorySpending } from '@/utils/checkupResult';
+import { useCheckupResult } from '@/hooks/useCheckups';
+import { useDecideCheckup } from '@/hooks/useDecideCheckup';
 import { formatWon } from '@/utils/formatPayment';
-import type { HomeSubscription } from '@/utils/homeSummary';
 
 const LOGO = require('@/assets/images/logo_placeholder.png');
 
 interface CheckupResultScreenProps {
-  subscription: CheckupSubscription;
-  /** 활용도(%) 정수 */
-  usage: number;
-  /** 같은 카테고리에서 구독 중인 서비스 (점검 중인 구독 포함) */
-  categorySubscriptions: HomeSubscription[];
-  /** 같은 서비스를 더 싸게 쓰는 상품. 없으면 영역 숨김 */
-  recommendations: CheckupRecommendation[];
+  checkupId: string;
 }
 
 // K-80 점검 결과
-export const CheckupResultScreen = ({
-  subscription,
-  usage,
-  categorySubscriptions,
-  recommendations,
-}: CheckupResultScreenProps) => {
-  const name = subscription.nameKo ?? subscription.name;
-  const { nextDate } = subscription;
-  const spending = categorySpending(subscription.id, categorySubscriptions);
+export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => {
+  const { data, isError, refetch } = useCheckupResult(checkupId);
+  const decide = useDecideCheckup(checkupId);
+
+  if (!data) {
+    return (
+      <View className="pt-safe flex-1 bg-bg-default">
+        <QueryState isError={isError} onRetry={refetch} />
+      </View>
+    );
+  }
+
+  // 활용도(%)·같은 카테고리 지출·더 싸게(번들 추천, 없으면 영역 숨김)는 서버가 계산
+  const { subscription, usage, spending, recommendations } = data;
+  const { name, nextDate } = subscription;
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -71,10 +71,10 @@ export const CheckupResultScreen = ({
             </View>
             <View className="gap-stack-xs">
               {spending.items.map((s) => {
-                const current = s.id === subscription.id;
+                const { current } = s;
                 return (
                   <ListItem
-                    key={s.id}
+                    key={s.name}
                     title={current ? name : s.name}
                     subtitle="현재 점검 중"
                     showSubtitle={current}
@@ -124,11 +124,19 @@ export const CheckupResultScreen = ({
           <Button
             variant="tonal"
             label="해지하기"
-            onPress={() => router.push(`/checkup/${subscription.id}/cancel`)}
+            onPress={() => router.push(`/checkup/${subscription.id}/cancel?checkupId=${checkupId}`)}
             className="flex-1"
           />
-          {/* ponytail: 유지 결정 저장·다음 결제 D-1 재확인 알림 등록은 API 연동 시 */}
-          <Button label="유지하기" onPress={() => router.dismissTo('/')} className="flex-1" />
+          {/* 유지 결정을 저장하면 홈 사용 현황에서 빠짐. D-1 알림은 서버가 모든 구독에 보냄 (명세)
+              shortcut: 저장 실패 안내는 디자인에 없어 화면에 남음, 디자인 나오면 안내 추가 */}
+          <Button
+            label="유지하기"
+            disabled={decide.isPending}
+            onPress={() =>
+              decide.mutate({ decision: 'KEEP' }, { onSuccess: () => router.dismissTo('/') })
+            }
+            className="flex-1"
+          />
         </View>
       </View>
     </View>

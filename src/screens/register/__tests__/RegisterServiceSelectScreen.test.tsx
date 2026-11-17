@@ -1,11 +1,24 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { userEvent, within } from '@testing-library/react-native';
 import { router, Stack } from 'expo-router';
-import { renderRouter, screen } from 'expo-router/testing-library';
+import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import { Pressable, Text } from 'react-native';
 
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { createQueryWrapper, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
 import { RegisterServiceSelectScreen } from '@/screens/register/RegisterServiceSelectScreen';
+
+// 검색어별 서버 응답 (검색·순위는 서버가 함). 검색어가 없으면 전체
+let searchResults: Record<string, string[]> = {};
+const mockServices = () =>
+  jest.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const keyword = new URL(String(input)).searchParams.get('keyword');
+    const ids = keyword ? (searchResults[keyword] ?? []) : null;
+    const services = ids
+      ? ids.map((id) => TEST_SERVICES.find((s) => s.serviceId === id)!)
+      : TEST_SERVICES;
+    return new Response(JSON.stringify({ code: 200, data: { services } }));
+  });
 
 const Start = () => (
   <Pressable accessibilityRole="button" onPress={() => router.push('/register/select')}>
@@ -20,10 +33,11 @@ const renderSelect = async ({ more = false } = {}) => {
       'register/index': Start,
       'register/select': () => <RegisterServiceSelectScreen more={more} />,
     },
-    { initialUrl: '/register' },
+    { initialUrl: '/register', wrapper: createQueryWrapper() },
   );
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   await user.press(screen.getByRole('button', { name: '직접 등록하기' }));
+  await screen.findByRole('checkbox', { name: 'Netflix' });
   return user;
 };
 
@@ -31,8 +45,13 @@ beforeEach(async () => {
   jest.useFakeTimers();
   useRegisterDraft.getState().reset();
   await AsyncStorage.clear();
+  searchResults = {};
+  mockServices();
 });
-afterEach(() => jest.useRealTimers());
+afterEach(() => {
+  jest.useRealTimers();
+  jest.restoreAllMocks();
+});
 
 describe('RegisterServiceSelectScreen 뒤로 가기', () => {
   // 이탈 팝업은 구독 정보 입력(A-03)에서만 (기획 답변)
@@ -71,10 +90,11 @@ it('불러온 구독 확인에서 추가 선택으로 들어왔으면 뒤로 가
       'register/found': Found,
       'register/select': () => <RegisterServiceSelectScreen more />,
     },
-    { initialUrl: '/register/found' },
+    { initialUrl: '/register/found', wrapper: createQueryWrapper() },
   );
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   await user.press(screen.getByRole('button', { name: '구독 추가하기' }));
+  await screen.findByRole('checkbox', { name: 'Netflix' });
 
   await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
 
@@ -96,10 +116,11 @@ it('불러온 구독 확인에서 추가로 고르면 결제 정보 입력 없�
       'register/select': () => <RegisterServiceSelectScreen more />,
       'register/selected': () => null,
     },
-    { initialUrl: '/register/found' },
+    { initialUrl: '/register/found', wrapper: createQueryWrapper() },
   );
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   await user.press(screen.getByRole('button', { name: '구독 추가하기' }));
+  await screen.findByRole('checkbox', { name: 'Netflix' });
 
   await user.press(screen.getByRole('checkbox', { name: '티빙' }));
   await user.press(screen.getByRole('button', { name: '2개 선택 완료' }));
@@ -121,17 +142,35 @@ it('선택한 서비스 칩은 고른 순서대로 나열한다', async () => {
   ]);
 });
 
-it('검색 결과는 이름 일치율 높은 순으로 보여 준다', async () => {
+it('검색 결과에 없는 서비스를 골라 뒀어도 칩은 그대로 보인다', async () => {
+  searchResults = { 티: ['tving'] };
   const user = await renderSelect();
+  await user.press(screen.getByRole('checkbox', { name: 'Netflix' }));
 
-  // 티빙은 앞부분 일치라 맨 위, 챗지피티·스포티파이는 중간에 포함이라 목록 순서대로
   await user.type(screen.getByPlaceholderText('검색'), '티');
 
-  const names = screen.getAllByRole('checkbox').map((c) => c.props.accessibilityLabel);
-  expect(names).toEqual(['티빙', 'ChatGPT', 'Spotify']);
+  await waitFor(() => expect(screen.queryByRole('checkbox', { name: 'Netflix' })).toBeNull());
+  expect(screen.getByRole('button', { name: 'Netflix' })).toBeOnTheScreen();
+});
+
+it('검색어를 서버에 보내고, 서버가 준 순서대로 보여 준다', async () => {
+  searchResults = { 티: ['tving', 'chatgpt', 'spotify'] };
+  const user = await renderSelect();
+
+  await user.type(screen.getByPlaceholderText('검색'), '티');
+
+  expect(await screen.findByText('검색 결과')).toBeOnTheScreen();
+  await waitFor(() =>
+    expect(screen.getAllByRole('checkbox').map((c) => c.props.accessibilityLabel)).toEqual([
+      '티빙',
+      'ChatGPT',
+      'Spotify',
+    ]),
+  );
 });
 
 it('구독 추가하기로 왔으면 이미 불러온 서비스는 체크된 채로 풀리지 않는다', async () => {
+  useRegisterDraft.getState().setFound('SCREENSHOT', TEST_FOUND);
   const user = await renderSelect({ more: true });
   const netflix = screen.getByRole('checkbox', { name: 'Netflix' });
 
@@ -144,6 +183,7 @@ it('구독 추가하기로 왔으면 이미 불러온 서비스는 체크된 채
 });
 
 it('불러온 구독의 이름을 바꿨으면 그 서비스는 잠기지 않아 새로 고를 수 있다', async () => {
+  useRegisterDraft.getState().setFound('SCREENSHOT', TEST_FOUND);
   useRegisterDraft.getState().setPayment('found-netflix', {
     name: '넷플 가족',
     category: '영상·OTT',
@@ -161,4 +201,13 @@ it('불러온 구독의 이름을 바꿨으면 그 서비스는 잠기지 않아
   await user.press(netflix);
 
   expect(useRegisterDraft.getState().selectedIds).toEqual(['netflix']);
+});
+
+it('보이면 머문 화면을 서비스 선택(A-02)으로 기록하고, 화면 효과가 정리 함수 말고 다른 값을 돌려주지 않는다', async () => {
+  const consoleError = jest.spyOn(console, 'error');
+  await renderSelect();
+
+  expect(useRegisterDraft.getState().lastStep).toBe('A-02');
+  // effect가 Promise를 돌려주면 React가 console.error로 알림
+  expect(consoleError.mock.calls.flat().join(' ')).not.toContain('must not return anything');
 });

@@ -7,9 +7,11 @@ import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { PaymentListItem } from '@/components/register/PaymentListItem';
-import { useRegisterDraft, useRegisterServices } from '@/hooks/useRegisterDraft';
+import { useCreateSubscriptions } from '@/hooks/useCreateSubscriptions';
+import { useRegisterDraft, useRegisterServices, useRegisterStep } from '@/hooks/useRegisterDraft';
 
 export const RegisterSelectedServiceScreen = () => {
+  useRegisterStep('A-04');
   // A-02에서 고른 목록은 저장소가 원본 (구독 추가하기로 바꿔도 바로 반영)
   const serviceIds = useRegisterDraft((s) => s.selectedIds);
   const payments = useRegisterDraft((s) => s.payments);
@@ -19,6 +21,24 @@ export const RegisterSelectedServiceScreen = () => {
   );
   const allEntered = services.length > 0 && services.every((s) => payments[s.id]);
   const ids = services.map((s) => s.id);
+  const create = useCreateSubscriptions();
+  // 직접 입력(custom-)은 사전 등록 서비스 id 없이 이름으로
+  // shortcut: 실패 안내(중복 등록 등)는 디자인에 없어 화면에 남음, 디자인·에러 코드 정해지면 안내 추가
+  const register = () =>
+    create.mutate(
+      {
+        source: 'MANUAL',
+        subscriptions: services.map((s) => ({
+          serviceId: s.id.startsWith('custom-') ? undefined : s.id,
+          name: s.name,
+          payment: payments[s.id],
+        })),
+      },
+      {
+        onSuccess: () =>
+          router.push({ pathname: '/register/done', params: { ids: ids.join(',') } }),
+      },
+    );
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -59,13 +79,11 @@ export const RegisterSelectedServiceScreen = () => {
         </FadeScrollView>
       </View>
       <View className="pb-safe px-screen-x">
-        {/* 모든 서비스 결제 정보 입력이 완료되면 활성화. shortcut: 등록 API 없이 완료 화면으로만 이동, API 연동 시 저장 성공 후 이동 */}
+        {/* 모든 서비스 결제 정보 입력이 완료되면 활성화. 등록 성공 후 완료 화면으로 */}
         <Cta
           label={`${services.length}개 구독 등록하기`}
-          disabled={!allEntered}
-          onPress={() =>
-            router.push({ pathname: '/register/done', params: { ids: ids.join(',') } })
-          }
+          disabled={!allEntered || create.isPending}
+          onPress={register}
           className="mb-[14px]"
         />
       </View>

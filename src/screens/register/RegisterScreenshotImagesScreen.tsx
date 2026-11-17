@@ -73,7 +73,9 @@ export const RegisterScreenshotImagesScreen = () => {
         <Cta
           label="구독 정보 불러오기"
           disabled={uris.length === 0}
-          onPress={() => router.push('/register/analyze')}
+          onPress={() =>
+            router.push({ pathname: '/register/analyze', params: { images: JSON.stringify(uris) } })
+          }
           className="mb-[14px]"
         />
       </View>

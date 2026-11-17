@@ -1,20 +1,20 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { useQuery } from '@tanstack/react-query';
 
-interface NotificationSettings {
-  // 꾸준히 쓰는 구독: 결제 3일 전 점검 알림
-  checkupReminder: boolean;
-  setCheckupReminder: (on: boolean) => void;
+import { request } from '@/lib/request';
+
+export interface NotificationSettings {
+  // 결제 전 점검 알림 (D-3 점검·D-1 결제 알림 모두)
+  paymentReminderEnabled: boolean;
 }
 
-// shortcut: 기기에만 저장, 알림 설정 API 생기면 서버 저장으로 교체
-export const useNotificationSettings = create<NotificationSettings>()(
-  persist(
-    (set) => ({
-      checkupReminder: false,
-      setCheckupReminder: (checkupReminder) => set({ checkupReminder }),
-    }),
-    { name: 'notification-settings', storage: createJSONStorage(() => AsyncStorage) },
-  ),
-);
+export const notificationSettingsKeys = {
+  all: ['notificationSettings'] as const,
+};
+
+// E-05 알림 설정
+export const useNotificationSettings = () =>
+  useQuery({
+    queryKey: notificationSettingsKeys.all,
+    queryFn: ({ signal }) =>
+      request<NotificationSettings>('/api/v1/notifications/settings', { signal }),
+  });

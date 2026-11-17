@@ -6,21 +6,23 @@ import { AlertCircleIcon, Step1Icon, Step2Icon, Step3Icon } from '@/assets/icons
 import { Cta } from '@/components/common/Cta';
 import { GuideStep } from '@/components/common/GuideStep';
 import { Modal } from '@/components/common/Modal';
+import { QueryState } from '@/components/common/QueryState';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { TopBar } from '@/components/common/TopBar';
-import { type CancelGuide, DEFAULT_WEB_GUIDE } from '@/constants/cancel';
+import { useCancelGuide } from '@/hooks/useCancelGuide';
+import { useCancelSubscription } from '@/hooks/useCancelSubscription';
 import { fillName } from '@/utils/josa';
 
 const STEP_ICONS = [Step1Icon, Step2Icon, Step3Icon];
 
 interface CancelGuideScreenProps {
   subscriptionId: string;
-  name: string;
-  guide: CancelGuide;
 }
 
 // X-01·X-03·X-04·X-05 해지 안내 + X-06 해지 완료 확인 모달
-export const CancelGuideScreen = ({ subscriptionId, name, guide }: CancelGuideScreenProps) => {
+export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) => {
+  const { data: guide, isError, refetch } = useCancelGuide(subscriptionId);
+  const cancelSubscription = useCancelSubscription();
   const [confirmOpen, setConfirmOpen] = useState(false);
   // 스토어·해지 페이지로 나갔다가 앱으로 돌아오면 모달 자동 노출
   const [awaitingReturn, setAwaitingReturn] = useState(false);
@@ -35,6 +37,15 @@ export const CancelGuideScreen = ({ subscriptionId, name, guide }: CancelGuideSc
     return () => sub.remove();
   }, [awaitingReturn]);
 
+  if (!guide) {
+    return (
+      <View className="pt-safe flex-1 bg-bg-default">
+        <QueryState isError={isError} onRetry={refetch} />
+      </View>
+    );
+  }
+  const { name } = guide;
+
   const onCta = () => {
     // 해지 링크 없음(X-05): '해지했어요'로 바로 모달
     if (!guide.url) return setConfirmOpen(true);
@@ -43,8 +54,12 @@ export const CancelGuideScreen = ({ subscriptionId, name, guide }: CancelGuideSc
       .catch(() => {});
   };
 
-  // shortcut: 해지 API 없이 구독 상세로만 돌아감, 연동 시 구독 종료·해지일 저장·점검 알림 중단 후 이동
-  const onComplete = () => router.dismissTo(`/manage/detail/${subscriptionId}`);
+  // 해지 완료 처리(구독 종료·해지일 저장·점검 알림 중단) 후 해지를 시작한 구독 상세로. 상세는 구독 종료(M-05)로 바뀜
+  // shortcut: 실패 안내는 디자인에 없어 모달만 닫힘, 디자인 나오면 안내 추가
+  const onComplete = () =>
+    cancelSubscription.mutate(subscriptionId, {
+      onSuccess: () => router.dismissTo(`/manage/detail/${subscriptionId}`),
+    });
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -61,7 +76,7 @@ export const CancelGuideScreen = ({ subscriptionId, name, guide }: CancelGuideSc
           description={`${name} · ${guide.payment}`}
         />
         <View className="gap-stack-lg">
-          {guide.steps ? (
+          {guide.steps.length > 0 ? (
             <View className="gap-stack-md">
               {guide.steps.map((step, i) => (
                 <GuideStep
@@ -77,7 +92,7 @@ export const CancelGuideScreen = ({ subscriptionId, name, guide }: CancelGuideSc
               lineBreakStrategyIOS="hangul-word"
               className="text-text-primary text-body2-semibold"
             >
-              {fillName(DEFAULT_WEB_GUIDE, name)}
+              {fillName(guide.message, name)}
             </Text>
           )}
           {guide.notice && (
