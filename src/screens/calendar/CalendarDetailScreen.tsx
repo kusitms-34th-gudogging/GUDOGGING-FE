@@ -9,14 +9,15 @@ import { Divider, ServiceHeader } from '@/components/common/DetailParts';
 import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
 import { MoreMenu } from '@/components/common/MoreMenu';
+import { QueryState } from '@/components/common/QueryState';
 import { TextArea } from '@/components/common/TextArea';
 import { TopBar } from '@/components/common/TopBar';
-import type { CalendarPayment } from '@/constants/calendar';
 import { PAID_AT } from '@/constants/services';
+import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
+import { useCalendarPaymentDetail } from '@/hooks/useSubscriptions';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
 import { monthly } from '@/utils/homeSummary';
 import { fillName } from '@/utils/josa';
-import { nextPaymentAfter } from '@/utils/paymentSchedule';
 
 const monthDay = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
 const fullDate = (d: Date) => `${d.getFullYear()}년 ${monthDay(d)}`;
@@ -27,18 +28,31 @@ const InfoRow = ({ title, value }: { title: string; value: string }) => (
 );
 
 interface CalendarDetailScreenProps {
-  payment: CalendarPayment;
-  // 캘린더에서 고른 결제 날짜. 다음 결제일을 이 날짜 기준으로 계산 (CAL-003)
+  id: string;
+  // 캘린더에서 고른 결제 날짜. 서버가 이 날짜 다음 결제일을 줌 (CAL-003)
   date: Date;
-  // 삭제하기: 구독과 점검 기록을 지우고 캘린더로 돌아감 (C-04)
-  onDelete: () => void;
 }
 
 // C-03 캘린더 결제 일정 상세
-export const CalendarDetailScreen = ({ payment: p, date, onDelete }: CalendarDetailScreenProps) => {
+export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) => {
+  // 삭제 후 다시 불러오면 404지만 TanStack은 이전 data를 남겨서 닫히는 동안 빈 화면이 안 됨
+  const { data: p, isError, refetch } = useCalendarPaymentDetail(id, date);
+  const deleteSubscriptions = useDeleteSubscriptions();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const close = () => setMenuOpen(false);
+
+  if (!p) {
+    return (
+      <View className="pt-safe flex-1 bg-bg-default">
+        <QueryState isError={isError} onRetry={refetch} />
+      </View>
+    );
+  }
+
+  // 삭제하기: 구독과 점검 기록을 지우고 캘린더로 돌아감 (C-04). 완료 토스트 없음 (화면설계서)
+  // shortcut: 실패 안내는 디자인에 없어 모달만 닫힘, 디자인 나오면 안내 추가
+  const onDelete = () => deleteSubscriptions.mutate([p.id], { onSuccess: () => router.back() });
 
   return (
     <View className="pt-safe pb-safe flex-1 bg-bg-default">
@@ -96,7 +110,7 @@ export const CalendarDetailScreen = ({ payment: p, date, onDelete }: CalendarDet
               결제
             </Text>
             <View>
-              <InfoRow title="다음 결제일" value={monthDay(nextPaymentAfter(p, date))} />
+              <InfoRow title="다음 결제일" value={monthDay(p.nextDate)} />
               <InfoRow title="결제 주기" value={formatCycle(p.cycle, p.unit)} />
               <InfoRow
                 title="결제한 곳"
