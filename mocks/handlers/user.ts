@@ -20,6 +20,7 @@ export const userHandlers = [
       checkups: [],
       draft: null,
       gmailEmail: null,
+      registered: false,
       readNotificationIds: new Set(),
     });
     return ok('회원 탈퇴했습니다.');
