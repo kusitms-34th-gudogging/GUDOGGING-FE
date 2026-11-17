@@ -81,7 +81,8 @@ export const useCheckupForm = (subscriptionId: string) =>
       questions: f.questions.map((q): CheckupQuestion => ({
         title: q.label,
         hint: q.hint ?? '',
-        options: q.options.toSorted((a, b) => a.score - b.score).map((o) => o.text),
+        // toSorted(ES2023)는 앱 JS 엔진(Hermes)에서 없을 수 있어 복사 후 sort
+        options: [...q.options].sort((a, b) => a.score - b.score).map((o) => o.text),
       })),
       memo: { placeholder: f.memoPlaceholder, chips: f.memoChips },
     }),
