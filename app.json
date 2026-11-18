@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "gudogging-fe",
+    "name": "구도깅",
     "slug": "gudogging-fe",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,7 +8,10 @@
     "scheme": "gudoggingfe",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./src/assets/expo.icon"
+      "bundleIdentifier": "com.subscribers.gudogging",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -34,9 +37,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#FFFFFF",
           "image": "./src/assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 111
         }
       ],
       [
@@ -78,6 +81,18 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "390a019d-073a-4230-bb51-b76752fa4c21"
+      }
+    },
+    "owner": "kusitms-34th-gudogging",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/390a019d-073a-4230-bb51-b76752fa4c21"
     }
   }
 }
