@@ -1,106 +1,110 @@
 ---
 paths:
   - '.maestro/**'
-  - '.eas/workflows/**'
-  - 'eas.json'
 ---
 
 # E2E 테스트 규칙 (Maestro)
 
-기준: **`package.json`에 설치된 Expo 버전의 공식 문서**와 Maestro 공식 문서 ([EAS Workflows E2E](https://docs.expo.dev/eas/workflows/examples/e2e-tests/) · [Maestro](https://docs.maestro.dev/) · [Maestro React Native](https://docs.maestro.dev/get-started/supported-platform/react-native)). 문법은 기억 말고 문서 확인
+기준: [Maestro](https://docs.maestro.dev/) · [Maestro React Native](https://docs.maestro.dev/get-started/supported-platform/react-native). 문법은 기억 말고 문서 확인
 
-> 아래 내용은 Expo SDK 58에서 확인함. `type: maestro` job은 alpha라 SDK를 올리면 문서와 대조해 이 파일도 갱신
+## 왜 Maestro, 왜 EAS Workflows가 아닌가
 
-## E2E 대상 고르기 (팀 결정)
+- Maestro는 빌드된 앱을 밖에서 조작함. 앱에 넣는 코드·네이티브 설정이 없어 CNG와 맞음
+- EAS Workflows `type: maestro` job은 쓰지 않음: 무료 플랜에서 실행 불가 ([Expo pricing](https://expo.dev/pricing)), workflow 안의 빌드도 iOS 빌드 한도에서 빠짐
+- 대신 앱은 로컬 Xcode로 시뮬레이터 빌드 (서명 불필요, EAS 횟수 무관)
 
-실기기(시뮬레이터)에서 앱을 끝까지 조작해 핵심 플로우가 동작하는지 확인. Expo 문서도 UI 검증은 스냅샷 대신 E2E(Maestro) 권장
+## E2E 대상 고르기
 
-**E2E로 확인할 것**
+E2E는 적게, 제품 핵심 가치를 지나는 **사용자 여정** 단위로 ([The Practical Test Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html): "Write _very few_ high-level tests"). 도메인마다 하나씩 짜지 않음
 
-- 핵심 사용자 여정 (로그인 → 온보딩 → 홈)
-- 실기기에서만 확인되는 것 (네이티브 모듈·권한 팝업·키보드·폰트)
+**E2E로 확인할 것** (실기기에서만 확인되는 것)
 
-**단위 테스트로 넘길 것** (Jest로 확인 가능하면 E2E에서 하지 않음)
+- 여러 화면·도메인을 지나는 여정 (예: 등록한 구독이 홈에 보임)
+- 네이티브 동작: OS 권한 팝업, SecureStore 토큰 유지, 키보드, 내비게이션 스택(뒤로 가기)
 
-- 컴포넌트 상태 (disabled, 에러 문구)
-- 화면 전환 하나 (`renderRouter`)
-- 분기 로직 조합
+**Jest로 넘길 것** (Jest로 확인 가능하면 E2E에서 하지 않음)
 
-## Maestro 공식 권장
+- 화면 하나 안의 상태·문구·분기, 화면 전환 하나(`renderRouter`)
 
-### 선택자 ([React Native](https://docs.maestro.dev/get-started/supported-platform/react-native) · [Selectors](https://docs.maestro.dev/reference/selectors/core-selectors))
+**여정 후보** (하나씩 추가하고, 실행 시간·깨지는 빈도를 보고 더 늘릴지 정함)
 
-- 화면 텍스트로 찾는 건 "쉽지만 깨지기 쉬움" (문구 변경·번역 시 깨짐) → **`testID` 사용이 best practice**. RN `testID`는 Maestro `id`로 찾음
-- `id`는 동적 콘텐츠, 텍스트 없는 아이콘, 다국어 앱에 특히 권장
-- `text`는 화면 텍스트와 iOS `accessibilityLabel`을 둘 다 찾음
-- `text`·`id`는 기본이 정규식 → `$`·`[` 같은 문자는 이스케이프
-- 같은 선택자가 여러 개면 `index`(0부터)로 고름
+1. 로그인 → 온보딩 → 홈, 앱 재실행 후 로그인 유지
+2. 구독 등록 → 홈·구독 관리에 보임
+3. 구독 점검 → 해지 안내
+4. 로그아웃 → 로그인 화면, 재실행 후에도 로그아웃 상태
 
-### 기다리기 ([Wait commands](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/wait-commands))
+**지금 제외**: 사진 보관함(스크린샷 등록)·Google 인증 창(Gmail)은 앱 밖 시스템 화면이라 조작 여부 미확인. 캘린더는 Jest로
 
-- 짧게 나타나거나 사라지는 요소는 assertion(`assertVisible`)으로. assertion은 요소가 나타날 때까지 계속 확인함
-- 몇 초 이상 걸리는 게 확실한 경우(느린 네트워크)만 `extendedWaitUntil` + `timeout`
-- "모든 timeout을 60초로 잡지 말 것". 5초 안에 뜨는 화면은 기본 assertion에 맡김
+## 선택자 ([React Native](https://docs.maestro.dev/get-started/supported-platform/react-native) · [Selectors](https://docs.maestro.dev/reference/selectors/core-selectors))
+
+- **`testID` 우선** (문구 변경에 안 깨짐). RN `testID`는 Maestro `id`로 찾음
+- `testID`는 E2E 여정이 누르거나 확인하는 요소에만 붙임. 공통 컴포넌트가 `testID` prop을 안 받으면 optional prop으로 추가해 `Pressable` 등에 그대로 넘김
+- 이름은 kebab-case `{화면}-{요소}` (예: `login-apple`, `home-screen`)
+- `text`·`id`는 기본이 정규식 → `$`·`[` 같은 문자는 이스케이프. 같은 선택자가 여러 개면 `index`(0부터)
+
+## 목서버
+
+- E2E는 `pnpm mock`을 **새로 띄워서** 돌림. Render 목서버는 쓰지 않음
+  - 목서버 상태가 메모리에 있어서 결과가 바뀜: 첫 로그인만 신규 가입(`isNewUser`) → 온보딩, 이후는 홈 (`mocks/handlers/auth.ts`)
+  - Render 무료 플랜은 잠들었다 깨면 상태 초기화, 팀원끼리 상태 공유
+- `EXPO_PUBLIC_API_URL`은 빌드할 때 앱에 박힘 → E2E 빌드는 로컬 목서버 주소로 빌드
+
+## 권한 ([launchApp](https://docs.maestro.dev/reference/commands-available/launchapp) · [setPermissions](https://docs.maestro.dev/reference/commands-available/setpermissions))
+
+- 기본값은 모든 권한 허용. iOS 알림은 시스템 팝업이 뜨고 Maestro가 Allow를 자동으로 탭
+- 거부 경로는 `launchApp`의 `permissions` (`all: deny` 후 필요한 것만 `allow`). 플로우 중간엔 `setPermissions`
+
+## 로그인
+
+- 지금은 Apple·Google SDK가 없어 버튼 탭만으로 로그인됨 (`src/hooks/useLogin.ts`)
+- SDK를 붙이면 네이티브 로그인 창은 조작 불가 → E2E 빌드에서만 켜지는 JS 우회 경로를 추가 (네이티브 변경 없이)
+
+## 기다리기 ([Wait commands](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/wait-commands))
+
+- 나타나거나 사라지는 요소는 `assertVisible`로 (나타날 때까지 계속 확인)
+- 몇 초 이상 걸리는 게 확실한 경우만 `extendedWaitUntil` + `timeout`. 모든 timeout을 길게 잡지 않음
 - 움직이는 요소는 `waitForAnimationToEnd`, 탭이 안 먹히면 `tapOn`에 `retryTapIfNoChange: true`
-
-### 앱 상태 ([launchApp](https://docs.maestro.dev/reference/commands-available/launchapp))
-
-- `launchApp`은 기본으로 실행 중인 앱을 종료하고 다시 실행 (`stopApp: true`)
-- `clearState: true`: 실행 전 앱 상태 초기화. `clearKeychain: true`: iOS 키체인 전체 초기화
-
-### 플로우 구성 ([Nested flows](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/nested-flows))
-
-- "Keep flows atomic": 서브플로우 하나는 한 가지 일만 (로그인, 로그아웃 등)
-- 셋업·정리 단계는 서브플로우로 만들어 `runFlow`로 호출
-- 서브플로우는 메인 테스트와 분리된 `subflows/`·`common/` 폴더에
-- 값은 `runFlow`의 `env`로 넘기고 서브플로우에서 `${VAR}`로 사용
 
 ## 파일 위치
 
 ```txt
-GUDOGGING-FE/
-├─ .maestro/                    # 루트, eas.json과 같은 위치 (Expo 문서)
-│  ├─ login.yml                 # 메인 플로우
-│  └─ subflows/                 # runFlow로 호출하는 서브플로우 (Maestro 문서)
-│     └─ login.yml
-├─ .eas/workflows/
-│  └─ e2e-tests.yml             # build → maestro job (Expo 문서)
-└─ eas.json                     # build.e2e-test 프로필
+.maestro/
+├─ auth-login-to-home.yml     # 여정 하나 = 파일 하나. 루트에만 둠
+└─ subflows/                  # runFlow로 호출하는 공통 단계 (로그인 등)
+   └─ login.yml
 ```
 
+- `maestro test .maestro/`는 루트의 YAML만 실행 (`config.yaml` `flows` 기본값 `*`, [Workspace configuration](https://docs.maestro.dev/api-reference/configuration/workspace-configuration)) → 여정은 루트에, 서브플로우는 `subflows/`에 두면 테스트로 안 돌아감. 도메인 폴더로 나누지 않음
+- 파일 이름은 `{도메인}-{여정}.yml` (예: `auth-login-to-home.yml`, `checkup-to-cancel.yml`). 여러 도메인을 지나면 시작 도메인. 파일이 많아져 폴더로 나눌 땐 `config.yaml`에 `flows: ['**', '!subflows/**']`
+- 서브플로우 하나는 한 가지 일만 ([Nested flows](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/nested-flows)). 값은 `runFlow`의 `env`로 넘김
 - `src/`의 `__tests__/`에 두지 않음 (Jest가 실행하려 함)
 
 ## 작성
 
-- `appId`는 앱 bundle ID (`app.json`의 `ios.bundleIdentifier`)
+- `appId`는 `app.json`의 `ios.bundleIdentifier`
 
 ```yaml
-# .maestro/login.yml
+# .maestro/auth-login-to-home.yml
 appId: com.subscribers.gudogging
 ---
 - launchApp:
     clearState: true
-    clearKeychain: true # 토큰이 iOS 키체인에 남음
+    clearKeychain: true # 토큰이 iOS 키체인(SecureStore)에 남음
 - tapOn:
-    id: 'login_button'
-- runFlow:
-    file: subflows/login.yml
-    env:
-      USERNAME: 'myUser'
-      PASSWORD: 'myPassword'
+    id: 'login-apple'
 - assertVisible:
-    id: 'home_screen'
+    id: 'home-screen'
 ```
 
-## 실행 ([EAS Workflows E2E](https://docs.expo.dev/eas/workflows/examples/e2e-tests/))
+## 실행
 
-- **지금은 iOS만 돌림** (프로젝트 결정). Android는 출시 결정되면 추가
-- 로컬: Maestro CLI 설치 → 시뮬레이터에 앱 설치 → `maestro test .maestro/{플로우}.yml` (Expo Go 불가)
-- CI: `eas.json`에 `e2e-test` 프로필 (`withoutCredentials`, iOS `simulator: true`, Android `buildType: "apk"`) + `.eas/workflows/e2e-tests.yml`의 `type: build` → `type: maestro` job (alpha)
-- 트리거는 `pull_request` 또는 라벨 붙은 PR만(`pull_request_labeled`) 중 선택
+- **지금은 iOS만** (프로젝트 결정)
+- 준비 (한 번): Java 17 (`brew install openjdk@17` + PATH), Maestro CLI (`curl -Ls "https://get.maestro.mobile.dev" | bash`). 앱이 아니라 Mac에 설치
+- 실행: `pnpm mock` → 로컬 목서버 주소로 `npx expo run:ios` → `maestro test .maestro/{도메인}-{여정}.yml` (Expo Go 불가)
+- CI는 GitHub Actions 기본 macOS runner로 돌려 본 뒤 이 문서에 추가
 
 ## 이럴 때 더 읽기
 
 - 플로우를 새로 작성할 때 → `.claude/skills/add-test/SKILL.md`
 - Jest로 넘길지 판단할 때 → `.claude/rules/unit-test.md` "범위"
-- 요소에 `testID`를 붙일 때 → `.claude/rules/components.md`
+- 공통 컴포넌트에 `testID` prop을 추가할 때 → `.claude/rules/components.md`
