@@ -1,0 +1,108 @@
+name: Deploy iOS
+
+# PR: 머지하면 iOS 빌드가 도는지 댓글로 미리 알림
+# dev push: 네이티브가 그대로면 OTA, 바뀌었으면 EAS 빌드 후 TestFlight 제출
+on:
+  pull_request:
+    branches: [dev]
+  push:
+    branches: [dev]
+
+concurrency:
+  group: deploy-ios-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+  EXPO_ACCOUNT: kusitms-34th-gudogging
+  # 무료 iOS 빌드 15회 중 비상용 3회는 남겨 둠
+  BUILD_LIMIT: 12
+  BUILD_COMMAND: npx eas-cli@latest build -p ios --profile production --auto-submit
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # 네이티브 지문(runtimeVersion과 같은 값)으로 이미 빌드가 있는지, 이번 달 빌드를 몇 번 썼는지 확인
+      - name: Check native fingerprint
+        id: fp
+        run: |
+          HASH=$(npx eas-cli@latest fingerprint:generate -p ios -e production --json --non-interactive | jq -r .hash)
+          BUILDS=$(npx eas-cli@latest build:list -p ios --fingerprint-hash "$HASH" --limit 20 --json --non-interactive \
+            | jq '[.[] | select(.status | ascii_downcase | IN("new","in_queue","in_progress","finished"))] | length')
+          USAGE=$(npx eas-cli@latest account:usage "$EXPO_ACCOUNT" --json --non-interactive)
+          USED=$(echo "$USAGE" | jq '.builds.ios.plan.used')
+          {
+            echo "hash=$HASH"
+            echo "has_build=$([ "$BUILDS" -gt 0 ] && echo true || echo false)"
+            echo "used=$USED"
+            echo "limit=$(echo "$USAGE" | jq '.builds.ios.plan.limit')"
+            echo "can_build=$([ "$USED" -lt "$BUILD_LIMIT" ] && echo true || echo false)"
+          } >> "$GITHUB_OUTPUT"
+          echo "fingerprint $HASH, builds $BUILDS, iOS usage $USED"
+
+      - name: Comment build notice on PR
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          HAS_BUILD: ${{ steps.fp.outputs.has_build }}
+          CAN_BUILD: ${{ steps.fp.outputs.can_build }}
+          USED: ${{ steps.fp.outputs.used }}
+          LIMIT: ${{ steps.fp.outputs.limit }}
+        run: |
+          MARKER='<!-- deploy-ios-notice -->'
+          COMMENT_ID=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
+            --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" | head -1)
+          if [ "$HAS_BUILD" = "true" ]; then
+            # 빌드가 필요 없으면 기존 안내만 갱신하고 새 댓글은 남기지 않음
+            [ -z "$COMMENT_ID" ] && exit 0
+            BODY="$MARKER
+          ✅ 네이티브 변경이 없어 머지하면 OTA로 자동 반영돼요. (빌드 안 함)"
+          elif [ "$CAN_BUILD" = "true" ]; then
+            BODY="$MARKER
+          📦 **이 PR은 네이티브 변경이 있어 머지하면 iOS 빌드가 1회 자동으로 돌아요.** (빌드 후 TestFlight 제출)
+          이번 달 EAS iOS 빌드 사용량: $USED / $LIMIT (자동 빌드는 ${BUILD_LIMIT}회까지)
+          급하지 않은 네이티브 변경(패키지 patch 업데이트 등)이면 다른 네이티브 변경과 모아서 머지하면 빌드를 아낄 수 있어요."
+          else
+            BODY="$MARKER
+          ⚠️ **이 PR은 네이티브 변경이 있지만 이번 달 자동 빌드 한도에 닿았어요.**
+          이번 달 EAS iOS 빌드 사용량: $USED / $LIMIT (자동 빌드는 ${BUILD_LIMIT}회까지)
+          머지해도 빌드·OTA가 돌지 않아요. 꼭 필요하면 머지 후 \`dev\`에서 직접 실행해 주세요.
+          \`\`\`
+          $BUILD_COMMAND
+          \`\`\`"
+          fi
+          if [ -n "$COMMENT_ID" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID" -f body="$BODY" >/dev/null
+          else
+            gh pr comment "$PR" --body "$BODY"
+          fi
+
+      # 네이티브가 바뀌었으면 새로 빌드해 TestFlight에 제출 (EAS에서 진행, 여기선 기다리지 않음)
+      - name: Build and submit to TestFlight
+        if: github.event_name == 'push' && steps.fp.outputs.has_build == 'false' && steps.fp.outputs.can_build == 'true'
+        run: $BUILD_COMMAND --non-interactive --no-wait
+
+      - name: Warn build limit reached
+        if: github.event_name == 'push' && steps.fp.outputs.has_build == 'false' && steps.fp.outputs.can_build == 'false'
+        run: echo "::warning::이번 달 iOS 빌드 ${{ steps.fp.outputs.used }}회로 자동 빌드 한도(${BUILD_LIMIT}회)에 닿아 건너뜀. 필요하면 직접 실행 → $BUILD_COMMAND"
+
+      # JS만 바뀌었으면 OTA 업데이트
+      - name: Publish OTA update
+        if: github.event_name == 'push' && steps.fp.outputs.has_build == 'true'
+        env:
+          MESSAGE: ${{ github.event.head_commit.message }}
+        run: npx eas-cli@latest update --channel production --platform ios --environment production --message "$MESSAGE" --non-interactive
