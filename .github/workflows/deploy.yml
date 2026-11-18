@@ -38,20 +38,28 @@ jobs:
       # 네이티브 지문(runtimeVersion과 같은 값)으로 이미 빌드가 있는지, 이번 달 빌드를 몇 번 썼는지 확인
       - name: Check native fingerprint
         id: fp
+        # pipefail + jq -e: EAS 조회가 실패하면 '빌드 없음'으로 넘어가 빌드를 낭비하지 않고 멈춤
+        shell: bash
         run: |
-          HASH=$(npx eas-cli@latest fingerprint:generate -p ios -e production --json --non-interactive | jq -r .hash)
-          BUILDS=$(npx eas-cli@latest build:list -p ios --fingerprint-hash "$HASH" --limit 20 --json --non-interactive \
-            | jq '[.[] | select(.status | ascii_downcase | IN("new","in_queue","in_progress","finished"))] | length')
-          USAGE=$(npx eas-cli@latest account:usage "$EXPO_ACCOUNT" --json --non-interactive)
-          USED=$(echo "$USAGE" | jq '.builds.ios.plan.used')
+          HASH=$(npx eas-cli@latest fingerprint:generate -p ios -e production --json --non-interactive | jq -er .hash)
+          # production 빌드만 셈 (preview 빌드는 production 채널 OTA를 받지 않음)
+          LIST=$(npx eas-cli@latest build:list -p ios --build-profile production --fingerprint-hash "$HASH" --limit 20 --json --non-interactive)
+          BUILDS=$(echo "$LIST" | jq -e '[.[] | select(.status | ascii_downcase | IN("new","in_queue","in_progress","finished"))] | length')
           {
             echo "hash=$HASH"
             echo "has_build=$([ "$BUILDS" -gt 0 ] && echo true || echo false)"
+          } >> "$GITHUB_OUTPUT"
+          echo "fingerprint $HASH, builds $BUILDS"
+          # 사용량은 빌드가 필요할 때만 조회 (조회 실패가 OTA를 막지 않게)
+          [ "$BUILDS" -gt 0 ] && exit 0
+          USAGE=$(npx eas-cli@latest account:usage "$EXPO_ACCOUNT" --json --non-interactive)
+          USED=$(echo "$USAGE" | jq -e '.builds.ios.plan.used')
+          {
             echo "used=$USED"
-            echo "limit=$(echo "$USAGE" | jq '.builds.ios.plan.limit')"
+            echo "limit=$(echo "$USAGE" | jq -e '.builds.ios.plan.limit')"
             echo "can_build=$([ "$USED" -lt "$BUILD_LIMIT" ] && echo true || echo false)"
           } >> "$GITHUB_OUTPUT"
-          echo "fingerprint $HASH, builds $BUILDS, iOS usage $USED"
+          echo "iOS usage $USED"
 
       - name: Comment build notice on PR
         if: github.event_name == 'pull_request'
@@ -105,4 +113,10 @@ jobs:
         if: github.event_name == 'push' && steps.fp.outputs.has_build == 'true'
         env:
           MESSAGE: ${{ github.event.head_commit.message }}
-        run: npx eas-cli@latest update --channel production --platform ios --environment production --message "$MESSAGE" --non-interactive
+        run: |
+          # 예전 실행을 Re-run하면 옛 코드로 최신 OTA를 덮어쓰므로 dev 최신 커밋일 때만 게시
+          if [ "$(git ls-remote origin refs/heads/dev | cut -f1)" != "$GITHUB_SHA" ]; then
+            echo "::warning::dev 최신 커밋이 아니라 OTA를 건너뜀"
+            exit 0
+          fi
+          npx eas-cli@latest update --channel production --platform ios --environment production --message "$MESSAGE" --non-interactive
