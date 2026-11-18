@@ -88,8 +88,8 @@ export const MypageScreen = () => {
   return (
     <View className="pt-safe flex-1 bg-bg-default">
       <TopBar title="마이페이지" showAction1={false} showAction2={false} />
-      <ScrollView contentContainerClassName="items-center gap-inset-lg pb-[120px] pt-[22px]">
-        <View className="w-[279px] flex-row items-center gap-inline-sm">
+      <ScrollView contentContainerClassName="gap-inset-lg pb-[120px] pt-[22px]">
+        <View className="ml-screen-x w-[279px] flex-row items-center gap-inline-sm">
           <Image source={PROFILE} className="size-logo-card rounded-full" />
           <View className="flex-1">
             {me?.email && <Text className="text-text-primary text-body1-semibold">{me.email}</Text>}
