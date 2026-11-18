@@ -72,11 +72,11 @@ GUDOGGING-FE/
 
 ## 작성
 
-- `appId`는 앱 bundle ID (`app.json`의 `ios.bundleIdentifier`). 아직 지정 안 됨 → 정식 ID 정해지면 그 값으로
+- `appId`는 앱 bundle ID (`app.json`의 `ios.bundleIdentifier`)
 
 ```yaml
 # .maestro/login.yml
-appId: com.example.app # app.json의 ios.bundleIdentifier로 교체
+appId: com.subscribers.gudogging
 ---
 - launchApp:
     clearState: true

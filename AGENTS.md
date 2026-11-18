@@ -16,7 +16,7 @@
 
 ## 명령어
 
-- 패키지 추가 `pnpm expo install <pkg>` (`pnpm add` 금지) · 버전 맞춤 `pnpm expo install --fix`
+- 패키지 추가 `pnpm expo install <pkg>` (`pnpm add` 금지. 예외: Expo가 버전을 관리하지 않는데 이미 쓰는 버전에 맞춰야 하는 패키지는 `pnpm add <pkg>@^<버전>`, 예: Babel 7 플러그인) · 버전 맞춤 `pnpm expo install --fix`
 - `pnpm start -c` (SVG 추가 후 캐시 초기화) · 토큰 재생성 `pnpm tokens:build`
 - 네이티브 모듈·Pretendard는 Expo Go에서 안 보임 → 개발 빌드 `npx expo run:ios`
 - 의존성·설정 진단 `npx expo-doctor` · 클라우드 빌드·제출·OTA는 EAS (`npx eas-cli@latest build|submit|update`, `https://docs.expo.dev/eas/index.md`)
@@ -43,4 +43,5 @@
 - 테스트: `.claude/skills/add-test/SKILL.md`
 - 커밋·PR: `.claude/skills/commit/SKILL.md` · `.claude/skills/pr/SKILL.md`
 - CodeRabbit 리뷰 대응: `.claude/skills/coderabbit-review/SKILL.md`
+- iOS 빌드·배포·패키지 변경: `.claude/docs/deploy.md`
 - 지침 문서 수정: `.claude/docs/writing-docs.md`
