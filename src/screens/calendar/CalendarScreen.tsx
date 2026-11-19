@@ -98,6 +98,7 @@ const MonthPanel = ({
                 today={sameDay(d, today)}
                 selected={inMonth && sameDay(d, selected)}
                 disabled={!inMonth}
+                sunday={d.getDay() === 0}
                 onPress={() => onSelect(d)}
                 className="flex-1"
               />
