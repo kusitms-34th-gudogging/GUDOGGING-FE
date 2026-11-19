@@ -121,6 +121,24 @@ export const CalendarScreen = () => {
   const current = useMonth(month);
   const payments = current.data?.byDate.get(formatDate(selected)) ?? [];
 
+  // 결제 행이 아래 끝에서 반쯤 잘려 보이지 않게: 맨 위에서 걸리는 행이 있으면 그만큼 아래 간격을 늘려 그 행을 숨기고,
+  // 스크롤이 멈출 때도 같은 끝선(viewEnd)에 행 아래 끝이 오게 맞춤 (2.5개 들어갈 자리면 2개만 보임)
+  const [avail, setAvail] = useState(0);
+  const [listY, setListY] = useState({ section: 0, list: 0 });
+  const [rows, setRows] = useState<{ top: number; bottom: number }[]>([]);
+  const base = listY.section + listY.list;
+  // 날짜를 바꿔 행이 줄면 남은 옛 값은 버림
+  const abs = rows
+    .slice(0, payments.length)
+    .map((r) => ({ top: base + r.top, bottom: base + r.bottom }));
+  const cut = abs.findIndex((r) => r.top < avail && r.bottom > avail);
+  const viewEnd = cut < 0 ? avail : cut > 0 ? abs[cut - 1].bottom : abs[0].top;
+  const snapOffsets = [0, ...abs.map((r) => r.bottom - viewEnd).filter((o) => o > 0)];
+  const hiddenStyle = useAnimatedStyle(
+    () => ({ paddingBottom: avail - viewEnd }),
+    [avail, viewEnd],
+  );
+
   // 이전·현재·다음 달을 나란히 두고 같이 미는 방식 (Swiper). 놓으면 옆 달이 바로 따라 들어와 빈 화면이 없음
   // 이미 그려진 달은 자리가 안 바뀌고 offset만 움직여서, 달이 바뀌는 순간에도 깜빡이지 않음
   const offset = useSharedValue(-page * width);
@@ -181,96 +199,123 @@ export const CalendarScreen = () => {
   });
 
   return (
-    <View className="pt-safe flex-1 bg-bg-default">
+    <View className="pt-safe pb-safe flex-1 bg-bg-default">
       <TopBar title="캘린더" showAction1={false} showAction2={false} />
-      <ScrollView contentContainerClassName="pb-[120px] pt-s12">
-        <View className="flex-row items-center justify-between px-screen-x">
-          <View className="items-start gap-s2">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityHint="이동할 날짜를 선택해요"
-              onPress={openDateSheet}
-              className="active:opacity-pressed"
-            >
-              <Text className="pl-[2px] text-text-primary text-head3-bold">
-                {month.getFullYear()}년 {month.getMonth() + 1}월
+      {/* 스크롤 영역을 떠 있는 탭바(52 + 아래 4) + 최소 간격 12 위에서 끝내서, 어느 기기에서도 행이 탭바에 닿거나 겹쳐 보이지 않게
+          iOS 기본 튕김(bounce)으로 끝에서 화면이 당겨지지 않게 */}
+      <Animated.View
+        onLayout={(e) => setAvail(e.nativeEvent.layout.height)}
+        className="mb-[68px] flex-1"
+        style={hiddenStyle}
+      >
+        <ScrollView
+          bounces={false}
+          contentContainerClassName="pb-s20 pt-s12"
+          snapToOffsets={snapOffsets}
+        >
+          <View className="flex-row items-center justify-between px-screen-x">
+            <View className="items-start gap-s2">
+              <Pressable
+                accessibilityRole="button"
+                accessibilityHint="이동할 날짜를 선택해요"
+                onPress={openDateSheet}
+                className="active:opacity-pressed"
+              >
+                <Text className="pl-[2px] text-text-primary text-head3-bold">
+                  {month.getFullYear()}년 {month.getMonth() + 1}월
+                </Text>
+              </Pressable>
+              {/* 오늘이 속한 달 합계라 어느 달 응답이든 같음 (CAL-001) */}
+              {current.data && (
+                <Badge
+                  variant="tonal"
+                  label={`이번 달 결제 합계 ${formatWon(current.data.currentMonthTotal)}`}
+                />
+              )}
+            </View>
+            <View className="pr-s4">
+              <Button variant="tonal" size="sm" label="오늘" onPress={() => goTo(today)} />
+            </View>
+          </View>
+
+          <GestureDetector gesture={swipe}>
+            <View className="mt-s20 gap-s8">
+              <View className="px-[6px]">
+                <CalendarWeekday />
+              </View>
+              <View className={cn('overflow-hidden', GRID_HEIGHT[weeks])}>
+                {[page - 1, page, page + 1].map((p) => (
+                  <MonthPanel
+                    key={p}
+                    page={p}
+                    offset={offset}
+                    width={width}
+                    current={p === page}
+                    today={today}
+                    selected={selected}
+                    onSelect={setSelected}
+                  />
+                ))}
+              </View>
+            </View>
+          </GestureDetector>
+
+          <View
+            onLayout={(e) => setListY((v) => ({ ...v, section: e.nativeEvent.layout.y }))}
+            className={cn('mt-s20 px-screen-x', payments.length ? 'gap-stack-md' : 'gap-s8')}
+          >
+            <View className="flex-row items-center justify-between">
+              <Text className="text-text-primary text-head4-bold">
+                {selected.getMonth() + 1}월 {selected.getDate()}일 ({WEEKDAYS[selected.getDay()]})
               </Text>
-            </Pressable>
-            {/* 오늘이 속한 달 합계라 어느 달 응답이든 같음 (CAL-001) */}
-            {current.data && (
-              <Badge
-                variant="tonal"
-                label={`이번 달 결제 합계 ${formatWon(current.data.currentMonthTotal)}`}
-              />
+              <Text className="text-text-secondary text-body3-regular">
+                {payments.length
+                  ? `${payments.length}건 · ${formatWon(sumOf(payments))}`
+                  : '결제 없음'}
+              </Text>
+            </View>
+            {current.isError ? (
+              <QueryState isError onRetry={current.refetch} />
+            ) : payments.length ? (
+              <View
+                onLayout={(e) => setListY((v) => ({ ...v, list: e.nativeEvent.layout.y }))}
+                className="gap-stack-sm"
+              >
+                {payments.map((p, i) => (
+                  <View
+                    key={p.id}
+                    onLayout={(e) => {
+                      const { y, height } = e.nativeEvent.layout;
+                      setRows((r) =>
+                        Object.assign([...r], { [i]: { top: y, bottom: y + height } }),
+                      );
+                    }}
+                  >
+                    <ListItem
+                      title={p.name}
+                      subtitle={`${formatCycle(p.cycle, p.unit)} · ${PAID_AT.find((a) => a.value === p.paidAt)?.label}`}
+                      showSubtitle
+                      logo={p.logo}
+                      showLogo
+                      cost={formatWon(p.amount)}
+                      showCost
+                      iconRightAction={{
+                        accessibilityLabel: `${p.name} 상세`,
+                        onPress: () =>
+                          router.push(`/calendar/detail/${p.id}?date=${formatDate(selected)}`),
+                      }}
+                    />
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text className="text-text-tertiary text-body2-regular">
+                {sameDay(selected, today) && '오늘은 '}결제 예정인 구독이 없어요
+              </Text>
             )}
           </View>
-          <View className="pr-s4">
-            <Button variant="tonal" size="sm" label="오늘" onPress={() => goTo(today)} />
-          </View>
-        </View>
-
-        <GestureDetector gesture={swipe}>
-          <View className="mt-s20 gap-s8">
-            <View className="px-[6px]">
-              <CalendarWeekday />
-            </View>
-            <View className={cn('overflow-hidden', GRID_HEIGHT[weeks])}>
-              {[page - 1, page, page + 1].map((p) => (
-                <MonthPanel
-                  key={p}
-                  page={p}
-                  offset={offset}
-                  width={width}
-                  current={p === page}
-                  today={today}
-                  selected={selected}
-                  onSelect={setSelected}
-                />
-              ))}
-            </View>
-          </View>
-        </GestureDetector>
-
-        <View className={cn('mt-s20 px-screen-x', payments.length ? 'gap-stack-md' : 'gap-s8')}>
-          <View className="flex-row items-center justify-between">
-            <Text className="text-text-primary text-head4-bold">
-              {selected.getMonth() + 1}월 {selected.getDate()}일 ({WEEKDAYS[selected.getDay()]})
-            </Text>
-            <Text className="text-text-secondary text-body3-regular">
-              {payments.length
-                ? `${payments.length}건 · ${formatWon(sumOf(payments))}`
-                : '결제 없음'}
-            </Text>
-          </View>
-          {current.isError ? (
-            <QueryState isError onRetry={current.refetch} />
-          ) : payments.length ? (
-            <View className="gap-stack-sm">
-              {payments.map((p) => (
-                <ListItem
-                  key={p.id}
-                  title={p.name}
-                  subtitle={`${formatCycle(p.cycle, p.unit)} · ${PAID_AT.find((a) => a.value === p.paidAt)?.label}`}
-                  showSubtitle
-                  logo={p.logo}
-                  showLogo
-                  cost={formatWon(p.amount)}
-                  showCost
-                  iconRightAction={{
-                    accessibilityLabel: `${p.name} 상세`,
-                    onPress: () =>
-                      router.push(`/calendar/detail/${p.id}?date=${formatDate(selected)}`),
-                  }}
-                />
-              ))}
-            </View>
-          ) : (
-            <Text className="text-text-tertiary text-body2-regular">
-              {sameDay(selected, today) && '오늘은 '}결제 예정인 구독이 없어요
-            </Text>
-          )}
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </Animated.View>
       <BottomSheet
         visible={dateSheet}
         onClose={() => setDateSheet(false)}
