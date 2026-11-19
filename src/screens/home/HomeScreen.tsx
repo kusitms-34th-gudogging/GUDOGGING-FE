@@ -64,6 +64,7 @@ export const HomeScreen = () => {
       />
       {/* 아래는 떠 있는 탭바(하단 안전 영역 + 4 + 52)에 가리지 않게 여백. 빈 상태는 화면 높이만큼 채우고 안에서 탭바만큼 뺌 */}
       <ScrollView
+        bounces={false}
         contentContainerClassName={cn('gap-inset-lg pt-stack-md', isEmpty ? 'grow' : 'pb-[120px]')}
       >
         <View className="gap-inline-sm px-screen-x">

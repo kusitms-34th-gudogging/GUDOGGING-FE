@@ -45,7 +45,11 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
         showAction1={false}
         showAction2={false}
       />
-      <ScrollView className="flex-1" contentContainerClassName="px-screen-x pb-section pt-stack-md">
+      <ScrollView
+        bounces={false}
+        className="flex-1"
+        contentContainerClassName="px-screen-x pb-section pt-stack-md"
+      >
         <UsageBreath usage={usage} name={name}>
           <View className="flex-row items-center gap-inline-sm">
             <View className="size-logo-card overflow-hidden rounded-full border-default border-border-subtle">

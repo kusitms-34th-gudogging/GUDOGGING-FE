@@ -110,6 +110,7 @@ export const ManageScreen = () => {
           style={snap.hiddenStyle}
         >
           <ScrollView
+            bounces={false}
             contentContainerClassName="gap-inset-lg px-screen-x pb-[52px] pt-stack-md"
             snapToOffsets={snap.snapOffsets}
           >
