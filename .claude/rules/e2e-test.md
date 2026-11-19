@@ -125,7 +125,8 @@ appId: com.subscribers.gudogging
   - 켜진 시뮬레이터가 하나여야 함 (여러 대면 Maestro가 아무거나 고름). E2E 도중엔 같은 시뮬레이터에서 Expo Go·개발 서버를 쓰지 않음
   - `package.json` `scripts`에 넣지 않음: 네이티브 지문(`packageJson:scripts`)이 바뀌어 dev 머지 때 EAS 빌드가 돎
 - `auth-login-to-home` 기준 약 70초 (로컬 iPhone 시뮬레이터)
-- CI(`.github/workflows/e2e.yml`): PR에서는 돌리지 않음 (첫 빌드 30분 넘게 걸림). dev 머지 때와 Actions 탭 수동 실행만, 7개 전체. dev 머지 때 E2E가 실패해도 배포(`deploy.yml`)는 막지 않음. 아직 GitHub에서 돌려 보지 않음 (로컬 리허설만) → 첫 실행 뒤 확인한 내용으로 고침
+- CI(`.github/workflows/e2e.yml`): PR에서는 돌리지 않음 (첫 빌드 30분 넘게 걸림). dev 머지 중 앱·목서버·플로우가 바뀐 것(`paths`)과 Actions 탭 수동 실행만, 7개 전체. dev 머지 때 E2E가 실패해도 배포(`deploy.yml`)는 막지 않음
+  - 캐시 없는 첫 실행 약 52분 (빌드 28분 · 플로우 7개 20분). 캐시는 `ios/`·DerivedData를 네이티브 지문 키로. PR에서 만든 캐시는 그 PR만 써서 dev 첫 실행은 다시 전체 빌드
 - 로컬 실행은 플로우가 지나가는 화면·`testID`·목서버 핸들러를 바꿨을 때 관련 플로우만. 문서·스타일만 바꾼 PR은 생략. PR에서 전체를 보려면 Actions 탭 수동 실행
 
 ## 이럴 때 더 읽기
