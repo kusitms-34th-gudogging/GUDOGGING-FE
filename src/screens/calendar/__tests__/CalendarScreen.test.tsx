@@ -193,8 +193,8 @@ it('다른 달로 가면 그 달 결제를 불러와 보여 준다', async () =>
   await user.press(screen.getByRole('button', { name: /^8(\s|$)/ }));
 
   expect(await screen.findByText('밀리의 서재')).toBeOnTheScreen();
-  expect(String(jest.mocked(globalThis.fetch).mock.calls.at(-1)?.[0])).toContain(
-    'year=2026&month=12',
+  expect(jest.mocked(globalThis.fetch).mock.calls.map(([url]) => String(url))).toContainEqual(
+    expect.stringContaining('year=2026&month=12'),
   );
 });
 

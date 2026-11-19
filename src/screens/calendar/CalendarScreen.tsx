@@ -3,16 +3,10 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
-import Animated, {
-  Easing,
-  type SharedValue,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { CalendarDay } from '@/components/calendar/CalendarDay';
+import { CalendarMonthPanel } from '@/components/calendar/CalendarMonthPanel';
 import { CalendarWeekday } from '@/components/calendar/CalendarWeekday';
 import { Badge } from '@/components/common/Badge';
 import { BottomSheet } from '@/components/common/BottomSheet';
@@ -24,8 +18,9 @@ import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { PAID_AT } from '@/constants/services';
 import { type CalendarItem, useCalendar } from '@/hooks/useCalendar';
+import { useRowSnap } from '@/hooks/useRowSnap';
 import { cn } from '@/utils/cn';
-import { formatDate } from '@/utils/date';
+import { formatDate, monthCells, monthOf, pageOf, sameDay } from '@/utils/date';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -33,81 +28,11 @@ const SWIPE_DISTANCE = 50;
 // 날짜 칸 높이 72 × 주 수. 옆 달을 겹쳐 두려고 칸들을 absolute로 놓아서 높이를 직접 줌
 const GRID_HEIGHT: Record<number, string> = { 4: 'h-[288px]', 5: 'h-[360px]', 6: 'h-[432px]' };
 
-// 달을 이어진 번호(page)로 다뤄서 스와이프 위치를 page × 화면 폭으로 계산
-const pageOf = (d: Date) => d.getFullYear() * 12 + d.getMonth();
-const monthOf = (page: number) => new Date(Math.floor(page / 12), page % 12, 1);
-
-// 이번 달 1일이 든 주의 일요일부터 이번 달이 끝나는 주까지
-const monthCells = (month: Date) => {
-  const first = new Date(month.getFullYear(), month.getMonth(), 1);
-  const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  return Array.from(
-    { length: Math.ceil((first.getDay() + days) / 7) * 7 },
-    (_, i) => new Date(first.getFullYear(), first.getMonth(), i + 1 - first.getDay()),
-  );
-};
-
-const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
 const sumOf = (list: CalendarItem[]) => list.reduce((sum, p) => sum + p.amount, 0);
 // 달마다 캘린더 API 한 번 (month는 1~12)
-const useMonth = (month: Date) => useCalendar(month.getFullYear(), month.getMonth() + 1);
-
-interface MonthPanelProps {
-  page: number;
-  offset: SharedValue<number>;
-  width: number;
-  current: boolean;
-  today: Date;
-  selected: Date;
-  onSelect: (date: Date) => void;
-}
-
-// 한 달 날짜 칸. 자기 page 자리(page × 폭)에 고정돼 있고 offset만큼 같이 밀림
-const MonthPanel = ({
-  page,
-  offset,
-  width,
-  current,
-  today,
-  selected,
-  onSelect,
-}: MonthPanelProps) => {
+const useMonth = (page: number) => {
   const month = monthOf(page);
-  const cells = monthCells(month);
-  const { data } = useMonth(month);
-  const style = useAnimatedStyle(() => ({
-    transform: [{ translateX: page * width + offset.get() }],
-  }));
-
-  return (
-    <Animated.View
-      style={style}
-      accessibilityElementsHidden={!current}
-      importantForAccessibility={current ? 'auto' : 'no-hide-descendants'}
-      className={cn('absolute inset-x-0 top-0 px-[6px]', !current && 'pointer-events-none')}
-    >
-      {Array.from({ length: cells.length / 7 }, (_, w) => (
-        <View key={w} className="flex-row gap-px">
-          {cells.slice(w * 7, w * 7 + 7).map((d) => {
-            const inMonth = d.getMonth() === month.getMonth();
-            return (
-              <CalendarDay
-                key={d.toISOString()}
-                date={d.getDate()}
-                subscriptions={inMonth ? data?.byDate.get(formatDate(d)) : undefined}
-                today={sameDay(d, today)}
-                selected={inMonth && sameDay(d, selected)}
-                disabled={!inMonth}
-                sunday={d.getDay() === 0}
-                onPress={() => onSelect(d)}
-                className="flex-1"
-              />
-            );
-          })}
-        </View>
-      ))}
-    </Animated.View>
-  );
+  return useCalendar(month.getFullYear(), month.getMonth() + 1);
 };
 
 // C-01 캘린더 (월별 결제 일정)
@@ -118,26 +43,13 @@ export const CalendarScreen = () => {
   const [selected, setSelected] = useState(today);
   const month = monthOf(page);
   const weeks = monthCells(month).length / 7;
-  const current = useMonth(month);
+  // 옆 달도 미리 그려 두려고 이전·다음 달까지 조회
+  const prev = useMonth(page - 1);
+  const current = useMonth(page);
+  const next = useMonth(page + 1);
   const payments = current.data?.byDate.get(formatDate(selected)) ?? [];
 
-  // 결제 행이 아래 끝에서 반쯤 잘려 보이지 않게: 맨 위에서 걸리는 행이 있으면 그만큼 아래 간격을 늘려 그 행을 숨기고,
-  // 스크롤이 멈출 때도 같은 끝선(viewEnd)에 행 아래 끝이 오게 맞춤 (2.5개 들어갈 자리면 2개만 보임)
-  const [avail, setAvail] = useState(0);
-  const [listY, setListY] = useState({ section: 0, list: 0 });
-  const [rows, setRows] = useState<{ top: number; bottom: number }[]>([]);
-  const base = listY.section + listY.list;
-  // 날짜를 바꿔 행이 줄면 남은 옛 값은 버림
-  const abs = rows
-    .slice(0, payments.length)
-    .map((r) => ({ top: base + r.top, bottom: base + r.bottom }));
-  const cut = abs.findIndex((r) => r.top < avail && r.bottom > avail);
-  const viewEnd = cut < 0 ? avail : cut > 0 ? abs[cut - 1].bottom : abs[0].top;
-  const snapOffsets = [0, ...abs.map((r) => r.bottom - viewEnd).filter((o) => o > 0)];
-  const hiddenStyle = useAnimatedStyle(
-    () => ({ paddingBottom: avail - viewEnd }),
-    [avail, viewEnd],
-  );
+  const snap = useRowSnap(payments.length);
 
   // 이전·현재·다음 달을 나란히 두고 같이 미는 방식 (Swiper). 놓으면 옆 달이 바로 따라 들어와 빈 화면이 없음
   // 이미 그려진 달은 자리가 안 바뀌고 offset만 움직여서, 달이 바뀌는 순간에도 깜빡이지 않음
@@ -204,14 +116,14 @@ export const CalendarScreen = () => {
       {/* 스크롤 영역을 떠 있는 탭바(52 + 아래 4) + 최소 간격 12 위에서 끝내서, 어느 기기에서도 행이 탭바에 닿거나 겹쳐 보이지 않게
           iOS 기본 튕김(bounce)으로 끝에서 화면이 당겨지지 않게 */}
       <Animated.View
-        onLayout={(e) => setAvail(e.nativeEvent.layout.height)}
+        onLayout={snap.onViewportLayout}
         className="mb-[68px] flex-1"
-        style={hiddenStyle}
+        style={snap.hiddenStyle}
       >
         <ScrollView
           bounces={false}
           contentContainerClassName="pb-s20 pt-s12"
-          snapToOffsets={snapOffsets}
+          snapToOffsets={snap.snapOffsets}
         >
           <View className="flex-row items-center justify-between px-screen-x">
             <View className="items-start gap-s2">
@@ -244,15 +156,16 @@ export const CalendarScreen = () => {
                 <CalendarWeekday />
               </View>
               <View className={cn('overflow-hidden', GRID_HEIGHT[weeks])}>
-                {[page - 1, page, page + 1].map((p) => (
-                  <MonthPanel
-                    key={p}
-                    page={p}
+                {[prev, current, next].map((q, i) => (
+                  <CalendarMonthPanel
+                    key={page - 1 + i}
+                    page={page - 1 + i}
                     offset={offset}
                     width={width}
-                    current={p === page}
+                    current={i === 1}
                     today={today}
                     selected={selected}
+                    byDate={q.data?.byDate}
                     onSelect={setSelected}
                   />
                 ))}
@@ -261,7 +174,7 @@ export const CalendarScreen = () => {
           </GestureDetector>
 
           <View
-            onLayout={(e) => setListY((v) => ({ ...v, section: e.nativeEvent.layout.y }))}
+            onLayout={snap.onSectionLayout}
             className={cn('mt-s20 px-screen-x', payments.length ? 'gap-stack-md' : 'gap-s8')}
           >
             <View className="flex-row items-center justify-between">
@@ -277,20 +190,9 @@ export const CalendarScreen = () => {
             {current.isError ? (
               <QueryState isError onRetry={current.refetch} />
             ) : payments.length ? (
-              <View
-                onLayout={(e) => setListY((v) => ({ ...v, list: e.nativeEvent.layout.y }))}
-                className="gap-stack-sm"
-              >
+              <View onLayout={snap.onListLayout} className="gap-stack-sm">
                 {payments.map((p, i) => (
-                  <View
-                    key={p.id}
-                    onLayout={(e) => {
-                      const { y, height } = e.nativeEvent.layout;
-                      setRows((r) =>
-                        Object.assign([...r], { [i]: { top: y, bottom: y + height } }),
-                      );
-                    }}
-                  >
+                  <View key={p.id} onLayout={snap.onRowLayout(i)}>
                     <ListItem
                       title={p.name}
                       subtitle={`${formatCycle(p.cycle, p.unit)} · ${PAID_AT.find((a) => a.value === p.paidAt)?.label}`}
