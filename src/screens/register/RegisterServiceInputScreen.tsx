@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Keyboard, Pressable, Text, View } from 'react-native';
 
 import { ImageColorAsset, ImageMonoAsset } from '@/assets/graphics';
 import { BottomSheet } from '@/components/common/BottomSheet';
@@ -139,6 +139,12 @@ const ServiceInputForm = ({
   // 금액 에러 표시는 안내일 뿐, 금액이 있으면 그대로 저장 가능 (화면설계서 A-15)
   const valid = nameValid && !!category && Number(amount) > 0 && cycleNum >= 1 && cycleNum <= 31;
   const closeMenu = () => setCategoryOpen(false);
+  // 입력칸이 아닌 곳(빈 곳·드롭다운·결제한 곳)을 누르면 키보드도 내림. 숫자 키패드는 완료 키가 없음
+  // 다른 입력칸을 누를 땐 키보드가 그 칸으로 넘어가야 해서 입력칸 onFocus는 closeMenu만
+  const closeMenuAndKeyboard = () => {
+    closeMenu();
+    Keyboard.dismiss();
+  };
   // shortcut: 직접 입력한 구독은 서비스명 수정 가능(명세)인데 상세 응답에 구분 값이 없어 편집은 모두 이름 고정, 응답에 생기면 직접 입력만 입력란으로
   const headerName = edit?.name ?? (found ? undefined : service?.name);
 
@@ -158,8 +164,12 @@ const ServiceInputForm = ({
           contentContainerClassName="grow"
           keyboardShouldPersistTaps="handled"
         >
-          {/* 드롭다운 메뉴 바깥(빈 곳)을 누르면 닫힘. 안쪽 버튼·입력칸은 각자 터치를 가져감 */}
-          <Pressable accessible={false} onPress={closeMenu} className="grow gap-screen-x">
+          {/* 빈 곳을 누르면 드롭다운 메뉴를 닫고 키보드도 내림. 안쪽 버튼·입력칸은 각자 터치를 가져감 */}
+          <Pressable
+            accessible={false}
+            onPress={closeMenuAndKeyboard}
+            className="grow gap-screen-x"
+          >
             {/* 편집도 사전 등록 서비스(A-03)처럼 서비스명은 보여 주기만 함 */}
             {headerName && (
               <View className="flex-row items-center gap-inline-sm">
@@ -173,6 +183,7 @@ const ServiceInputForm = ({
             <View className="gap-stack-lg">
               {(isCustom || found) && !edit && (
                 <TextField
+                  testID="register-input-name"
                   label="서비스명"
                   // 불러온 구독은 찾은 이름을 흐리게 보여 주고, 비워 두면 그 이름으로 저장 (Figma A-15)
                   placeholder={found?.name ?? '서비스명을 입력해 주세요'}
@@ -184,11 +195,15 @@ const ServiceInputForm = ({
                 />
               )}
               <Dropdown
+                testID="register-input-category"
                 label="카테고리"
                 placeholder="카테고리를 선택해 주세요"
                 value={category}
                 open={categoryOpen}
-                onPress={() => !locked && setCategoryOpen((o) => !o)}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  if (!locked) setCategoryOpen((o) => !o);
+                }}
                 options={CATEGORIES}
                 onSelect={(v) => {
                   setCategory(v);
@@ -196,6 +211,7 @@ const ServiceInputForm = ({
                 }}
               />
               <TextField
+                testID="register-input-amount"
                 label="결제 금액"
                 placeholder="결제 금액을 입력해 주세요"
                 keyboardType="number-pad"
@@ -229,7 +245,7 @@ const ServiceInputForm = ({
                   value={unit}
                   onPress={() => {
                     if (locked) return;
-                    closeMenu();
+                    closeMenuAndKeyboard();
                     setDraftUnit(undefined);
                     setUnitSheet(true);
                   }}
@@ -237,12 +253,13 @@ const ServiceInputForm = ({
                 />
               </View>
               <Dropdown
+                testID="register-input-date"
                 label="다음 결제일"
                 placeholder="다음 결제일을 선택해 주세요"
                 value={formatDate(nextDate)}
                 showIcon={false}
                 onPress={() => {
-                  closeMenu();
+                  closeMenuAndKeyboard();
                   setDraftDate(nextDate);
                   setDateSheet(true);
                 }}
@@ -254,7 +271,7 @@ const ServiceInputForm = ({
                   selected={paidAt}
                   onSelect={(v) => {
                     if (!locked) setPaidAt(v);
-                    closeMenu();
+                    closeMenuAndKeyboard();
                   }}
                 />
                 <Text className="text-text-tertiary text-caption1-regular">
@@ -269,6 +286,7 @@ const ServiceInputForm = ({
       </View>
       <View className="pb-safe px-screen-x">
         <Cta
+          testID="register-input-save"
           label={found ? '수정 완료' : '저장하기'}
           disabled={!valid || reactivateSubscription.isPending || updateSubscription.isPending}
           onPress={() => {
@@ -349,6 +367,7 @@ const ServiceInputForm = ({
         // 과거 결제일은 허용하지 않음 (명세)
         confirmDisabled={draftDate < startOfToday()}
         onConfirm={() => setNextDate(draftDate)}
+        confirmTestID="register-date-confirm"
       >
         <Dial value={draftDate} onValueChange={setDraftDate} />
       </BottomSheet>

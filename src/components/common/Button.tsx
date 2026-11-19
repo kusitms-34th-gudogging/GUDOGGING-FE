@@ -72,6 +72,7 @@ interface ButtonProps
   disabled?: boolean;
   onPress?: () => void;
   className?: string;
+  testID?: string;
 }
 
 export const Button = ({
@@ -83,11 +84,13 @@ export const Button = ({
   disabled,
   onPress,
   className,
+  testID,
 }: ButtonProps) => {
   const contentColor = disabled ? 'text-text-on-disabled' : buttonContentVariants({ variant });
 
   return (
     <Pressable
+      testID={testID}
       accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}

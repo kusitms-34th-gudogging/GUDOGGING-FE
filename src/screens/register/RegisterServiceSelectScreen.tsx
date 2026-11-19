@@ -59,7 +59,12 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
       {/* 목록 영역은 CTA 위 56까지 채움 (Figma 목록 주석) */}
       <View className="flex-1 gap-inset-lg px-screen-x pb-[56px] pt-stack-md">
         <View className="gap-stack-lg">
-          <SearchBar value={query} onChangeText={setQuery} placeholder="검색" />
+          <SearchBar
+            testID="register-search"
+            value={query}
+            onChangeText={setQuery}
+            placeholder="검색"
+          />
           <View className="gap-stack-sm">
             <Text className="px-s2 text-text-primary text-head4-bold">
               등록할 서비스를 모두 선택해 주세요.
@@ -92,7 +97,12 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
           {!search.data && (
             <QueryState isError={search.isError} onRetry={() => void search.refetch()} />
           )}
-          <FadeScrollView className="flex-1" contentContainerClassName="gap-inline-xs">
+          {/* 검색 키보드가 떠 있어도 목록·직접 입력하기가 한 번에 눌리게 (기본값은 첫 탭이 키보드만 내림) */}
+          <FadeScrollView
+            className="flex-1"
+            contentContainerClassName="gap-inline-xs"
+            keyboardShouldPersistTaps="handled"
+          >
             {results.map((s) => (
               <ListItem
                 key={s.id}
@@ -104,11 +114,13 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
                 showCheckBox
                 checked={selectedIds.includes(s.id) || lockedIds.includes(s.id)}
                 onCheckedChange={() => toggle(s.id)}
+                checkBoxTestID={`register-service-${s.id}`}
                 checkBoxLocked={lockedIds.includes(s.id)}
               />
             ))}
             {!!keyword && (
               <AddServiceRow
+                testID="register-custom"
                 label="직접 입력하기"
                 onPress={() =>
                   router.push({ pathname: '/register/input', params: more ? { more: '1' } : {} })
@@ -120,6 +132,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
       </View>
       <View className="pb-safe px-screen-x">
         <Cta
+          testID="register-select-done"
           label={`${count}개 선택 완료`}
           disabled={count === 0}
           onPress={() => {

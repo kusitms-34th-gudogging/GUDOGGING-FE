@@ -27,7 +27,7 @@ const monthDay = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
 // M-01 등록된 구독 없음 · M-02 구독 중 탭(.1 더보기 · .2 삭제 선택 · .3 삭제 모달) · M-04 구독 종료 탭
 export const ManageScreen = () => {
   const [tab, setTab] = useState<Tab>('ACTIVE');
-  const { data, isError, refetch } = useSubscriptions(tab);
+  const { data, isError, refetch, isPlaceholderData } = useSubscriptions(tab);
   const deleteSubscriptions = useDeleteSubscriptions();
   const { show } = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -54,7 +54,8 @@ export const ManageScreen = () => {
 
   // 정렬(결제일 순 · 해지일 순)은 서버 기본값
   // shortcut: 정렬 기준 바꾸는 메뉴는 옵션이 정해지지 않아 고정
-  const items = (data?.subscriptions ?? []).map((s) => ({
+  // 탭을 막 바꿔 이전 탭 데이터(placeholder)면 형식이 안 맞아 만들지 않음 (구독 중엔 해지일이 없음)
+  const items = (isPlaceholderData ? [] : (data?.subscriptions ?? [])).map((s) => ({
     ...s,
     subtitle:
       tab === 'ACTIVE'
@@ -113,60 +114,73 @@ export const ManageScreen = () => {
                 }}
               />
             </View>
-            <View className="gap-stack-md">
-              <View className="flex-row items-center justify-between pl-s2">
-                {selecting ? (
-                  <>
-                    <Text className="text-text-primary text-body2-semibold">
-                      {`${picked.length}개 선택`}
-                    </Text>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel="선택한 구독 삭제"
-                      disabled={picked.length === 0}
-                      onPress={() => setConfirmOpen(true)}
-                      className={cn(
-                        'flex-row items-center gap-s2 py-inline-xs active:opacity-pressed',
-                        picked.length === 0 && 'opacity-disabled',
-                      )}
-                    >
-                      <Text className="text-text-error text-caption1-regular">삭제</Text>
-                      <TrashIcon className="size-icon-xs text-icon-error" />
-                    </Pressable>
-                  </>
-                ) : (
-                  <>
-                    <Text
-                      className={cn(
-                        'text-text-primary',
-                        tab === 'ACTIVE' ? 'text-body2-semibold' : 'text-body1-semibold',
-                      )}
-                    >
-                      {tab === 'ACTIVE'
-                        ? `월 ${formatWon(data.monthlyTotal)}`
-                        : `월 ${formatWon(data.monthlyTotal)} 절약`}
-                    </Text>
-                    <View className="flex-row items-center gap-s2 py-inline-xs">
-                      <Text className="text-text-secondary text-caption1-regular">
-                        {tab === 'ACTIVE' ? '결제일 순' : '해지일 순'}
+            {/* 탭을 바꿔 새 목록이 오기 전엔 이전 탭 데이터라 금액·목록을 숨기고 탭·개수만 둠 */}
+            {!isPlaceholderData && (
+              <View className="gap-stack-md">
+                <View className="flex-row items-center justify-between pl-s2">
+                  {selecting ? (
+                    <>
+                      <Text className="text-text-primary text-body2-semibold">
+                        {`${picked.length}개 선택`}
                       </Text>
-                      <ChevronDownIcon className="size-icon-xs text-icon-secondary" />
-                    </View>
-                  </>
-                )}
-              </View>
-              <View className="gap-stack-sm">
-                {items.map((s) =>
-                  selecting ? (
-                    // 삭제 선택 중엔 행 어디를 눌러도 체크 (상세 이동 없음)
-                    <Pressable
-                      key={s.id}
-                      accessibilityRole="checkbox"
-                      accessibilityLabel={s.name}
-                      accessibilityState={{ checked: picked.includes(s.id) }}
-                      onPress={() => toggle(s.id)}
-                    >
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="선택한 구독 삭제"
+                        disabled={picked.length === 0}
+                        onPress={() => setConfirmOpen(true)}
+                        className={cn(
+                          'flex-row items-center gap-s2 py-inline-xs active:opacity-pressed',
+                          picked.length === 0 && 'opacity-disabled',
+                        )}
+                      >
+                        <Text className="text-text-error text-caption1-regular">삭제</Text>
+                        <TrashIcon className="size-icon-xs text-icon-error" />
+                      </Pressable>
+                    </>
+                  ) : (
+                    <>
+                      <Text className="text-text-primary text-body2-semibold">
+                        {tab === 'ACTIVE'
+                          ? `월 ${formatWon(data.monthlyTotal)}`
+                          : `월 ${formatWon(data.monthlyTotal)} 절약`}
+                      </Text>
+                      <View className="flex-row items-center gap-s2 py-inline-xs">
+                        <Text className="text-text-secondary text-caption1-regular">
+                          {tab === 'ACTIVE' ? '결제일 순' : '해지일 순'}
+                        </Text>
+                        <ChevronDownIcon className="size-icon-xs text-icon-secondary" />
+                      </View>
+                    </>
+                  )}
+                </View>
+                <View className="gap-stack-sm">
+                  {items.map((s) =>
+                    selecting ? (
+                      // 삭제 선택 중엔 행 어디를 눌러도 체크 (상세 이동 없음)
+                      <Pressable
+                        key={s.id}
+                        accessibilityRole="checkbox"
+                        accessibilityLabel={s.name}
+                        accessibilityState={{ checked: picked.includes(s.id) }}
+                        onPress={() => toggle(s.id)}
+                      >
+                        <ListItem
+                          title={s.name}
+                          subtitle={s.subtitle}
+                          showSubtitle
+                          logo={LOGO}
+                          showLogo
+                          cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
+                          showCost
+                          showCheckBox
+                          checked={picked.includes(s.id)}
+                          onCheckedChange={() => toggle(s.id)}
+                        />
+                      </Pressable>
+                    ) : (
+                      // 행 전체가 터치 영역 → 구독 상세 (상태에 따라 M-03 · M-05)
                       <ListItem
+                        key={s.id}
                         title={s.name}
                         subtitle={s.subtitle}
                         showSubtitle
@@ -174,31 +188,16 @@ export const ManageScreen = () => {
                         showLogo
                         cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
                         showCost
-                        showCheckBox
-                        checked={picked.includes(s.id)}
-                        onCheckedChange={() => toggle(s.id)}
+                        iconRightAction={{
+                          accessibilityLabel: `${s.name} 상세`,
+                          onPress: () => router.push(`/manage/detail/${s.id}`),
+                        }}
                       />
-                    </Pressable>
-                  ) : (
-                    // 행 전체가 터치 영역 → 구독 상세 (상태에 따라 M-03 · M-05)
-                    <ListItem
-                      key={s.id}
-                      title={s.name}
-                      subtitle={s.subtitle}
-                      showSubtitle
-                      logo={LOGO}
-                      showLogo
-                      cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
-                      showCost
-                      iconRightAction={{
-                        accessibilityLabel: `${s.name} 상세`,
-                        onPress: () => router.push(`/manage/detail/${s.id}`),
-                      }}
-                    />
-                  ),
-                )}
+                    ),
+                  )}
+                </View>
               </View>
-            </View>
+            )}
           </ScrollView>
         </>
       )}

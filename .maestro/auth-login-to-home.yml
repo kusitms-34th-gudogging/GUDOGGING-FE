@@ -1,0 +1,25 @@
+# 신규 가입자: 로그인 → 온보딩 → 알림 권한 → 구독 추가 건너뛰기 → 홈
+# 목서버를 새로 띄운 뒤 첫 로그인이어야 온보딩으로 감 (mocks/handlers/auth.ts isNewUser)
+appId: com.subscribers.gudogging
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true # 토큰이 iOS 키체인(SecureStore)에 남음
+- tapOn:
+    id: 'login-apple'
+- tapOn:
+    id: 'onboarding-next' # 다음
+- waitForAnimationToEnd
+- tapOn:
+    id: 'onboarding-next' # 시작하기 → 알림 시트
+- tapOn:
+    id: 'notification-allow'
+# iOS 알림 권한 팝업. 영어 시뮬레이터는 Maestro가 Allow를 자동으로 눌러 팝업이 없음 → optional
+- tapOn:
+    text: '허용|Allow'
+    optional: true
+- tapOn:
+    id: 'add-subscription-skip'
+- assertVisible:
+    id: 'home-screen'
+# 재실행 후 로그인 유지는 세션 확인(S-01) 구현 후 추가. 지금은 실행마다 로그인 화면부터 (src/app/(tabs)/index.tsx)

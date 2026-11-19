@@ -1,4 +1,4 @@
-import { userEvent } from '@testing-library/react-native';
+import { act, userEvent } from '@testing-library/react-native';
 import { Slot } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
@@ -141,6 +141,30 @@ describe('ManageScreen', () => {
     expect(await screen.findByText('월 7,900원 절약')).toBeOnTheScreen();
     expect(screen.getByText('7,900원')).toBeOnTheScreen();
     expect(screen.getByText('10월 10일 해지 · 총 지출 47,400원')).toBeOnTheScreen();
+  });
+
+  it('구독 종료 탭을 처음 열 때 응답 전에도 탭은 그대로 두고 이전 탭 목록만 숨긴다', async () => {
+    let release = () => {};
+    const spy = mockApi(routes);
+    const base = spy.getMockImplementation()!;
+    spy.mockImplementation(async (input, init) => {
+      if (!String(input).includes('status=ENDED')) return base(input, init);
+      await new Promise<void>((resolve) => (release = resolve));
+      return new Response(JSON.stringify({ code: 200, data: ENDED }));
+    });
+    const user = await renderManage();
+    await screen.findByText('월 39,000원');
+
+    await user.press(screen.getByRole('tab', { name: '구독 종료 1' }));
+
+    // 응답 전: 화면 전체가 로딩으로 바뀌지 않고 탭은 남음. 구독 중 금액·목록은 안 보임
+    expect(screen.getByRole('tab', { name: '구독 종료 1' })).toBeOnTheScreen();
+    expect(screen.queryByText('월 39,000원')).not.toBeOnTheScreen();
+    expect(screen.queryByText('빠른 결제')).not.toBeOnTheScreen();
+
+    await act(async () => release());
+
+    expect(await screen.findByText('월 7,900원 절약')).toBeOnTheScreen();
   });
 
   it('더보기 → 삭제로 고른 구독만 확인 모달을 거쳐 삭제 API로 보낸다', async () => {

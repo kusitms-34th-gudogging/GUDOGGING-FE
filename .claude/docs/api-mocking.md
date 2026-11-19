@@ -13,6 +13,7 @@ http.get('/api/v1/home', () => ok('홈 정보를 조회했습니다.', { summary
 http.post('/api/v1/subscriptions', () => ok('구독을 등록했습니다.', { ... }, 201)),
 ```
 
+- E2E용 상태 초기화 `POST /e2e/reset`은 `E2E=1 pnpm mock`일 때만 등록 (`mocks/handlers/e2e.ts`). 사용법은 `.claude/rules/e2e-test.md`
 - 고정 경로(`/subscriptions/drafts`)는 `/:subscriptionId`보다 먼저 등록 (MSW는 먼저 맞는 핸들러로 응답)
 
 ## 주의

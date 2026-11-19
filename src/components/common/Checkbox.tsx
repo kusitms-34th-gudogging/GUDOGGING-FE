@@ -10,6 +10,7 @@ interface CheckboxProps {
   locked?: boolean;
   accessibilityLabel: string;
   className?: string;
+  testID?: string;
 }
 
 export const Checkbox = ({
@@ -19,11 +20,13 @@ export const Checkbox = ({
   locked,
   accessibilityLabel,
   className,
+  testID,
 }: CheckboxProps) => {
   const showCheck = checked && !disabled;
 
   return (
     <Pressable
+      testID={testID}
       accessibilityRole="checkbox"
       accessibilityState={{ checked, disabled: disabled || locked }}
       accessibilityLabel={accessibilityLabel}

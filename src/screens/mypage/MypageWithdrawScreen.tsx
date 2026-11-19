@@ -45,7 +45,12 @@ export const MypageWithdrawScreen = () => {
       <View className="pb-safe px-screen-x">
         <View className="mb-[14px] flex-row gap-inline-sm">
           <Button variant="tonal" label="취소" onPress={() => router.back()} className="flex-1" />
-          <Button label="탈퇴하기" onPress={() => setConfirmOpen(true)} className="flex-1" />
+          <Button
+            testID="withdraw-submit"
+            label="탈퇴하기"
+            onPress={() => setConfirmOpen(true)}
+            className="flex-1"
+          />
         </View>
       </View>
       {/* 강조색 버튼이 머무르는 쪽(계속 이용하기), 탈퇴는 회색 왼쪽 (Figma E-08) */}
@@ -56,6 +61,7 @@ export const MypageWithdrawScreen = () => {
         title="회원 탈퇴를 진행할까요?"
         description="계정과 구독 데이터를 삭제합니다."
         cancelLabel="탈퇴하기"
+        cancelTestID="withdraw-confirm"
         onCancel={withdraw}
         confirmLabel="계속 이용하기"
       />

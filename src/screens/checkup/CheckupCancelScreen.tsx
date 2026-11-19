@@ -116,11 +116,12 @@ export const CheckupCancelScreen = ({ id, checkupId }: CheckupCancelScreenProps)
             keyboardShouldPersistTaps="handled"
             onLayout={() => customOn && scrollRef.current?.scrollToEnd()}
           >
-            {[...reasons, '직접 입력'].map((reason) => {
+            {[...reasons, '직접 입력'].map((reason, i) => {
               const isCustom = reason === '직접 입력';
               return (
                 <OptionCard
                   key={reason}
+                  testID={`cancel-reason-${i}`}
                   title={reason}
                   showAsset={false}
                   multiple
@@ -147,6 +148,7 @@ export const CheckupCancelScreen = ({ id, checkupId }: CheckupCancelScreenProps)
       </KeyboardAvoidingView>
       <View className="pb-safe px-screen-x">
         <Cta
+          testID="cancel-reason-submit"
           label="해지 방법 보기"
           disabled={!canSubmit || decide.isPending}
           onPress={() => submit(true)}

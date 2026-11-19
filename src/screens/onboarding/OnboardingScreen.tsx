@@ -108,6 +108,7 @@ export const OnboardingScreen = ({ onRequestNotification, onComplete }: Onboardi
           showAction2={false}
           showTextAction
           textAction="건너뛰기"
+          textActionTestID="onboarding-skip"
           onTextActionPress={() => setSheetVisible(true)}
         />
         <OnboardingVisual height={visualHeight} page={page} step={step} />
@@ -140,6 +141,7 @@ export const OnboardingScreen = ({ onRequestNotification, onComplete }: Onboardi
         <View className="flex-1 justify-end px-screen-x">
           <Cta
             className="mb-[14px]"
+            testID="onboarding-next"
             label={page === 1 ? '다음' : '시작하기'}
             onPress={() => (page === 1 ? goTo(2) : setSheetVisible(true))}
           />

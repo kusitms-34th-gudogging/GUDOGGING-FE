@@ -151,3 +151,7 @@ db.subscriptions.push({
   canceledAt: null,
   isSteady: false,
 });
+
+// E2E 초기화용: 시드까지 넣은 처음 상태를 복사해 둠 (handlers/e2e.ts)
+const initial = structuredClone(db);
+export const resetDb = () => Object.assign(db, structuredClone(initial));

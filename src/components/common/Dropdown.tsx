@@ -19,6 +19,8 @@ interface DropdownProps {
   options?: string[];
   onSelect?: (option: string) => void;
   className?: string;
+  /** 옵션은 `{testID}-option-{순서}` */
+  testID?: string;
 }
 
 export const Dropdown = ({
@@ -33,6 +35,7 @@ export const Dropdown = ({
   options,
   onSelect,
   className,
+  testID,
 }: DropdownProps) => (
   <View className={cn('min-w-[120px] gap-stack-sm', open && 'z-10', className)}>
     {showLabel && (
@@ -42,6 +45,7 @@ export const Dropdown = ({
     )}
     <View>
       <Pressable
+        testID={testID}
         accessibilityRole="button"
         accessibilityLabel={label}
         accessibilityValue={{ text: value ?? placeholder }}
@@ -76,9 +80,10 @@ export const Dropdown = ({
       </Pressable>
       {open && options && (
         <View className="absolute left-0 right-0 top-full mt-s4 rounded-input bg-surface-raised p-inset-xs shadow-elevation-2">
-          {options.map((option) => (
+          {options.map((option, i) => (
             <DropdownOption
               key={option}
+              testID={testID && `${testID}-option-${i}`}
               label={option}
               selected={option === value}
               onSelect={() => onSelect?.(option)}

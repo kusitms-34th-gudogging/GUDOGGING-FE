@@ -18,6 +18,7 @@ type ImageCardProps =
       onPress: () => void;
       accessibilityLabel: string;
       className?: string;
+      testID?: string;
     };
 
 const cardClassName =
@@ -27,6 +28,7 @@ export const ImageCard = (props: ImageCardProps) => {
   if (props.variant === 'add') {
     return (
       <Pressable
+        testID={props.testID}
         accessibilityRole="button"
         accessibilityLabel={props.accessibilityLabel}
         onPress={props.onPress}

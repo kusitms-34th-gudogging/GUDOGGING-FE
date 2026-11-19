@@ -123,6 +123,7 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
         <View className="mb-[14px] flex-row gap-inline-sm">
           <Button
             variant="tonal"
+            testID="checkup-result-cancel"
             label="해지하기"
             onPress={() => router.push(`/checkup/${subscription.id}/cancel?checkupId=${checkupId}`)}
             className="flex-1"

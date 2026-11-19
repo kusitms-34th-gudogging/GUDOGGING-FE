@@ -5,11 +5,13 @@ import { PlusIcon } from '@/assets/icons';
 interface AddServiceRowProps {
   label: string;
   onPress: () => void;
+  testID?: string;
 }
 
 // 구독 목록 끝의 추가 줄 (구독 추가하기·직접 입력하기 등)
-export const AddServiceRow = ({ label, onPress }: AddServiceRowProps) => (
+export const AddServiceRow = ({ label, onPress, testID }: AddServiceRowProps) => (
   <Pressable
+    testID={testID}
     accessibilityRole="button"
     // 행 높이는 36이라 위아래로 늘려 터치 영역 44
     hitSlop={{ top: 4, bottom: 4 }}

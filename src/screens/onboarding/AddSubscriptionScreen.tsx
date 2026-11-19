@@ -84,6 +84,7 @@ export const AddSubscriptionScreen = ({
         showAction2={false}
         showTextAction
         textAction="건너뛰기"
+        textActionTestID="add-subscription-skip"
         onTextActionPress={onSkip}
       />
 

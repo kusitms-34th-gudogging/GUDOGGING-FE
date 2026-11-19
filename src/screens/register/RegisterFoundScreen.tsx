@@ -128,6 +128,7 @@ export const RegisterFoundScreen = () => {
         {/* 등록 가능에서 체크한 구독이 있으면 활성화 (등록 가능은 결제 정보가 다 있음). 등록 성공 후 완료 화면으로
             shortcut: 실패 안내(중복 등록 등)는 디자인에 없어 화면에 남음, 디자인·에러 코드 정해지면 안내 추가 */}
         <Cta
+          testID="register-found-submit"
           label="선택한 구독 등록하기"
           disabled={selected.length === 0 || create.isPending}
           onPress={() =>

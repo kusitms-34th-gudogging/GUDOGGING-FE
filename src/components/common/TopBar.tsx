@@ -46,6 +46,8 @@ interface TopBarProps extends VariantProps<typeof topBarVariants> {
   showTextAction?: boolean;
   textAction?: string;
   onTextActionPress?: () => void;
+  /** E2E에서 텍스트 버튼을 찾는 testID */
+  textActionTestID?: string;
   className?: string;
 }
 
@@ -68,6 +70,7 @@ export const TopBar = ({
   showTextAction,
   textAction,
   onTextActionPress,
+  textActionTestID,
   className,
 }: TopBarProps) => {
   const isDetail = variant === 'detail';
@@ -96,6 +99,7 @@ export const TopBar = ({
         {isDetail && showTextAction && textAction && onTextActionPress ? (
           <Pressable
             accessibilityRole="button"
+            testID={textActionTestID}
             onPress={onTextActionPress}
             className="h-touch-target justify-center pl-inset-xs pr-inset-md active:opacity-pressed"
           >

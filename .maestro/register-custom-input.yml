@@ -1,0 +1,38 @@
+# 목록에 없는 서비스를 키보드로 직접 입력해 등록 → 구독 관리에 보임
+appId: com.subscribers.gudogging
+---
+- runFlow: subflows/login.yml
+- tapOn:
+    id: 'home-add'
+- tapOn:
+    id: 'register-method-manual'
+- tapOn:
+    id: 'register-search'
+- inputText: 'Melon' # 사전 등록 목록에 없는 이름이어야 '직접 입력하기'가 의미 있음
+- tapOn:
+    id: 'register-custom'
+- tapOn:
+    id: 'register-input-name'
+- inputText: 'Melon'
+- tapOn:
+    id: 'register-input-category'
+- tapOn:
+    id: 'register-input-category-option-0'
+- tapOn:
+    id: 'register-input-amount'
+- inputText: '10900'
+# 숫자 키패드는 완료 키가 없고 저장 버튼을 가림 → 사용자처럼 입력칸 밖 빈 곳을 눌러 키보드를 내린 뒤 저장
+# (안 내리면 저장 자리의 키패드 '0'이 눌려 금액이 바뀜. Maestro hideKeyboard는 숫자 키패드에서 실패)
+# shortcut: 빈 곳은 testID가 없어 화면 비율 좌표('결제 금액' 글자 오른쪽), 레이아웃이 바뀌면 조정
+- tapOn:
+    point: '75%,38%'
+- tapOn:
+    id: 'register-input-save'
+- tapOn:
+    id: 'register-submit'
+- tapOn:
+    id: 'register-done'
+- assertVisible: '2개 구독 중이에요'
+- tapOn:
+    id: 'tab-manage'
+- assertVisible: 'Melon.*'

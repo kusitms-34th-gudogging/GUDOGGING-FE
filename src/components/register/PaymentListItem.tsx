@@ -15,6 +15,7 @@ type PaymentListItemProps = Pick<
   onEdit: () => void;
   // 켜면 입력 전엔 화살표만, 입력 후엔 금액만 (선택한 구독 A-04). 끄면 입력 전엔 빨간 "입력하기"
   showChevron?: boolean;
+  testID?: string;
 };
 
 export const PaymentListItem = ({
@@ -23,6 +24,7 @@ export const PaymentListItem = ({
   emptySubtitle,
   onEdit,
   showChevron = false,
+  testID,
   ...checkbox
 }: PaymentListItemProps) => (
   <ListItem
@@ -39,6 +41,7 @@ export const PaymentListItem = ({
     iconRightAction={{
       accessibilityLabel: `${name} 결제 정보 ${payment ? '수정하기' : '입력하기'}`,
       onPress: onEdit,
+      testID,
     }}
     {...checkbox}
   />

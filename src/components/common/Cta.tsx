@@ -28,10 +28,12 @@ interface CtaProps extends VariantProps<typeof ctaVariants> {
   disabled?: boolean;
   onPress?: () => void;
   className?: string;
+  testID?: string;
 }
-export const Cta = ({ variant, label, disabled, onPress, className }: CtaProps) => (
+export const Cta = ({ variant, label, disabled, onPress, className, testID }: CtaProps) => (
   <Pressable
     accessibilityRole="button"
+    testID={testID}
     disabled={disabled}
     onPress={onPress}
     className={cn(

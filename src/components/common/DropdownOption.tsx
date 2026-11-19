@@ -10,6 +10,7 @@ interface DropdownOptionProps {
   destructive?: boolean;
   onSelect: () => void;
   className?: string;
+  testID?: string;
 }
 
 export const DropdownOption = ({
@@ -18,8 +19,10 @@ export const DropdownOption = ({
   destructive,
   onSelect,
   className,
+  testID,
 }: DropdownOptionProps) => (
   <Pressable
+    testID={testID}
     accessibilityRole="menuitem"
     accessibilityState={{ selected }}
     onPress={onSelect}

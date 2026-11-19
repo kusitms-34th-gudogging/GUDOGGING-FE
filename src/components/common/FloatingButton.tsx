@@ -23,6 +23,7 @@ interface FloatingButtonProps extends VariantProps<typeof floatingButtonVariants
   accessibilityLabel: string;
   onPress?: () => void;
   className?: string;
+  testID?: string;
 }
 
 export const FloatingButton = ({
@@ -30,8 +31,10 @@ export const FloatingButton = ({
   accessibilityLabel,
   onPress,
   className,
+  testID,
 }: FloatingButtonProps) => (
   <Pressable
+    testID={testID}
     accessibilityRole="button"
     accessibilityLabel={accessibilityLabel}
     onPress={onPress}

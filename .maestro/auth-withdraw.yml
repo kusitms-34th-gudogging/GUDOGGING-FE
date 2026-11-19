@@ -1,0 +1,19 @@
+# 회원 탈퇴: 마이페이지 → 탈퇴 → 완료 → 로그인 화면 → 다시 로그인하면 신규 가입(온보딩)
+appId: com.subscribers.gudogging
+---
+- runFlow: subflows/login.yml
+- tapOn:
+    id: 'tab-mypage'
+- tapOn:
+    id: 'mypage-withdraw'
+- tapOn:
+    id: 'withdraw-submit'
+- tapOn:
+    id: 'withdraw-confirm' # 모달 왼쪽(회색) 버튼이 탈퇴
+- tapOn:
+    id: 'withdraw-done'
+- tapOn:
+    id: 'login-apple'
+# 계정이 지워졌으면 다시 로그인할 때 신규 가입으로 온보딩부터
+- assertVisible:
+    id: 'onboarding-next'

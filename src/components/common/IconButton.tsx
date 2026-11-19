@@ -35,6 +35,7 @@ interface IconButtonProps extends VariantProps<typeof iconButtonIconVariants> {
   accessibilityLabel: string;
   onPress?: () => void;
   className?: string;
+  testID?: string;
 }
 
 export const IconButton = ({
@@ -44,8 +45,10 @@ export const IconButton = ({
   accessibilityLabel,
   onPress,
   className,
+  testID,
 }: IconButtonProps) => (
   <Pressable
+    testID={testID}
     accessibilityRole="button"
     accessibilityLabel={accessibilityLabel}
     onPress={onPress}

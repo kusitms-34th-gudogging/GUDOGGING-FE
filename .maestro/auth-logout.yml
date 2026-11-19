@@ -1,0 +1,12 @@
+# 로그아웃: 마이페이지 → 로그아웃 → 로그인 화면
+appId: com.subscribers.gudogging
+---
+- runFlow: subflows/login.yml
+- tapOn:
+    id: 'tab-mypage'
+- tapOn:
+    id: 'mypage-logout'
+- tapOn:
+    id: 'mypage-logout-confirm'
+- assertVisible:
+    id: 'login-apple'

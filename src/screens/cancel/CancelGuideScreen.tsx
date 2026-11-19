@@ -108,7 +108,7 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
         </View>
       </View>
       <View className="pb-safe px-screen-x">
-        <Cta label={guide.cta} onPress={onCta} className="mb-[14px]" />
+        <Cta testID="cancel-guide-cta" label={guide.cta} onPress={onCta} className="mb-[14px]" />
       </View>
       <Modal
         visible={confirmOpen}
@@ -118,6 +118,7 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
         description={'해지 완료를 누르면 점검 알림이\n더 이상 오지 않아요.'}
         cancelLabel="취소"
         confirmLabel="해지 완료"
+        confirmTestID="cancel-guide-complete"
         onConfirm={onComplete}
       />
     </View>

@@ -83,6 +83,7 @@ export const NotificationSheet = ({ onAllow, onLater }: NotificationSheetProps) 
         <View className="mt-s24 w-full gap-stack-md">
           {/* OS 권한 팝업이 뜨는 동안에는 종을 마지막 프레임에 멈춰 둠 */}
           <Cta
+            testID="notification-allow"
             label="알림 받기"
             onPress={() => {
               settle();
@@ -90,6 +91,7 @@ export const NotificationSheet = ({ onAllow, onLater }: NotificationSheetProps) 
             }}
           />
           <Pressable
+            testID="notification-later"
             accessibilityRole="button"
             hitSlop={12}
             onPress={onLater}

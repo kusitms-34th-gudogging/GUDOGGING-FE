@@ -113,7 +113,7 @@ export const RegisterDoneScreen = ({ serviceIds }: RegisterDoneScreenProps) => {
         </View>
       </View>
       <View className="pb-safe px-screen-x">
-        <Cta label="확인" onPress={finish} className="mb-[14px]" />
+        <Cta testID="register-done" label="확인" onPress={finish} className="mb-[14px]" />
       </View>
     </View>
   );

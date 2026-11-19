@@ -47,7 +47,7 @@ export const SubscriptionDetailScreen = ({
   };
 
   return (
-    <View className="pt-safe pb-safe flex-1 bg-bg-default">
+    <View testID="manage-detail-active" className="pt-safe pb-safe flex-1 bg-bg-default">
       <TopBar
         variant="detail"
         title="구독 상세"

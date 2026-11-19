@@ -62,13 +62,19 @@ export const RegisterScreenshotGuideScreen = () => {
               className="flex-1"
             />
             <Button
+              testID="screenshot-guide-add"
               label="스크린샷 등록하기"
               onPress={() => router.push('/register/images')}
               className="flex-1"
             />
           </View>
         ) : (
-          <Cta label="스크린샷 찍으러 가기" onPress={openSubscriptions} className="mb-[14px]" />
+          <Cta
+            testID="screenshot-guide-open"
+            label="스크린샷 찍으러 가기"
+            onPress={openSubscriptions}
+            className="mb-[14px]"
+          />
         )}
       </View>
     </View>
