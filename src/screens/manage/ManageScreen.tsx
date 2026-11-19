@@ -102,18 +102,9 @@ export const ManageScreen = () => {
           <Button size="sm" label="구독 등록하기" onPress={() => router.push('/register')} />
         </View>
       ) : (
-        // 캘린더와 같이 스크롤 영역을 떠 있는 탭바(52 + 아래 4) + 간격 12 위에서 끝내고, 아래 끝에 반쯤 걸린 행은 숨김
-        // 맨 아래까지 내리면 마지막 행이 + 버튼(탭바 위 18 + 48) 위로 올라오게 여백
-        <Animated.View
-          onLayout={snap.onViewportLayout}
-          className="mb-[68px] flex-1"
-          style={snap.hiddenStyle}
-        >
-          <ScrollView
-            bounces={false}
-            contentContainerClassName="gap-inset-lg px-screen-x pb-[52px] pt-stack-md"
-            snapToOffsets={snap.snapOffsets}
-          >
+        // 탭·금액 줄은 고정하고 목록만 스크롤
+        <>
+          <View className="gap-inset-lg px-screen-x pt-stack-md">
             <View className="w-[164px]">
               <SegmentedControl
                 options={[
@@ -129,69 +120,67 @@ export const ManageScreen = () => {
             </View>
             {/* 탭을 바꿔 새 목록이 오기 전엔 이전 탭 데이터라 금액·목록을 숨기고 탭·개수만 둠 */}
             {!isPlaceholderData && (
-              <View onLayout={snap.onSectionLayout} className="gap-stack-md">
-                <View className="flex-row items-center justify-between pl-s2">
-                  {selecting ? (
-                    <>
-                      <Text className="text-text-primary text-body2-semibold">
-                        {`${picked.length}개 선택`}
+              <View className="flex-row items-center justify-between pl-s2">
+                {selecting ? (
+                  <>
+                    <Text className="text-text-primary text-body2-semibold">
+                      {`${picked.length}개 선택`}
+                    </Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="선택한 구독 삭제"
+                      disabled={picked.length === 0}
+                      onPress={() => setConfirmOpen(true)}
+                      className={cn(
+                        'flex-row items-center gap-s2 py-inline-xs active:opacity-pressed',
+                        picked.length === 0 && 'opacity-disabled',
+                      )}
+                    >
+                      <Text className="text-text-error text-caption1-regular">삭제</Text>
+                      <TrashIcon className="size-icon-xs text-icon-error" />
+                    </Pressable>
+                  </>
+                ) : (
+                  <>
+                    <Text className="text-text-primary text-body2-semibold">
+                      {tab === 'ACTIVE'
+                        ? `월 ${formatWon(data.monthlyTotal)}`
+                        : `월 ${formatWon(data.monthlyTotal)} 절약`}
+                    </Text>
+                    <View className="flex-row items-center gap-s2 py-inline-xs">
+                      <Text className="text-text-secondary text-caption1-regular">
+                        {tab === 'ACTIVE' ? '결제일 순' : '해지일 순'}
                       </Text>
+                      <ChevronDownIcon className="size-icon-xs text-icon-secondary" />
+                    </View>
+                  </>
+                )}
+              </View>
+            )}
+          </View>
+          {/* 캘린더와 같이 스크롤 영역을 떠 있는 탭바(52 + 아래 4) + 간격 12 위에서 끝내고, 아래 끝에 반쯤 걸린 행은 숨김
+              맨 아래까지 내리면 마지막 행이 + 버튼(탭바 위 18 + 48) 위로 올라오게 여백 */}
+          {!isPlaceholderData && (
+            <Animated.View
+              onLayout={snap.onViewportLayout}
+              className="mb-[68px] mt-stack-md flex-1"
+              style={snap.hiddenStyle}
+            >
+              <ScrollView
+                bounces={false}
+                contentContainerClassName="gap-stack-sm px-screen-x pb-[52px]"
+                snapToOffsets={snap.snapOffsets}
+              >
+                {items.map((s, i) => (
+                  <View key={s.id} onLayout={snap.onRowLayout(i)}>
+                    {selecting ? (
+                      // 삭제 선택 중엔 행 어디를 눌러도 체크 (상세 이동 없음)
                       <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel="선택한 구독 삭제"
-                        disabled={picked.length === 0}
-                        onPress={() => setConfirmOpen(true)}
-                        className={cn(
-                          'flex-row items-center gap-s2 py-inline-xs active:opacity-pressed',
-                          picked.length === 0 && 'opacity-disabled',
-                        )}
+                        accessibilityRole="checkbox"
+                        accessibilityLabel={s.name}
+                        accessibilityState={{ checked: picked.includes(s.id) }}
+                        onPress={() => toggle(s.id)}
                       >
-                        <Text className="text-text-error text-caption1-regular">삭제</Text>
-                        <TrashIcon className="size-icon-xs text-icon-error" />
-                      </Pressable>
-                    </>
-                  ) : (
-                    <>
-                      <Text className="text-text-primary text-body2-semibold">
-                        {tab === 'ACTIVE'
-                          ? `월 ${formatWon(data.monthlyTotal)}`
-                          : `월 ${formatWon(data.monthlyTotal)} 절약`}
-                      </Text>
-                      <View className="flex-row items-center gap-s2 py-inline-xs">
-                        <Text className="text-text-secondary text-caption1-regular">
-                          {tab === 'ACTIVE' ? '결제일 순' : '해지일 순'}
-                        </Text>
-                        <ChevronDownIcon className="size-icon-xs text-icon-secondary" />
-                      </View>
-                    </>
-                  )}
-                </View>
-                <View onLayout={snap.onListLayout} className="gap-stack-sm">
-                  {items.map((s, i) => (
-                    <View key={s.id} onLayout={snap.onRowLayout(i)}>
-                      {selecting ? (
-                        // 삭제 선택 중엔 행 어디를 눌러도 체크 (상세 이동 없음)
-                        <Pressable
-                          accessibilityRole="checkbox"
-                          accessibilityLabel={s.name}
-                          accessibilityState={{ checked: picked.includes(s.id) }}
-                          onPress={() => toggle(s.id)}
-                        >
-                          <ListItem
-                            title={s.name}
-                            subtitle={s.subtitle}
-                            showSubtitle
-                            logo={LOGO}
-                            showLogo
-                            cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
-                            showCost
-                            showCheckBox
-                            checked={picked.includes(s.id)}
-                            onCheckedChange={() => toggle(s.id)}
-                          />
-                        </Pressable>
-                      ) : (
-                        // 행 전체가 터치 영역 → 구독 상세 (상태에 따라 M-03 · M-05)
                         <ListItem
                           title={s.name}
                           subtitle={s.subtitle}
@@ -200,19 +189,33 @@ export const ManageScreen = () => {
                           showLogo
                           cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
                           showCost
-                          iconRightAction={{
-                            accessibilityLabel: `${s.name} 상세`,
-                            onPress: () => router.push(`/manage/detail/${s.id}`),
-                          }}
+                          showCheckBox
+                          checked={picked.includes(s.id)}
+                          onCheckedChange={() => toggle(s.id)}
                         />
-                      )}
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
-          </ScrollView>
-        </Animated.View>
+                      </Pressable>
+                    ) : (
+                      // 행 전체가 터치 영역 → 구독 상세 (상태에 따라 M-03 · M-05)
+                      <ListItem
+                        title={s.name}
+                        subtitle={s.subtitle}
+                        showSubtitle
+                        logo={LOGO}
+                        showLogo
+                        cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
+                        showCost
+                        iconRightAction={{
+                          accessibilityLabel: `${s.name} 상세`,
+                          onPress: () => router.push(`/manage/detail/${s.id}`),
+                        }}
+                      />
+                    )}
+                  </View>
+                ))}
+              </ScrollView>
+            </Animated.View>
+          )}
+        </>
       )}
       {/* 탭바(하단 안전 영역 + 4 + 52) 위 18에 + 버튼, 그 위 8에 토스트. 구독이 없으면 + 버튼 자리만 비움 */}
       <View pointerEvents="box-none" className="pb-safe absolute inset-x-0 bottom-0">
