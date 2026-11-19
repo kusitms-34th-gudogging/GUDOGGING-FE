@@ -139,12 +139,7 @@ export const ManageScreen = () => {
                     </>
                   ) : (
                     <>
-                      <Text
-                        className={cn(
-                          'text-text-primary',
-                          tab === 'ACTIVE' ? 'text-body2-semibold' : 'text-body1-semibold',
-                        )}
-                      >
+                      <Text className="text-text-primary text-body2-semibold">
                         {tab === 'ACTIVE'
                           ? `월 ${formatWon(data.monthlyTotal)}`
                           : `월 ${formatWon(data.monthlyTotal)} 절약`}
