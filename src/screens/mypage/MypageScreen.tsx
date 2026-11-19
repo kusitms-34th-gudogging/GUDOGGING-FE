@@ -34,6 +34,7 @@ interface MenuItem {
   title: string;
   icon: ComponentType<SvgProps>;
   onPress?: () => void;
+  testID?: string;
 }
 
 // 로그아웃은 이 화면의 확인 팝업을 열어서 화면 안에서 만듦
@@ -63,7 +64,12 @@ const getSections = (openLogout: () => void): { title: string; items: MenuItem[]
   {
     title: '계정 관리',
     items: [
-      { title: '로그아웃', icon: assetSlot(CheckColorAsset), onPress: openLogout },
+      {
+        title: '로그아웃',
+        icon: assetSlot(CheckColorAsset),
+        onPress: openLogout,
+        testID: 'mypage-logout',
+      },
       {
         title: '회원 탈퇴',
         icon: assetSlot(AlertColorAsset),
@@ -114,7 +120,11 @@ export const MypageScreen = () => {
                       iconRight={ChevronRightIcon}
                       showIconRight
                       iconRightAction={
-                        item.onPress && { accessibilityLabel: item.title, onPress: item.onPress }
+                        item.onPress && {
+                          accessibilityLabel: item.title,
+                          onPress: item.onPress,
+                          testID: item.testID,
+                        }
                       }
                     />
                   ))}
@@ -132,6 +142,7 @@ export const MypageScreen = () => {
         description="다시 로그인해야 서비스를 이용할 수 있어요."
         cancelLabel="취소"
         confirmLabel="로그아웃 하기"
+        confirmTestID="mypage-logout-confirm"
         onConfirm={logout}
       />
     </View>

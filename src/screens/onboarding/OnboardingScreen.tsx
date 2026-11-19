@@ -108,6 +108,7 @@ export const OnboardingScreen = ({ onRequestNotification, onComplete }: Onboardi
           showAction2={false}
           showTextAction
           textAction="건너뛰기"
+          textActionTestID="onboarding-skip"
           onTextActionPress={() => setSheetVisible(true)}
         />
         <OnboardingVisual height={visualHeight} page={page} step={step} />

@@ -187,6 +187,7 @@ const CheckupQuestions = ({
               {questions[step].options.map((label, i) => (
                 <OptionCard
                   key={label}
+                  testID={`checkup-option-${i}`}
                   title={label}
                   showAsset={false}
                   selected={selected === i + 1}
@@ -200,6 +201,7 @@ const CheckupQuestions = ({
       <View className="pb-safe px-screen-x">
         {step === 0 ? (
           <Cta
+            testID="checkup-next"
             label="다음"
             disabled={selected === undefined}
             onPress={onNext}
@@ -215,6 +217,7 @@ const CheckupQuestions = ({
             />
             {isMemo ? (
               <Button
+                testID="checkup-finish"
                 label="결과 보기"
                 disabled={submit.isPending}
                 onPress={() => finish(memo.trim())}
@@ -222,6 +225,7 @@ const CheckupQuestions = ({
               />
             ) : (
               <Button
+                testID="checkup-next"
                 label="다음"
                 disabled={selected === undefined}
                 onPress={onNext}

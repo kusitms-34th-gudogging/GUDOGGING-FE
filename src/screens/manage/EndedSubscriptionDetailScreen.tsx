@@ -31,7 +31,7 @@ export const EndedSubscriptionDetailScreen = ({
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <View className="pt-safe pb-safe flex-1 bg-bg-default">
+    <View testID="manage-detail-ended" className="pt-safe pb-safe flex-1 bg-bg-default">
       <TopBar
         variant="detail"
         title="구독 상세"

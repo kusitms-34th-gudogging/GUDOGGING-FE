@@ -178,6 +178,7 @@ export const HomeScreen = () => {
           className="pb-safe absolute inset-x-0 bottom-0 items-end px-screen-x"
         >
           <FloatingButton
+            testID="home-add"
             accessibilityLabel="구독 추가"
             onPress={() => router.push('/register')}
             className="mb-[74px]"

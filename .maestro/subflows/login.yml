@@ -1,0 +1,17 @@
+# 신규 가입자로 로그인하고 온보딩을 건너뛰어 홈까지. 알림 권한은 묻지 않음
+# 목서버가 처음 상태여야 함 (scripts/e2e.sh가 플로우마다 초기화)
+appId: com.subscribers.gudogging
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true # 토큰이 iOS 키체인(SecureStore)에 남음
+- tapOn:
+    id: 'login-apple'
+- tapOn:
+    id: 'onboarding-skip'
+- tapOn:
+    id: 'notification-later'
+- tapOn:
+    id: 'add-subscription-skip'
+- assertVisible:
+    id: 'home-screen'

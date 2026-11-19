@@ -1,0 +1,30 @@
+# 점검(3문항 모두 가장 부정) → 결과에서 해지 → 이유 선택 → 해지 안내 → 외부 해지 화면 갔다 와서 해지 완료 → 구독 종료
+appId: com.subscribers.gudogging
+---
+- runFlow: subflows/login.yml
+- tapOn:
+    id: 'home-checkup' # 시드 구독 Netflix 점검
+- repeat:
+    times: 3
+    commands:
+      - tapOn:
+          id: 'checkup-option-0'
+      - tapOn:
+          id: 'checkup-next'
+- tapOn:
+    id: 'checkup-finish' # 메모는 비워 둠
+- tapOn:
+    id: 'checkup-result-cancel'
+- tapOn:
+    id: 'cancel-reason-0'
+- tapOn:
+    id: 'cancel-reason-submit'
+- tapOn:
+    id: 'cancel-guide-cta' # 해지 링크를 Safari로 열고 앱을 떠남
+# 앱으로 돌아오면 '해지했나요?' 모달 (AppState active)
+- launchApp:
+    stopApp: false
+- tapOn:
+    id: 'cancel-guide-complete'
+- assertVisible:
+    id: 'manage-detail-ended'

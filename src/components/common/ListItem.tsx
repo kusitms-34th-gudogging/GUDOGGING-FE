@@ -10,6 +10,7 @@ import { Checkbox } from './Checkbox';
 interface ListItemIconAction {
   accessibilityLabel: string;
   onPress: () => void;
+  testID?: string;
 }
 
 interface ListItemProps {
@@ -33,6 +34,7 @@ interface ListItemProps {
   showCheckBox?: boolean;
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
+  checkBoxTestID?: string;
   checkBoxLocked?: boolean;
   className?: string;
 }
@@ -57,6 +59,7 @@ export const ListItem = ({
   showCheckBox,
   checked = false,
   onCheckedChange,
+  checkBoxTestID,
   checkBoxLocked,
   className,
 }: ListItemProps) => {
@@ -75,6 +78,7 @@ export const ListItem = ({
                 <View className="w-[34px] flex-row justify-end overflow-hidden">
                   <Checkbox
                     checked={checked}
+                    testID={checkBoxTestID}
                     onCheckedChange={(next) => onCheckedChange?.(next)}
                     locked={checkBoxLocked}
                     accessibilityLabel={title}
@@ -142,6 +146,7 @@ const Row = ({
 }) =>
   action ? (
     <Pressable
+      testID={action.testID}
       accessibilityRole="button"
       accessibilityLabel={action.accessibilityLabel}
       onPress={action.onPress}
@@ -156,6 +161,7 @@ const Row = ({
 const Trailing = ({ action, children }: { action?: ListItemIconAction; children: ReactNode }) =>
   action ? (
     <Pressable
+      testID={action.testID}
       accessibilityRole="button"
       accessibilityLabel={action.accessibilityLabel}
       onPress={action.onPress}

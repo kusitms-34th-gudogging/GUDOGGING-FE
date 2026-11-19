@@ -11,6 +11,7 @@ interface ModalProps {
   cancelLabel?: string;
   onConfirm?: () => void;
   onCancel?: () => void;
+  confirmTestID?: string;
 }
 
 export const Modal = ({
@@ -24,6 +25,7 @@ export const Modal = ({
   cancelLabel,
   onConfirm,
   onCancel,
+  confirmTestID,
 }: ModalProps) => (
   <RNModal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
     <View className="flex-1 items-center justify-center">
@@ -63,6 +65,7 @@ export const Modal = ({
               </Pressable>
             )}
             <Pressable
+              testID={confirmTestID}
               accessibilityRole="button"
               onPress={() => {
                 onConfirm?.();

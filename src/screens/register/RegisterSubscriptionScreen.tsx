@@ -97,6 +97,7 @@ export const RegisterSubscriptionScreen = () => {
           {METHODS.map(({ method, ...card }) => (
             <OptionCard
               key={method}
+              testID={`register-method-${method}`}
               {...card}
               selected={selected === method}
               onSelect={() => {

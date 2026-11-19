@@ -18,6 +18,7 @@ interface OptionCardProps {
   // 여러 개 고르는 목록이면 true (스크린리더가 체크박스로 읽음)
   multiple?: boolean;
   className?: string;
+  testID?: string;
 }
 
 export const OptionCard = ({
@@ -31,8 +32,10 @@ export const OptionCard = ({
   onSelect,
   multiple,
   className,
+  testID,
 }: OptionCardProps) => (
   <Pressable
+    testID={testID}
     accessibilityRole={multiple ? 'checkbox' : 'radio'}
     accessibilityState={multiple ? { checked: selected } : { selected }}
     onPress={onSelect}

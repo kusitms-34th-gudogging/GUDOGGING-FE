@@ -104,6 +104,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
                 showCheckBox
                 checked={selectedIds.includes(s.id) || lockedIds.includes(s.id)}
                 onCheckedChange={() => toggle(s.id)}
+                checkBoxTestID={`register-service-${s.id}`}
                 checkBoxLocked={lockedIds.includes(s.id)}
               />
             ))}
@@ -120,6 +121,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
       </View>
       <View className="pb-safe px-screen-x">
         <Cta
+          testID="register-select-done"
           label={`${count}개 선택 완료`}
           disabled={count === 0}
           onPress={() => {

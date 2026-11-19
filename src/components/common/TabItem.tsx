@@ -11,6 +11,7 @@ interface TabItemProps {
   onSelect: () => void;
   onLayout?: (e: LayoutChangeEvent) => void;
   className?: string;
+  testID?: string;
 }
 
 // 탭바 안에서는 사용처가 className="flex-1"로 균등 분배
@@ -21,8 +22,10 @@ export const TabItem = ({
   onSelect,
   onLayout,
   className,
+  testID,
 }: TabItemProps) => (
   <Pressable
+    testID={testID}
     accessibilityRole="tab"
     accessibilityLabel={accessibilityLabel}
     accessibilityState={{ selected }}

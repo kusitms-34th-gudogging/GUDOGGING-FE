@@ -46,6 +46,7 @@ export const TabBar = ({ selected, onSelect, className }: TabBarProps) => {
       {TABS.map(({ menu, label, icon }, index) => (
         <TabItem
           key={menu}
+          testID={`tab-${menu}`}
           icon={icon}
           accessibilityLabel={label}
           selected={selected === menu}

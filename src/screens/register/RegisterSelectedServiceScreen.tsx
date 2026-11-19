@@ -64,6 +64,7 @@ export const RegisterSelectedServiceScreen = () => {
           {services.map((s) => (
             <PaymentListItem
               key={s.id}
+              testID={`register-payment-${s.id}`}
               name={s.name}
               payment={payments[s.id]}
               emptySubtitle="결제 정보 입력 필요"
@@ -81,6 +82,7 @@ export const RegisterSelectedServiceScreen = () => {
       <View className="pb-safe px-screen-x">
         {/* 모든 서비스 결제 정보 입력이 완료되면 활성화. 등록 성공 후 완료 화면으로 */}
         <Cta
+          testID="register-submit"
           label={`${services.length}개 구독 등록하기`}
           disabled={!allEntered || create.isPending}
           onPress={register}

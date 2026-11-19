@@ -16,7 +16,7 @@ export const CheckupPromptCard = ({ onPress }: CheckupPromptCardProps) => (
         <Text className="text-text-primary text-body1-semibold">
           {'결제 전 30초 질문,\n잘 쓰는 구독을 가려 드려요'}
         </Text>
-        <Button size="sm" label="점검하러 가기" onPress={onPress} />
+        <Button size="sm" testID="home-checkup" label="점검하러 가기" onPress={onPress} />
       </View>
     </View>
   </View>

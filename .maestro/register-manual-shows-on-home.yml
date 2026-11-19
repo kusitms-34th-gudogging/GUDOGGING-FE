@@ -1,0 +1,28 @@
+# 직접 등록: 서비스 선택 → 결제 정보 저장(기본값) → 등록 → 홈·구독 관리에 보임
+appId: com.subscribers.gudogging
+---
+- runFlow: subflows/login.yml
+- tapOn:
+    id: 'home-add'
+- tapOn:
+    id: 'register-method-manual'
+- tapOn:
+    id: 'register-service-5e1c9a07-5a4d-4e7b-9c21-000000000004' # Spotify (mocks/handlers/service.ts)
+- tapOn:
+    id: 'register-select-done'
+- tapOn:
+    id: 'register-payment-5e1c9a07-5a4d-4e7b-9c21-000000000004'
+- tapOn:
+    id: 'register-input-save' # 사전 등록 서비스라 기본값으로 저장 가능
+- tapOn:
+    id: 'register-submit'
+- tapOn:
+    id: 'register-done'
+- assertVisible:
+    id: 'home-screen'
+# 시드 Netflix + 등록한 Spotify
+- assertVisible: '2개 구독 중이에요'
+- tapOn:
+    id: 'tab-manage'
+# 행 전체가 버튼이라 접근성 라벨 'Spotify 상세'로 보임. text는 정규식 전체 일치
+- assertVisible: 'Spotify.*'

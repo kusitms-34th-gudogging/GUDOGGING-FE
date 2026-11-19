@@ -269,6 +269,7 @@ const ServiceInputForm = ({
       </View>
       <View className="pb-safe px-screen-x">
         <Cta
+          testID="register-input-save"
           label={found ? '수정 완료' : '저장하기'}
           disabled={!valid || reactivateSubscription.isPending || updateSubscription.isPending}
           onPress={() => {

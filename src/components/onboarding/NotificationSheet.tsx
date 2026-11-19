@@ -91,6 +91,7 @@ export const NotificationSheet = ({ onAllow, onLater }: NotificationSheetProps) 
             }}
           />
           <Pressable
+            testID="notification-later"
             accessibilityRole="button"
             hitSlop={12}
             onPress={onLater}
