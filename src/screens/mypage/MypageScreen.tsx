@@ -74,6 +74,7 @@ const getSections = (openLogout: () => void): { title: string; items: MenuItem[]
         title: '회원 탈퇴',
         icon: assetSlot(AlertColorAsset),
         onPress: () => router.push('/mypage/withdraw'),
+        testID: 'mypage-withdraw',
       },
     ],
   },

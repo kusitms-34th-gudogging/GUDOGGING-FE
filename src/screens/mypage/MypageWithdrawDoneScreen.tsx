@@ -41,7 +41,7 @@ export const MypageWithdrawDoneScreen = () => {
         <Text className="text-center text-text-primary text-head3-bold">{TITLE}</Text>
       </View>
       <View className="pb-safe px-screen-x">
-        <Cta label="확인" onPress={leave} className="mb-[14px]" />
+        <Cta testID="withdraw-done" label="확인" onPress={leave} className="mb-[14px]" />
       </View>
     </View>
   );

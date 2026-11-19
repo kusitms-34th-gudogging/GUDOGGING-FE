@@ -1,4 +1,5 @@
 # 점검(3문항 모두 가장 부정) → 결과에서 해지 → 이유 선택 → 해지 안내 → 외부 해지 화면 갔다 와서 해지 완료 → 구독 종료
+# → 재등록(다음 결제일 다이얼) → 다시 구독 중
 appId: com.subscribers.gudogging
 ---
 - runFlow: subflows/login.yml
@@ -28,3 +29,21 @@ appId: com.subscribers.gudogging
     id: 'cancel-guide-complete'
 - assertVisible:
     id: 'manage-detail-ended'
+# 재등록: 다음 결제일만 바꿔 같은 구독을 구독 중으로
+- tapOn:
+    id: 'manage-detail-reregister'
+- tapOn:
+    id: 'register-input-date'
+# 다이얼은 바텀시트 안에 있어 접근성 트리에 안 잡힘(testID로 못 찾음) → 선택된 연도 바로 아래 줄(다음 해)을 탭
+# 연도 열은 순환하지 않아 항상 미래 (월·일 열은 끝에서 돌아 과거가 될 수 있음)
+# shortcut: 화면 비율 좌표라 iPhone 18 Pro 기준, 다른 기기에서 빗나가면 좌표 조정 또는 바텀시트 접근성 수정
+- tapOn:
+    point: '25%,80%'
+- waitForAnimationToEnd
+- tapOn:
+    id: 'register-date-confirm'
+- tapOn:
+    id: 'register-input-save'
+# 목서버는 저장한 날짜 대신 '오늘 이후 첫 결제일'을 돌려줘서 날짜 대신 구독 중 상태만 확인 (mocks/db.ts nextBilling)
+- assertVisible:
+    id: 'manage-detail-active'

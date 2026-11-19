@@ -240,6 +240,7 @@ const ServiceInputForm = ({
                 />
               </View>
               <Dropdown
+                testID="register-input-date"
                 label="다음 결제일"
                 placeholder="다음 결제일을 선택해 주세요"
                 value={formatDate(nextDate)}
@@ -353,6 +354,7 @@ const ServiceInputForm = ({
         // 과거 결제일은 허용하지 않음 (명세)
         confirmDisabled={draftDate < startOfToday()}
         onConfirm={() => setNextDate(draftDate)}
+        confirmTestID="register-date-confirm"
       >
         <Dial value={draftDate} onValueChange={setDraftDate} />
       </BottomSheet>

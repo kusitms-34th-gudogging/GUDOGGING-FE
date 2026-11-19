@@ -46,6 +46,7 @@ interface BottomSheetProps {
   confirmLabel: string;
   confirmDisabled?: boolean;
   onConfirm: () => void;
+  confirmTestID?: string;
   children: ReactNode;
 }
 
@@ -60,6 +61,7 @@ export const BottomSheet = ({
   confirmLabel,
   confirmDisabled,
   onConfirm,
+  confirmTestID,
   children,
 }: BottomSheetProps) => {
   const ref = useRef<BottomSheetModal>(null);
@@ -112,6 +114,7 @@ export const BottomSheet = ({
               </View>
             )}
             <Cta
+              testID={confirmTestID}
               label={confirmLabel}
               disabled={confirmDisabled}
               onPress={() => {

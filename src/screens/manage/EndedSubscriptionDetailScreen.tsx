@@ -162,6 +162,7 @@ export const EndedSubscriptionDetailScreen = ({
       {/* 기존 정보를 채운 구독 정보 입력으로. 다음 결제일만 바꿔 같은 구독을 재등록 (명세 reactivate) */}
       <View className="px-screen-x pb-[14px] pt-stack-md">
         <Cta
+          testID="manage-detail-reregister"
           label="재등록하기"
           onPress={() => router.push({ pathname: '/register/input', params: { reregister: s.id } })}
         />
