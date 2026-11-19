@@ -17,7 +17,6 @@ const payment = (id: string, name: string, date: string, dDay: number) => ({
 const home = (over: Partial<Home> = {}): Home => ({
   summary: { expectedAmount: 0, yearlyAmount: 0, subscriptionCount: 0, logos: [] },
   upcomingPayments: [],
-  nearestPayment: null,
   usage: {
     hasCheckup: false,
     nudgeSubscriptionId: null,
@@ -38,6 +37,7 @@ const renderHome = async (response: unknown) => {
       index: () => <HomeScreen />,
       'register/index': () => null,
       'checkup/[id]': () => null,
+      'manage/detail/[id]': () => null,
       calendar: () => null,
       notification: () => null,
     },
@@ -81,37 +81,24 @@ describe('HomeScreen', () => {
 
     await user.press(await screen.findByRole('button', { name: '구독 등록하기' }));
 
-    expect(screen.queryByText('다가오는 결제')).not.toBeOnTheScreen();
+    expect(screen.queryByText('구독 점검하기')).not.toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: '구독 추가' })).not.toBeOnTheScreen();
     expect(screen).toHavePathname('/register');
   });
 
-  it('7일 안 결제는 D-n과 함께 보이고, 점검이 필요한 구독만 눌러서 점검에 간다', async () => {
+  it('점검할 구독은 결제일·D-n과 함께 보이고, 행을 누르면 그 구독 점검에 간다', async () => {
     const user = await renderHome(
       home({
         summary: subscribed,
-        upcomingPayments: [
-          { ...payment('netflix', '넷플릭스', '2026-10-17', 1), needsCheckup: true },
-          { ...payment('youtube', '유튜브', '2026-10-19', 3), needsCheckup: false },
-        ],
+        upcomingPayments: [payment('netflix', '넷플릭스', '2026-10-30', 14)],
       }),
     );
 
-    expect(await screen.findByText('10월 17일 결제 · D-1')).toBeOnTheScreen();
-    expect(screen.queryByRole('button', { name: '유튜브 점검하기' })).not.toBeOnTheScreen();
+    expect(await screen.findByText('10월 30일 결제 · D-14')).toBeOnTheScreen();
 
     await user.press(screen.getByRole('button', { name: '넷플릭스 점검하기' }));
     expect(screen).toHavePathname('/checkup/netflix');
     expect(screen).toHaveSearchParams({ id: 'netflix', restart: '1' });
-  });
-
-  it('7일 안 결제가 없으면 안내 문구와 가장 가까운 1건을 보여 준다', async () => {
-    await renderHome(
-      home({ summary: subscribed, nearestPayment: payment('far', '먼 구독', '2026-10-30', 14) }),
-    );
-
-    expect(await screen.findByText('7일 안에 결제 예정인 구독이 없어요')).toBeOnTheScreen();
-    expect(screen.getByText('10월 30일 결제')).toBeOnTheScreen();
   });
 
   it('점검 기록이 없으면 점검 유도 카드로, 응답이 고른 구독의 점검에 간다', async () => {
@@ -141,10 +128,26 @@ describe('HomeScreen', () => {
     expect(screen.queryByRole('button', { name: '점검하러 가기' })).not.toBeOnTheScreen();
   });
 
-  it('다가오는 결제 화살표를 누르면 캘린더로 간다', async () => {
+  it('잘 안 쓰는 구독 행을 누르면 그 구독 상세로 간다', async () => {
+    const user = await renderHome(
+      home({
+        summary: subscribed,
+        usage: {
+          ...home().usage,
+          hasCheckup: true,
+          items: [payment('netflix', '넷플릭스', '2026-10-17', 1)],
+        },
+      }),
+    );
+
+    await user.press(await screen.findByRole('button', { name: '넷플릭스 상세' }));
+    expect(screen).toHavePathname('/manage/detail/netflix');
+  });
+
+  it('구독 점검하기 화살표를 누르면 캘린더로 간다', async () => {
     const user = await renderHome(home({ summary: subscribed }));
 
-    await user.press(await screen.findByRole('button', { name: '다가오는 결제' }));
+    await user.press(await screen.findByRole('button', { name: '구독 점검하기' }));
     expect(screen).toHavePathname('/calendar');
   });
 
