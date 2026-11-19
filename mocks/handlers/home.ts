@@ -8,6 +8,7 @@ import {
   monthlyAmount,
   nextBilling,
   type Subscription,
+  toDate,
   today,
   toIso,
 } from '../db.ts';
@@ -39,7 +40,7 @@ export const homeHandlers = [
       db.checkups.some(
         (c) =>
           c.subscriptionId === s.subscriptionId &&
-          billingDates(s, new Date(c.checkedAt), nextBilling(s)).length <= 1,
+          billingDates(s, toDate(c.checkedAt), nextBilling(s)).length <= 1,
       );
     // 활용도 60% 미만이고 '유지하기'를 고르지 않은 구독, 꾸준히 쓰는 구독 제외
     const unused = active.filter((s) => {

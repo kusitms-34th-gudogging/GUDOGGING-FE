@@ -69,7 +69,12 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: [{ group: ['../*'], message: '폴더 밖은 @/ 절대경로' }] },
+        {
+          patterns: [
+            { group: ['../*'], message: '폴더 밖은 @/ 절대경로' },
+            { group: ['@/server/*'], message: '서버 코드는 src/server, src/app/api에서만' },
+          ],
+        },
       ],
     },
   },

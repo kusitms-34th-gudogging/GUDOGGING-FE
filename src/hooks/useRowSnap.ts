@@ -23,10 +23,15 @@ export const useRowSnap = (count: number) => {
     hiddenStyle,
     snapOffsets: [0, ...abs.map((r) => r.bottom - viewEnd).filter((o) => o > 0)],
     onViewportLayout: (e: LayoutChangeEvent) => setAvail(e.nativeEvent.layout.height),
-    onSectionLayout: (e: LayoutChangeEvent) =>
-      setListY((v) => ({ ...v, section: e.nativeEvent.layout.y })),
-    onListLayout: (e: LayoutChangeEvent) =>
-      setListY((v) => ({ ...v, list: e.nativeEvent.layout.y })),
+    // y는 updater 밖에서 꺼냄 (updater가 핸들러 반환 뒤 실행될 수 있음)
+    onSectionLayout: (e: LayoutChangeEvent) => {
+      const { y } = e.nativeEvent.layout;
+      setListY((v) => ({ ...v, section: y }));
+    },
+    onListLayout: (e: LayoutChangeEvent) => {
+      const { y } = e.nativeEvent.layout;
+      setListY((v) => ({ ...v, list: y }));
+    },
     onRowLayout: (i: number) => (e: LayoutChangeEvent) => {
       const { y, height } = e.nativeEvent.layout;
       setRows((r) => Object.assign([...r], { [i]: { top: y, bottom: y + height } }));
