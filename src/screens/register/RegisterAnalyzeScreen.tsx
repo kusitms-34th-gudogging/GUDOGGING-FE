@@ -59,7 +59,15 @@ export const RegisterAnalyzeScreen = ({ source, images = [] }: RegisterAnalyzeSc
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
-      <CategoryPullBackground />
+      {/* 돋보기 + 문구 묶음을 기기 높이와 관계없이 화면 세로 가운데에. 배경 Lottie는 돋보기 자리에 맞춰 깔림 */}
+      <View pointerEvents="box-none" className="absolute inset-0 items-center justify-center">
+        <View className="items-center gap-s20">
+          <View className="size-[104px]">
+            <CategoryPullBackground />
+          </View>
+          <Text className="text-center text-text-primary text-head3-bold">{message}</Text>
+        </View>
+      </View>
       <TopBar
         variant="detail"
         title={title}
@@ -68,7 +76,6 @@ export const RegisterAnalyzeScreen = ({ source, images = [] }: RegisterAnalyzeSc
         showAction1={false}
         showAction2={false}
       />
-      <Text className="pt-[341px] text-center text-text-primary text-head3-bold">{message}</Text>
     </View>
   );
 };
