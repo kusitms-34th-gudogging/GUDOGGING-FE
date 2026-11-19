@@ -48,6 +48,8 @@ E2E는 적게, 제품 핵심 가치를 지나는 **사용자 여정** 단위로 
 - 외부 링크(Safari·App Store)로 나갔다 돌아오는 건 `launchApp: { stopApp: false }`
 - 바텀시트(`BottomSheet`) 안의 다이얼은 접근성 트리에 안 잡혀 `testID`로 못 찾음 → 줄을 화면 비율 좌표로 탭 (`tapOn: { point }`)
 - 목서버는 저장한 다음 결제일 대신 '오늘 이후 첫 결제일'을 계산해 돌려줌 (`mocks/db.ts` `nextBilling`) → 날짜를 바꾼 결과는 응답 날짜로 확인하지 않음
+- 새 시뮬레이터(CI 포함)는 소프트웨어 키보드가 뜸. 키보드가 가린 자리를 탭하면 키가 눌림 → 입력 뒤엔 사용자처럼 입력칸 밖 빈 곳을 탭해 키보드를 내림. `hideKeyboard`는 숫자 키패드에서 실패
+  - 하드웨어 키보드가 연결된 로컬 시뮬레이터는 키보드가 안 떠서 이런 문제가 숨음 → 플로우를 새로 짜면 새 시뮬레이터에서도 한 번 돌려 봄
 - iOS 사진 보관함은 시스템 화면이라 `testID`가 없음 → 사진은 `addMedia`로 넣고(맨 앞에 들어감) 칸은 `id: 'PXGGridLayout-Info'` + `index: 0`, 완료는 `'완료|Done'`. 테스트 이미지는 `.maestro/assets/`
 
 ## 목서버
@@ -113,10 +115,11 @@ appId: com.subscribers.gudogging
 - 준비 (한 번): Java 17 (`brew install openjdk@17` + PATH), Maestro CLI (`curl -Ls "https://get.maestro.mobile.dev" | bash`). 앱이 아니라 Mac에 설치
 - 빌드 (처음, 앱 코드가 바뀌었을 때): `EXPO_PUBLIC_API_URL=http://localhost:9090 npx expo run:ios --configuration Release --no-bundler`
   - `ios/`가 없으면 prebuild가 돌며 `package.json` `scripts`를 바꿈 → 커밋하지 말고 되돌림 (`.claude/docs/deploy.md`)
-- 실행: `E2E=1 pnpm mock`을 띄워 두고 `sh scripts/e2e.sh` (플로우마다 초기화 후 `maestro test`, 하나만 돌릴 땐 `sh scripts/e2e.sh .maestro/{도메인}-{여정}.yml`)
+- 실행: `E2E=1 pnpm mock`을 띄워 두고 `sh scripts/e2e.sh` (플로우마다 초기화 후 `maestro test`, 실패해도 끝까지 돌고 마지막에 실패한 플로우를 모아 보여 줌. 하나만 돌릴 땐 `sh scripts/e2e.sh .maestro/{도메인}-{여정}.yml`)
+  - 켜진 시뮬레이터가 하나여야 함 (여러 대면 Maestro가 아무거나 고름). E2E 도중엔 같은 시뮬레이터에서 Expo Go·개발 서버를 쓰지 않음
   - `package.json` `scripts`에 넣지 않음: 네이티브 지문(`packageJson:scripts`)이 바뀌어 dev 머지 때 EAS 빌드가 돎
 - `auth-login-to-home` 기준 약 70초 (로컬 iPhone 시뮬레이터)
-- CI는 GitHub Actions 기본 macOS runner로 돌려 본 뒤 이 문서에 추가
+- CI(`.github/workflows/e2e.yml`): PR에서는 돌리지 않음(오래 걸림). dev 머지 때와 Actions 탭 수동 실행만, 7개 전체. 아직 GitHub에서 돌려 보지 않음 (로컬 리허설만) → 첫 실행 뒤 확인한 내용으로 고침
 
 ## 이럴 때 더 읽기
 

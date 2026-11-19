@@ -21,7 +21,11 @@ appId: com.subscribers.gudogging
 - tapOn:
     id: 'register-input-amount'
 - inputText: '10900'
-# 키보드가 떠 있는 채로 저장 버튼이 눌려야 함 (키보드에 가려지면 여기서 실패)
+# 숫자 키패드는 완료 키가 없고 저장 버튼을 가림 → 사용자처럼 입력칸 밖 빈 곳을 눌러 키보드를 내린 뒤 저장
+# (안 내리면 저장 자리의 키패드 '0'이 눌려 금액이 바뀜. Maestro hideKeyboard는 숫자 키패드에서 실패)
+# shortcut: 빈 곳은 testID가 없어 화면 비율 좌표('결제 금액' 글자 오른쪽), 레이아웃이 바뀌면 조정
+- tapOn:
+    point: '75%,38%'
 - tapOn:
     id: 'register-input-save'
 - tapOn:

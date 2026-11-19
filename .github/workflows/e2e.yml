@@ -1,0 +1,97 @@
+name: E2E
+
+# Maestro E2E 전체를 iOS 시뮬레이터에서 실행 (.claude/rules/e2e-test.md)
+# EAS 빌드 횟수를 쓰지 않음: runner의 Xcode로 시뮬레이터용 Release 빌드
+# 공개 레포라 기본 macOS runner는 무료. 대형 runner(macos_l·macos_xl)는 유료라 쓰지 않음
+# PR에서는 돌리지 않음 (오래 걸려서). dev 머지 때와 Actions 탭 수동 실행만. 결과는 Actions 실행 결과로 확인
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    env:
+      # 앱은 runner 안의 목서버를 봄. Release 빌드라 이 값이 번들에 박힘 (개발 빌드는 .env.local이 덮어씀)
+      EXPO_PUBLIC_API_URL: http://localhost:9090
+      CI: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # 네이티브 지문(deploy.yml과 같은 기준)이 같으면 prebuild 결과(ios/, Pods 포함)를 그대로 씀
+      # 다르면 ios/는 새로 만들고(낡은 네이티브 방지), Xcode 중간 결과만 최근 것으로 증분 빌드
+      - name: Native fingerprint
+        id: fp
+        run: echo "hash=$(node -e "const p=require.resolve('@expo/fingerprint',{paths:[require.resolve('expo/package.json')]}); require(p).createFingerprintAsync('.').then(f=>console.log(f.hash))")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ios
+          key: e2e-ios-${{ steps.fp.outputs.hash }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: e2e-derived-${{ steps.fp.outputs.hash }}
+          restore-keys: e2e-derived-
+
+      # Maestro CLI는 Java 17 필요
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      # 다이얼 좌표 탭이 iPhone 18 Pro 기준이라 있으면 그 기기, 없으면 첫 iPhone (checkup-to-cancel.yml shortcut)
+      - name: Boot simulator
+        run: |
+          DEVICES=$(xcrun simctl list devices available -j)
+          UDID=$(echo "$DEVICES" | jq -r '[.devices[][] | select(.name == "iPhone 18 Pro")][0].udid // empty')
+          [ -n "$UDID" ] || UDID=$(echo "$DEVICES" | jq -r '[.devices[][] | select(.name | startswith("iPhone"))][0].udid')
+          echo "Simulator: $(echo "$DEVICES" | jq -r --arg u "$UDID" '.devices[][] | select(.udid == $u) | .name') ($UDID)"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+
+      # prebuild → pod install → Release 빌드 → 시뮬레이터 설치까지 (로컬에서 쓰는 명령과 같음)
+      - name: Build app
+        run: npx expo run:ios --configuration Release --no-bundler --device "$UDID"
+
+      - name: Start mock server
+        run: |
+          E2E=1 pnpm mock > mock.log 2>&1 &
+          for i in $(seq 60); do curl -sf -o /dev/null http://localhost:9090/api/v1/services && exit 0; sleep 1; done
+          echo "목서버가 뜨지 않음"; cat mock.log; exit 1
+
+      - name: Run E2E
+        id: e2e
+        shell: bash # -eo pipefail: tee 앞 e2e.sh가 실패하면 단계도 실패
+        run: sh scripts/e2e.sh 2>&1 | tee e2e.log
+
+      - name: Upload Maestro artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro
+          path: |
+            ~/.maestro/tests
+            e2e.log
+            mock.log
+          retention-days: 7
+
