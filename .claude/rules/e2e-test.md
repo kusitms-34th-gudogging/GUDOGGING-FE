@@ -47,11 +47,14 @@ E2E는 적게, 제품 핵심 가치를 지나는 **사용자 여정** 단위로 
 - E2E는 `pnpm mock`을 **새로 띄워서** 돌림. Render 목서버는 쓰지 않음
   - 목서버 상태가 메모리에 있어서 결과가 바뀜: 첫 로그인만 신규 가입(`isNewUser`) → 온보딩, 이후는 홈 (`mocks/handlers/auth.ts`)
   - Render 무료 플랜은 잠들었다 깨면 상태 초기화, 팀원끼리 상태 공유
-- `EXPO_PUBLIC_API_URL`은 빌드할 때 앱에 박힘 → E2E 빌드는 로컬 목서버 주소로 빌드
+- 실행 전마다 목서버를 처음 상태로 (가입 상태가 남으면 다음 실행은 온보딩 없이 홈으로 감): `E2E=1 pnpm mock`으로 띄우고 `curl -X POST http://localhost:9090/e2e/reset`, 또는 목서버 재시작
+  - `/e2e/reset`은 `E2E=1`일 때만 생김 (`mocks/handlers/e2e.ts`). Render 공용 목서버엔 없음
+- 앱은 **Release**로 빌드해야 셸에서 준 `EXPO_PUBLIC_API_URL`이 들어감. 개발 빌드는 `expo/virtual/env.js`가 `.env.local` 값을 셸 값 위에 덮어써서 Render로 요청함
 
 ## 권한 ([launchApp](https://docs.maestro.dev/reference/commands-available/launchapp) · [setPermissions](https://docs.maestro.dev/reference/commands-available/setpermissions))
 
-- 기본값은 모든 권한 허용. iOS 알림은 시스템 팝업이 뜨고 Maestro가 Allow를 자동으로 탭
+- 기본값은 모든 권한 허용. 단 iOS 알림은 시스템 팝업이 뜨고, Maestro가 영어 시뮬레이터에선 Allow를 자동으로 누르지만 한국어 시뮬레이터에선 안 누름 → 플로우에서 `tapOn`(`text: '허용|Allow'`, `optional: true`)
+- 실패한 실행이 팝업을 띄운 채 끝나면 다음 실행에서 팝업이 화면을 가림 → 시뮬레이터에서 팝업을 닫고 다시 실행
 - 거부 경로는 `launchApp`의 `permissions` (`all: deny` 후 필요한 것만 `allow`). 플로우 중간엔 `setPermissions`
 
 ## 로그인
@@ -100,7 +103,11 @@ appId: com.subscribers.gudogging
 
 - **지금은 iOS만** (프로젝트 결정)
 - 준비 (한 번): Java 17 (`brew install openjdk@17` + PATH), Maestro CLI (`curl -Ls "https://get.maestro.mobile.dev" | bash`). 앱이 아니라 Mac에 설치
-- 실행: `pnpm mock` → 로컬 목서버 주소로 `npx expo run:ios` → `maestro test .maestro/{도메인}-{여정}.yml` (Expo Go 불가)
+- 빌드 (처음, 앱 코드가 바뀌었을 때): `EXPO_PUBLIC_API_URL=http://localhost:9090 npx expo run:ios --configuration Release --no-bundler`
+  - `ios/`가 없으면 prebuild가 돌며 `package.json` `scripts`를 바꿈 → 커밋하지 말고 되돌림 (`.claude/docs/deploy.md`)
+- 실행: `E2E=1 pnpm mock`을 띄워 두고 `sh scripts/e2e.sh` (플로우마다 초기화 후 `maestro test`, 하나만 돌릴 땐 `sh scripts/e2e.sh .maestro/{도메인}-{여정}.yml`)
+  - `package.json` `scripts`에 넣지 않음: 네이티브 지문(`packageJson:scripts`)이 바뀌어 dev 머지 때 EAS 빌드가 돎
+- `auth-login-to-home` 기준 약 70초 (로컬 iPhone 시뮬레이터)
 - CI는 GitHub Actions 기본 macOS runner로 돌려 본 뒤 이 문서에 추가
 
 ## 이럴 때 더 읽기
