@@ -61,7 +61,7 @@ export const HomeNotificationScreen = () => {
           </Text>
         </View>
       ) : (
-        <ScrollView contentContainerClassName="pb-safe gap-screen-x pt-stack-md">
+        <ScrollView bounces={false} contentContainerClassName="pb-safe gap-screen-x pt-stack-md">
           {sections.map((section) => (
             <View key={section.title} className="gap-inset-xs">
               <View className="px-screen-x">

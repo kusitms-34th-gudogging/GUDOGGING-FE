@@ -96,7 +96,7 @@ export const MypageScreen = () => {
   return (
     <View className="pt-safe flex-1 bg-bg-default">
       <TopBar title="마이페이지" showAction1={false} showAction2={false} />
-      <ScrollView contentContainerClassName="gap-inset-lg pb-[120px] pt-[12px]">
+      <ScrollView bounces={false} contentContainerClassName="gap-inset-lg pb-[120px] pt-[12px]">
         <View className="ml-screen-x w-[279px] flex-row items-center gap-inline-sm">
           <Image source={PROFILE} className="size-logo-card rounded-full" />
           <View className="flex-1">

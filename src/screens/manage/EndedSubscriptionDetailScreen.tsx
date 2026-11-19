@@ -46,7 +46,7 @@ export const EndedSubscriptionDetailScreen = ({
         onClose={() => setMenuOpen(false)}
         options={[{ label: '편집', onSelect: () => {} }]}
       />
-      <ScrollView contentContainerClassName="gap-s20 pb-stack-md pt-stack-md">
+      <ScrollView bounces={false} contentContainerClassName="gap-s20 pb-stack-md pt-stack-md">
         <View className="gap-stack-md px-screen-x">
           <ServiceHeader
             name={s.name}

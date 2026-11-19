@@ -91,7 +91,7 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
         confirmLabel="삭제하기"
         onConfirm={onDelete}
       />
-      <ScrollView contentContainerClassName="gap-s20 pb-[14px] pt-stack-md">
+      <ScrollView bounces={false} contentContainerClassName="gap-s20 pb-[14px] pt-stack-md">
         <View className="gap-stack-md px-screen-x">
           <ServiceHeader
             name={p.name}
