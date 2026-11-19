@@ -1,0 +1,34 @@
+# 목록에 없는 서비스를 키보드로 직접 입력해 등록 → 구독 관리에 보임
+appId: com.subscribers.gudogging
+---
+- runFlow: subflows/login.yml
+- tapOn:
+    id: 'home-add'
+- tapOn:
+    id: 'register-method-manual'
+- tapOn:
+    id: 'register-search'
+- inputText: 'Melon' # 사전 등록 목록에 없는 이름이어야 '직접 입력하기'가 의미 있음
+- tapOn:
+    id: 'register-custom'
+- tapOn:
+    id: 'register-input-name'
+- inputText: 'Melon'
+- tapOn:
+    id: 'register-input-category'
+- tapOn:
+    id: 'register-input-category-option-0'
+- tapOn:
+    id: 'register-input-amount'
+- inputText: '10900'
+# 키보드가 떠 있는 채로 저장 버튼이 눌려야 함 (키보드에 가려지면 여기서 실패)
+- tapOn:
+    id: 'register-input-save'
+- tapOn:
+    id: 'register-submit'
+- tapOn:
+    id: 'register-done'
+- assertVisible: '2개 구독 중이에요'
+- tapOn:
+    id: 'tab-manage'
+- assertVisible: 'Melon.*'

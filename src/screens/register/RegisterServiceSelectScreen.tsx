@@ -59,7 +59,12 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
       {/* 목록 영역은 CTA 위 56까지 채움 (Figma 목록 주석) */}
       <View className="flex-1 gap-inset-lg px-screen-x pb-[56px] pt-stack-md">
         <View className="gap-stack-lg">
-          <SearchBar value={query} onChangeText={setQuery} placeholder="검색" />
+          <SearchBar
+            testID="register-search"
+            value={query}
+            onChangeText={setQuery}
+            placeholder="검색"
+          />
           <View className="gap-stack-sm">
             <Text className="px-s2 text-text-primary text-head4-bold">
               등록할 서비스를 모두 선택해 주세요.
@@ -110,6 +115,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
             ))}
             {!!keyword && (
               <AddServiceRow
+                testID="register-custom"
                 label="직접 입력하기"
                 onPress={() =>
                   router.push({ pathname: '/register/input', params: more ? { more: '1' } : {} })

@@ -55,7 +55,12 @@ export const RegisterScreenshotImagesScreen = () => {
               />
             ))}
             {uris.length < MAX_IMAGES && (
-              <ImageCard variant="add" onPress={pick} accessibilityLabel="스크린샷 추가" />
+              <ImageCard
+                variant="add"
+                testID="screenshot-images-add"
+                onPress={pick}
+                accessibilityLabel="스크린샷 추가"
+              />
             )}
           </View>
         </View>
@@ -71,6 +76,7 @@ export const RegisterScreenshotImagesScreen = () => {
       </View>
       <View className="pb-safe px-screen-x">
         <Cta
+          testID="screenshot-images-analyze"
           label="구독 정보 불러오기"
           disabled={uris.length === 0}
           onPress={() =>

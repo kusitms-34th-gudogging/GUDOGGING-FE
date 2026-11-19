@@ -173,6 +173,7 @@ const ServiceInputForm = ({
             <View className="gap-stack-lg">
               {(isCustom || found) && !edit && (
                 <TextField
+                  testID="register-input-name"
                   label="서비스명"
                   // 불러온 구독은 찾은 이름을 흐리게 보여 주고, 비워 두면 그 이름으로 저장 (Figma A-15)
                   placeholder={found?.name ?? '서비스명을 입력해 주세요'}
@@ -184,6 +185,7 @@ const ServiceInputForm = ({
                 />
               )}
               <Dropdown
+                testID="register-input-category"
                 label="카테고리"
                 placeholder="카테고리를 선택해 주세요"
                 value={category}
@@ -196,6 +198,7 @@ const ServiceInputForm = ({
                 }}
               />
               <TextField
+                testID="register-input-amount"
                 label="결제 금액"
                 placeholder="결제 금액을 입력해 주세요"
                 keyboardType="number-pad"
