@@ -35,14 +35,21 @@ interface SocialLoginButtonProps extends VariantProps<typeof socialLoginButtonVa
   provider: NonNullable<VariantProps<typeof socialLoginButtonVariants>['provider']>;
   onPress?: () => void;
   className?: string;
+  testID?: string;
 }
 
-export const SocialLoginButton = ({ provider, onPress, className }: SocialLoginButtonProps) => {
+export const SocialLoginButton = ({
+  provider,
+  onPress,
+  className,
+  testID,
+}: SocialLoginButtonProps) => {
   const { label, logo: Logo } = PROVIDERS[provider];
 
   return (
     <Pressable
       accessibilityRole="button"
+      testID={testID}
       onPress={onPress}
       className={cn(socialLoginButtonVariants({ provider }), className)}
     >

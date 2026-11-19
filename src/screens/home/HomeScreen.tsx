@@ -49,7 +49,7 @@ export const HomeScreen = () => {
       : [];
 
   return (
-    <View className="pt-safe flex-1 bg-bg-default">
+    <View testID="home-screen" className="pt-safe flex-1 bg-bg-default">
       <TopBar
         variant="main"
         title="홈"
