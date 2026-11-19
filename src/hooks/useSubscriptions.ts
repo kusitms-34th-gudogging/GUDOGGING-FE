@@ -1,4 +1,4 @@
-import { type QueryClient, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, type QueryClient, useQuery } from '@tanstack/react-query';
 
 import type { SubscriptionDetail } from '@/constants/manage';
 import { calendarKeys } from '@/hooks/useCalendar';
@@ -95,6 +95,8 @@ export const useSubscriptions = (status: SubscriptionStatus) =>
     queryKey: subscriptionKeys.list(status),
     queryFn: ({ signal }) =>
       request<SubscriptionListResponse>(`/api/v1/subscriptions?status=${status}`, { signal }),
+    // 탭을 바꿔 처음 부를 때 화면 전체가 로딩으로 바뀌지 않게 이전 탭 데이터를 유지 (화면은 isPlaceholderData면 목록을 숨김)
+    placeholderData: keepPreviousData,
     select: (data) => ({
       ...data,
       subscriptions: data.subscriptions.map((s) => ({
