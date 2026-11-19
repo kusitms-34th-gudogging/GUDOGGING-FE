@@ -1,6 +1,7 @@
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { CheckIcon } from '@/assets/icons';
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 interface DropdownOptionProps {

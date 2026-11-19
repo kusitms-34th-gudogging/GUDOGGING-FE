@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Image, type ImageSourcePropType, Pressable, Text, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 const notificationItemVariants = cva('flex-row items-start gap-inline-md px-screen-x py-inset-sm', {

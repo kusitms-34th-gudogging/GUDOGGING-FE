@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { ChevronDownIcon, MoreIcon, TrashIcon } from '@/assets/icons';
 import { Button } from '@/components/common/Button';
@@ -10,6 +10,7 @@ import { Modal } from '@/components/common/Modal';
 import { MoreMenu } from '@/components/common/MoreMenu';
 import { QueryState } from '@/components/common/QueryState';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
+import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';

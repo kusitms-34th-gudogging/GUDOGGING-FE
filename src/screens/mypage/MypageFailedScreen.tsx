@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { AccessibilityInfo, Text, View } from 'react-native';
+import { AccessibilityInfo, View } from 'react-native';
 
 import { Button } from '@/components/common/Button';
 import { ShakingAlertIcon } from '@/components/common/ShakingAlertIcon';
 import { StatusBlurBackground } from '@/components/common/StatusBlurBackground';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { useConnectGmail } from '@/hooks/useConnectGmail';
 import { useWithdraw } from '@/hooks/useWithdraw';

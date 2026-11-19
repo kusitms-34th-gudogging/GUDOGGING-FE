@@ -6,13 +6,13 @@ import {
   Platform,
   ScrollView,
   type ScrollViewInstance,
-  Text,
   View,
 } from 'react-native';
 
 import { Cta } from '@/components/common/Cta';
 import { OptionCard } from '@/components/common/OptionCard';
 import { QueryState } from '@/components/common/QueryState';
+import { Text } from '@/components/common/Text';
 import { TextArea } from '@/components/common/TextArea';
 import { TopBar } from '@/components/common/TopBar';
 import { CHECKUP_CATEGORIES, toCheckupCategory } from '@/constants/checkup';

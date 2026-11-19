@@ -7,7 +7,9 @@ import {
 } from '@gorhom/bottom-sheet';
 import { colors } from '@tokens';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { ScrollView, useWindowDimensions, View } from 'react-native';
+
+import { Text } from '@/components/common/Text';
 
 import { Cta } from './Cta';
 

@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 const ctaVariants = cva('', {

@@ -1,6 +1,7 @@
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { Button } from '@/components/common/Button';
+import { Text } from '@/components/common/Text';
 
 interface QueryStateProps {
   isError: boolean;

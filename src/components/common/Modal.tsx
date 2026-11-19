@@ -1,4 +1,6 @@
-import { Modal as RNModal, Pressable, Text, View } from 'react-native';
+import { Modal as RNModal, Pressable, View } from 'react-native';
+
+import { Text } from '@/components/common/Text';
 
 interface ModalProps {
   visible: boolean;

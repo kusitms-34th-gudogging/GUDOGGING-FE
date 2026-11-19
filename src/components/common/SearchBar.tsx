@@ -41,6 +41,7 @@ export const SearchBar = ({
   <View className={cn(searchBarVariants({ variant }), className)}>
     <Icon className="size-icon-sm text-icon-secondary" />
     <TextInput
+      allowFontScaling={false} // 시스템 글자 크기 무시 (Text.tsx와 같은 팀 결정)
       {...inputProps}
       value={value}
       onChangeText={onChangeText}

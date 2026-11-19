@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import { useEffect } from 'react';
-import { AccessibilityInfo, Text, View } from 'react-native';
+import { AccessibilityInfo, View } from 'react-native';
 
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { CategoryPullBackground } from '@/components/register/CategoryPullBackground';
 import type { FoundSubscription } from '@/constants/services';

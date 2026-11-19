@@ -1,6 +1,6 @@
 import LottieView from 'lottie-react-native';
 import { useEffect, useRef } from 'react';
-import { AppState, Pressable, Text, View } from 'react-native';
+import { AppState, Pressable, View } from 'react-native';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -11,6 +11,7 @@ import Animated, {
 
 import bellRing from '@/assets/animations/bell_ring.json';
 import { Cta } from '@/components/common/Cta';
+import { Text } from '@/components/common/Text';
 
 const SHEET_ENTER_MS = 300;
 const BELL_LAST_FRAME = 336;

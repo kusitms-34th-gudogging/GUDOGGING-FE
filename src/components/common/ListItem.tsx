@@ -1,7 +1,8 @@
 import type { ComponentType, ReactNode } from 'react';
-import { Image, type ImageSourcePropType, Pressable, Text, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 import { Checkbox } from './Checkbox';

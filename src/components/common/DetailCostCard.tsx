@@ -1,8 +1,9 @@
 import { colors } from '@tokens';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { SaveColorAsset, SaveMonoAsset } from '@/assets/graphics';
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 interface DetailCostCardProps {

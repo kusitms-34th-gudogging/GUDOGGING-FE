@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CheckIcon, Step1Icon, Step2Icon, Step3Icon } from '@/assets/icons';
@@ -7,6 +7,7 @@ import { Button } from '@/components/common/Button';
 import { Cta } from '@/components/common/Cta';
 import { GuideStep } from '@/components/common/GuideStep';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import type { LoginProvider } from '@/types/auth';
 

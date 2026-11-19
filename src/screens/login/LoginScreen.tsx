@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Text, View } from 'react-native';
+import { AccessibilityInfo, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -10,6 +10,7 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { SocialLoginButton } from '@/components/common/SocialLoginButton';
+import { Text } from '@/components/common/Text';
 import { LOGIN_TRANSITION_SEC, LoginBackdrop } from '@/components/login/LoginBackdrop';
 import type { LoginProvider } from '@/types/auth';
 

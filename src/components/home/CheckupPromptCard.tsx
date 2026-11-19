@@ -1,7 +1,8 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { EditColorAsset } from '@/assets/graphics';
 import { Button } from '@/components/common/Button';
+import { Text } from '@/components/common/Text';
 
 interface CheckupPromptCardProps {
   onPress: () => void;

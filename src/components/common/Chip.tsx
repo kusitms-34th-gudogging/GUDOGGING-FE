@@ -1,7 +1,8 @@
 import type { ComponentType } from 'react';
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 interface ChipProps {

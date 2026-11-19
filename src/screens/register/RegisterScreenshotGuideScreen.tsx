@@ -1,12 +1,13 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Linking, Text, View } from 'react-native';
+import { Linking, View } from 'react-native';
 
 import { Step1Icon, Step2Icon, Step3Icon } from '@/assets/icons';
 import { Button } from '@/components/common/Button';
 import { Cta } from '@/components/common/Cta';
 import { GuideStep } from '@/components/common/GuideStep';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 
 // Apple 계정의 전체 구독 목록 (App Store 구독 관리)

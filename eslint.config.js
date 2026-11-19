@@ -26,6 +26,14 @@ module.exports = defineConfig([
             { group: ['../*'], message: '폴더 밖은 @/ 절대경로' },
             { group: ['@/server/*'], message: '서버 코드는 src/server, src/app/api에서만' },
           ],
+          paths: [
+            {
+              name: 'react-native',
+              importNames: ['Text', 'TextInput'],
+              message:
+                '시스템 글자 크기를 무시하는 공통 컴포넌트 사용 → Text는 @/components/common/Text, 입력은 TextField·TextArea·SearchBar',
+            },
+          ],
         },
       ],
       'no-restricted-syntax': [
@@ -48,6 +56,21 @@ module.exports = defineConfig([
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
       'import/no-default-export': 'error',
+    },
+  },
+  // react-native Text·TextInput을 감싸는 공통 컴포넌트 (allowFontScaling={false})
+  {
+    files: [
+      'src/components/common/Text.tsx',
+      'src/components/common/TextField.tsx',
+      'src/components/common/TextArea.tsx',
+      'src/components/common/SearchBar.tsx',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { patterns: [{ group: ['../*'], message: '폴더 밖은 @/ 절대경로' }] },
+      ],
     },
   },
   {

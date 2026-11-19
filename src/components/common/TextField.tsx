@@ -1,7 +1,8 @@
 import { colors } from '@tokens';
 import { useState } from 'react';
-import { Text, TextInput, type TextInputProps, View } from 'react-native';
+import { TextInput, type TextInputProps, View } from 'react-native';
 
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 interface TextFieldProps extends Omit<
@@ -53,6 +54,7 @@ export const TextField = ({
         )}
       >
         <TextInput
+          allowFontScaling={false} // 시스템 글자 크기 무시 (Text.tsx와 같은 팀 결정)
           {...inputProps}
           accessibilityLabel={label}
           accessibilityHint={showHelper || showError ? helper : undefined}

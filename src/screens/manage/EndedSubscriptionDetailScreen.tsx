@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { MoreIcon } from '@/assets/icons';
 import { Badge } from '@/components/common/Badge';
@@ -9,6 +9,7 @@ import { DetailCostCard } from '@/components/common/DetailCostCard';
 import { Divider, ServiceHeader } from '@/components/common/DetailParts';
 import { ListItem } from '@/components/common/ListItem';
 import { MoreMenu } from '@/components/common/MoreMenu';
+import { Text } from '@/components/common/Text';
 import { TextArea } from '@/components/common/TextArea';
 import { TopBar } from '@/components/common/TopBar';
 import type { EndedSubscriptionDetail } from '@/constants/manage';

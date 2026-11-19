@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Text, useWindowDimensions, View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -10,6 +10,7 @@ import Animated, {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Cta } from '@/components/common/Cta';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { NotificationSheet } from '@/components/onboarding/NotificationSheet';
 import { OnboardingVisual } from '@/components/onboarding/OnboardingVisual';

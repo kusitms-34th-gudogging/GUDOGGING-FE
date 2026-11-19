@@ -1,7 +1,7 @@
 import { motion } from '@tokens';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
@@ -20,6 +20,7 @@ import { Button } from '@/components/common/Button';
 import { Dial } from '@/components/common/Dial';
 import { ListItem } from '@/components/common/ListItem';
 import { QueryState } from '@/components/common/QueryState';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { PAID_AT } from '@/constants/services';
 import { type CalendarItem, useCalendar } from '@/hooks/useCalendar';

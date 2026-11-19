@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Image, ScrollView, Text, View } from 'react-native';
+import { Image, ScrollView, View } from 'react-native';
 
 import { RecommendCard } from '@/components/checkup/RecommendCard';
 import { UsageBreath } from '@/components/checkup/UsageBreath';
@@ -7,6 +7,7 @@ import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
 import { ListItem } from '@/components/common/ListItem';
 import { QueryState } from '@/components/common/QueryState';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { useCheckupResult } from '@/hooks/useCheckups';
 import { useDecideCheckup } from '@/hooks/useDecideCheckup';

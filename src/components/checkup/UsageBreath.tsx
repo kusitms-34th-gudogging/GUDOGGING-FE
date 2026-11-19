@@ -1,7 +1,7 @@
 import { Blur, Canvas, Circle, Group, RadialGradient, vec } from '@shopify/react-native-skia';
 import { colors } from '@tokens';
 import { type ReactNode, useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, {
   Easing,
   type SharedValue,
@@ -13,6 +13,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 // 노션 "점검 결과 인터랙션" 값. 그래픽 영역 287 × 236 기준

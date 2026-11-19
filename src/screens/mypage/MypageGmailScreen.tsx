@@ -1,11 +1,12 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { CheckCircleIcon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
 import { Modal } from '@/components/common/Modal';
 import { QueryState } from '@/components/common/QueryState';
+import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useConnectGmail } from '@/hooks/useConnectGmail';

@@ -1,6 +1,7 @@
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { PlusIcon } from '@/assets/icons';
+import { Text } from '@/components/common/Text';
 
 interface AddServiceRowProps {
   label: string;

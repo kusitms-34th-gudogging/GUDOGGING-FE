@@ -1,7 +1,8 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { Badge } from '@/components/common/Badge';
+import { Text } from '@/components/common/Text';
 import type { CheckupRecommendation } from '@/constants/checkup';
 import { formatWon } from '@/utils/formatPayment';
 

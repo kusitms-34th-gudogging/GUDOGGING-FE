@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { type ComponentType, Fragment, useState } from 'react';
-import { Image, ScrollView, Text, View } from 'react-native';
+import { Image, ScrollView, View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
 import {
@@ -14,6 +14,7 @@ import {
 import { ChevronRightIcon } from '@/assets/icons';
 import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { useLogout } from '@/hooks/useLogout';
 import { useMe } from '@/hooks/useMe';

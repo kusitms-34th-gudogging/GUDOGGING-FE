@@ -2,10 +2,11 @@ import * as Haptics from 'expo-haptics';
 import { type NativeStackNavigationProp, router, useNavigation } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Text, View } from 'react-native';
+import { AccessibilityInfo, View } from 'react-native';
 
 import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { getRegisteredServices, useRegisterDraft } from '@/hooks/useRegisterDraft';

@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { QueryState } from '@/components/common/QueryState';
+import { Text } from '@/components/common/Text';
 import { Toggle } from '@/components/common/Toggle';
 import { TopBar } from '@/components/common/TopBar';
 import { useNotificationSettings } from '@/hooks/useNotificationSettings';

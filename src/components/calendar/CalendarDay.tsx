@@ -1,6 +1,7 @@
 import { cva } from 'class-variance-authority';
-import { Image, type ImageSourcePropType, Pressable, Text, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
+import { Text } from '@/components/common/Text';
 import type { CheckupCategory } from '@/constants/checkup';
 import { cn } from '@/utils/cn';
 
