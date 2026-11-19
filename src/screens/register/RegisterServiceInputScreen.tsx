@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Keyboard, Pressable, Text, View } from 'react-native';
 
 import { ImageColorAsset, ImageMonoAsset } from '@/assets/graphics';
 import { BottomSheet } from '@/components/common/BottomSheet';
@@ -158,8 +158,15 @@ const ServiceInputForm = ({
           contentContainerClassName="grow"
           keyboardShouldPersistTaps="handled"
         >
-          {/* 드롭다운 메뉴 바깥(빈 곳)을 누르면 닫힘. 안쪽 버튼·입력칸은 각자 터치를 가져감 */}
-          <Pressable accessible={false} onPress={closeMenu} className="grow gap-screen-x">
+          {/* 빈 곳을 누르면 드롭다운 메뉴를 닫고 키보드도 내림 (숫자 키패드는 완료 키가 없음). 안쪽 버튼·입력칸은 각자 터치를 가져감 */}
+          <Pressable
+            accessible={false}
+            onPress={() => {
+              closeMenu();
+              Keyboard.dismiss();
+            }}
+            className="grow gap-screen-x"
+          >
             {/* 편집도 사전 등록 서비스(A-03)처럼 서비스명은 보여 주기만 함 */}
             {headerName && (
               <View className="flex-row items-center gap-inline-sm">

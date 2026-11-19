@@ -97,7 +97,12 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
           {!search.data && (
             <QueryState isError={search.isError} onRetry={() => void search.refetch()} />
           )}
-          <FadeScrollView className="flex-1" contentContainerClassName="gap-inline-xs">
+          {/* 검색 키보드가 떠 있어도 목록·직접 입력하기가 한 번에 눌리게 (기본값은 첫 탭이 키보드만 내림) */}
+          <FadeScrollView
+            className="flex-1"
+            contentContainerClassName="gap-inline-xs"
+            keyboardShouldPersistTaps="handled"
+          >
             {results.map((s) => (
               <ListItem
                 key={s.id}
