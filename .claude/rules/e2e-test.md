@@ -74,7 +74,7 @@ E2E는 적게, 제품 핵심 가치를 지나는 **사용자 여정** 단위로 
 
 ## 기다리기 ([Wait commands](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/wait-commands))
 
-- 나타나거나 사라지는 요소는 `assertVisible`로 (나타날 때까지 계속 확인)
+- 나타나는 요소는 `assertVisible`, 사라지는 요소는 `assertNotVisible` (둘 다 그 상태가 될 때까지 계속 확인)
 - 몇 초 이상 걸리는 게 확실한 경우만 `extendedWaitUntil` + `timeout`. 모든 timeout을 길게 잡지 않음
 - 움직이는 요소는 `waitForAnimationToEnd`, 탭이 안 먹히면 `tapOn`에 `retryTapIfNoChange: true`
 
@@ -97,7 +97,7 @@ E2E는 적게, 제품 핵심 가치를 지나는 **사용자 여정** 단위로 
 - `appId`는 `app.json`의 `ios.bundleIdentifier`
 
 ```yaml
-# .maestro/auth-login-to-home.yml
+# .maestro/subflows/login.yml
 appId: com.subscribers.gudogging
 ---
 - launchApp:
@@ -105,6 +105,12 @@ appId: com.subscribers.gudogging
     clearKeychain: true # 토큰이 iOS 키체인(SecureStore)에 남음
 - tapOn:
     id: 'login-apple'
+- tapOn:
+    id: 'onboarding-skip' # 첫 로그인은 온보딩으로 감
+- tapOn:
+    id: 'notification-later'
+- tapOn:
+    id: 'add-subscription-skip'
 - assertVisible:
     id: 'home-screen'
 ```

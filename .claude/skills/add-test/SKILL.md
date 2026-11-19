@@ -40,5 +40,5 @@ description: 테스트 코드를 작성할 때 사용. "테스트 짜줘", "테�
 3. **E2E 대상 고르기**(`.claude/rules/e2e-test.md`)로 Jest로 넘길 것은 빼고, 사용자 여정 하나만 정함. 여정 단계를 보여주고 **확인을 받은 뒤** 작성
 4. `.maestro/{도메인}-{여정}.yml` 작성. 공통 단계(로그인 등)는 `.maestro/subflows/`로 빼서 `runFlow`
 5. 선택자는 `.claude/rules/e2e-test.md` "선택자"대로. 필요한 요소에 `testID`가 없으면 추가할 위치를 사용자에게 알림
-6. 환경이 있으면 `pnpm mock` 후 `maestro test .maestro/{도메인}-{여정}.yml` → 통과 확인 → 중간 단계의 `assertVisible`을 틀린 값으로 바꿔 실패하는지 확인하고 되돌림
+6. 환경이 있으면 다른 터미널에 `E2E=1 pnpm mock`을 띄우고 `sh scripts/e2e.sh .maestro/{도메인}-{여정}.yml` → 통과 확인 → 중간 단계의 `assertVisible`을 틀린 값으로 바꿔 같은 명령으로 실패하는지 확인하고 되돌림 (스크립트가 실행마다 목서버를 초기화해 두 번 다 같은 경로로 감)
 7. 보고: 작성한 플로우, 추가가 필요한 `testID`, 실행 확인 여부
