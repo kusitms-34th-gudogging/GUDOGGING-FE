@@ -3,8 +3,9 @@ name: E2E
 # Maestro E2E 전체를 iOS 시뮬레이터에서 실행 (.claude/rules/e2e-test.md)
 # EAS 빌드 횟수를 쓰지 않음: runner의 Xcode로 시뮬레이터용 Release 빌드
 # 공개 레포라 기본 macOS runner는 무료. 대형 runner(macos_l·macos_xl)는 유료라 쓰지 않음
-# PR에서는 돌리지 않음 (오래 걸려서). dev 머지 때와 Actions 탭 수동 실행만. 결과는 Actions 실행 결과로 확인
+# PR·dev 머지·Actions 탭 수동 실행 때. PR에선 체크 목록에 결과가 뜨지만 머지 필수(required)는 아님 (오래 걸려서 기다리지 않고 머지 가능)
 on:
+  pull_request:
   push:
     branches: [dev]
   workflow_dispatch:
@@ -13,7 +14,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: e2e-${{ github.ref }}
+  group: e2e-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:

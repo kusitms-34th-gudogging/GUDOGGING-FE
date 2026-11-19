@@ -119,7 +119,7 @@ appId: com.subscribers.gudogging
   - 켜진 시뮬레이터가 하나여야 함 (여러 대면 Maestro가 아무거나 고름). E2E 도중엔 같은 시뮬레이터에서 Expo Go·개발 서버를 쓰지 않음
   - `package.json` `scripts`에 넣지 않음: 네이티브 지문(`packageJson:scripts`)이 바뀌어 dev 머지 때 EAS 빌드가 돎
 - `auth-login-to-home` 기준 약 70초 (로컬 iPhone 시뮬레이터)
-- CI(`.github/workflows/e2e.yml`): PR에서는 돌리지 않음(오래 걸림). dev 머지 때와 Actions 탭 수동 실행만, 7개 전체. 아직 GitHub에서 돌려 보지 않음 (로컬 리허설만) → 첫 실행 뒤 확인한 내용으로 고침
+- CI(`.github/workflows/e2e.yml`): PR·dev 머지·Actions 탭 수동 실행 때 7개 전체. PR 체크 목록에 뜨지만 머지 필수는 아님 (오래 걸려 기다리지 않고 머지 가능). dev 머지 때 E2E가 실패해도 배포(`deploy.yml`)는 막지 않음. 아직 GitHub에서 돌려 보지 않음 (로컬 리허설만) → 첫 실행 뒤 확인한 내용으로 고침
 
 ## 이럴 때 더 읽기
 
