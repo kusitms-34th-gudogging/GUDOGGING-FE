@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { userEvent } from '@testing-library/react-native';
+import { fireEvent, userEvent } from '@testing-library/react-native';
 import { router, Stack } from 'expo-router';
 import { act, renderRouter, screen } from 'expo-router/testing-library';
-import { Pressable, Text } from 'react-native';
+import { Keyboard, Pressable, Text } from 'react-native';
 
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
@@ -80,6 +80,30 @@ describe('RegisterServiceInputScreen 이탈 팝업', () => {
     // 사이의 서비스 선택 화면이 팝업을 다시 띄우지 않음
     expect(screen.queryByText('등록을 그만할까요?')).not.toBeOnTheScreen();
     expect(useRegisterDraft.getState().selectedIds).toEqual([]);
+  });
+});
+
+describe('RegisterServiceInputScreen 키보드', () => {
+  // 입력칸이 아닌 곳을 누르면 키보드를 내림 (숫자 키패드는 완료 키가 없어 내릴 방법이 없음)
+  it.each(['카테고리', '결제 주기 단위', '다음 결제일'])(
+    '%s 드롭다운을 누르면 키보드를 내린다',
+    async (label) => {
+      const user = await renderInput();
+      const dismiss = jest.spyOn(Keyboard, 'dismiss');
+
+      await user.press(screen.getByRole('button', { name: label }));
+
+      expect(dismiss).toHaveBeenCalled();
+    },
+  );
+
+  it('다른 입력칸으로 옮길 땐 키보드를 내리지 않는다', async () => {
+    await renderInput();
+    const dismiss = jest.spyOn(Keyboard, 'dismiss');
+
+    fireEvent(screen.getByLabelText('결제 금액'), 'focus');
+
+    expect(dismiss).not.toHaveBeenCalled();
   });
 });
 

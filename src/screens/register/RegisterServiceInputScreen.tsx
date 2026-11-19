@@ -139,6 +139,12 @@ const ServiceInputForm = ({
   // 금액 에러 표시는 안내일 뿐, 금액이 있으면 그대로 저장 가능 (화면설계서 A-15)
   const valid = nameValid && !!category && Number(amount) > 0 && cycleNum >= 1 && cycleNum <= 31;
   const closeMenu = () => setCategoryOpen(false);
+  // 입력칸이 아닌 곳(빈 곳·드롭다운·결제한 곳)을 누르면 키보드도 내림. 숫자 키패드는 완료 키가 없음
+  // 다른 입력칸을 누를 땐 키보드가 그 칸으로 넘어가야 해서 입력칸 onFocus는 closeMenu만
+  const closeMenuAndKeyboard = () => {
+    closeMenu();
+    Keyboard.dismiss();
+  };
   // shortcut: 직접 입력한 구독은 서비스명 수정 가능(명세)인데 상세 응답에 구분 값이 없어 편집은 모두 이름 고정, 응답에 생기면 직접 입력만 입력란으로
   const headerName = edit?.name ?? (found ? undefined : service?.name);
 
@@ -158,13 +164,10 @@ const ServiceInputForm = ({
           contentContainerClassName="grow"
           keyboardShouldPersistTaps="handled"
         >
-          {/* 빈 곳을 누르면 드롭다운 메뉴를 닫고 키보드도 내림 (숫자 키패드는 완료 키가 없음). 안쪽 버튼·입력칸은 각자 터치를 가져감 */}
+          {/* 빈 곳을 누르면 드롭다운 메뉴를 닫고 키보드도 내림. 안쪽 버튼·입력칸은 각자 터치를 가져감 */}
           <Pressable
             accessible={false}
-            onPress={() => {
-              closeMenu();
-              Keyboard.dismiss();
-            }}
+            onPress={closeMenuAndKeyboard}
             className="grow gap-screen-x"
           >
             {/* 편집도 사전 등록 서비스(A-03)처럼 서비스명은 보여 주기만 함 */}
@@ -197,7 +200,10 @@ const ServiceInputForm = ({
                 placeholder="카테고리를 선택해 주세요"
                 value={category}
                 open={categoryOpen}
-                onPress={() => !locked && setCategoryOpen((o) => !o)}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  if (!locked) setCategoryOpen((o) => !o);
+                }}
                 options={CATEGORIES}
                 onSelect={(v) => {
                   setCategory(v);
@@ -239,7 +245,7 @@ const ServiceInputForm = ({
                   value={unit}
                   onPress={() => {
                     if (locked) return;
-                    closeMenu();
+                    closeMenuAndKeyboard();
                     setDraftUnit(undefined);
                     setUnitSheet(true);
                   }}
@@ -253,7 +259,7 @@ const ServiceInputForm = ({
                 value={formatDate(nextDate)}
                 showIcon={false}
                 onPress={() => {
-                  closeMenu();
+                  closeMenuAndKeyboard();
                   setDraftDate(nextDate);
                   setDateSheet(true);
                 }}
@@ -265,7 +271,7 @@ const ServiceInputForm = ({
                   selected={paidAt}
                   onSelect={(v) => {
                     if (!locked) setPaidAt(v);
-                    closeMenu();
+                    closeMenuAndKeyboard();
                   }}
                 />
                 <Text className="text-text-tertiary text-caption1-regular">
