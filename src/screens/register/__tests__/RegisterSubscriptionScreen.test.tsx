@@ -11,7 +11,8 @@ const DRAFTS = '/api/v1/subscriptions/drafts';
 // 다른 기기에서 직접 등록하던 서버 임시저장: Netflix는 결제 정보까지, 헬스장은 직접 입력
 const SERVER_DRAFT = {
   savedAt: '2026-11-07T16:30:00',
-  lastStep: 'A-04',
+  lastStep: 'CONFIRM_SUBSCRIPTIONS',
+  editingItemIndex: null,
   items: [
     {
       serviceId: 'netflix',
@@ -57,6 +58,7 @@ const renderScreen = async (serverDraft: object | null = null) => {
       'register/found': () => null,
       'register/selected': () => null,
       'register/select': () => null,
+      'register/input': () => null,
     },
     { initialUrl: '/register', wrapper: createQueryWrapper() },
   );
@@ -117,7 +119,7 @@ describe('RegisterSubscriptionScreen 불러오기 팝업', () => {
 
   it('직접 등록에서 서비스 선택에 머물렀으면 불러오기로 서비스 선택 화면으로 간다', async () => {
     useRegisterDraft.getState().setSelectedIds(['netflix']);
-    useRegisterDraft.getState().setLastStep('A-02');
+    useRegisterDraft.getState().setLastStep('SELECT_SERVICES');
     const user = await renderScreen();
 
     await user.press(screen.getByRole('button', { name: '불러오기' }));
@@ -133,7 +135,7 @@ describe('RegisterSubscriptionScreen 불러오기 팝업', () => {
     expect(screen).toHavePathname('/register/selected');
     const { selectedIds, payments, lastStep } = useRegisterDraft.getState();
     expect(selectedIds).toEqual(['netflix', 'tving']);
-    expect(lastStep).toBe('A-04');
+    expect(lastStep).toBe('CONFIRM_SUBSCRIPTIONS');
     // 결제 정보를 다 채운 항목만 결제 정보로 (티빙은 고른 서비스로만)
     expect(payments).toEqual({
       netflix: {
@@ -155,6 +157,33 @@ describe('RegisterSubscriptionScreen 불러오기 팝업', () => {
         paidAt: 'appstore',
       },
     });
+  });
+
+  it('정보 입력 중에 멈췄으면 불러오기로 선택한 구독 위에 그 항목 입력 화면을 연다', async () => {
+    const user = await renderScreen({
+      ...SERVER_DRAFT,
+      lastStep: 'INPUT_SUBSCRIPTION',
+      editingItemIndex: 2,
+    });
+
+    await user.press(await screen.findByRole('button', { name: '불러오기' }));
+
+    // items[2] 동네 헬스장(직접 입력)의 기기 id
+    expect(screen).toHavePathname('/register/input');
+    expect(screen).toHaveSearchParams({ id: 'custom-draft-2' });
+    await act(() => router.back());
+    expect(screen).toHavePathname('/register/selected');
+  });
+
+  it('새 직접 입력 중에 멈췄으면(editingItemIndex null) 서비스 선택 위에 빈 직접 입력을 연다', async () => {
+    const user = await renderScreen({ ...SERVER_DRAFT, lastStep: 'INPUT_SUBSCRIPTION' });
+
+    await user.press(await screen.findByRole('button', { name: '불러오기' }));
+
+    expect(screen).toHavePathname('/register/input');
+    expect(screen).toHaveSearchParams({});
+    await act(() => router.back());
+    expect(screen).toHavePathname('/register/select');
   });
 
   it('서버 임시저장만 있을 때 새로 등록하기를 누르면 서버 임시저장을 지운다', async () => {

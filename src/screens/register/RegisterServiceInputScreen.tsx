@@ -92,7 +92,8 @@ const ServiceInputForm = ({
   reactivate?: SubscriptionDetail;
   edit?: SubscriptionDetail;
 }) => {
-  useRegisterStep('A-03');
+  // 직접 등록 임시저장 대상만 기록 (구독 편집·재등록·불러온 구독 수정은 직접 등록 흐름이 아님)
+  useRegisterStep(edit || reactivate || found ? undefined : 'INPUT_SUBSCRIPTION', serviceId);
   // 사전 등록 서비스(A-03)만 서비스명 잠금, 직접 입력·불러온 구독은 서비스명도 입력·수정
   const isCustom = !service;
   const payments = useRegisterDraft((s) => s.payments);

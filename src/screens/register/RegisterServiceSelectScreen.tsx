@@ -21,7 +21,7 @@ interface RegisterServiceSelectScreenProps {
 }
 
 export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScreenProps) => {
-  useRegisterStep('A-02');
+  useRegisterStep('SELECT_SERVICES');
   const [query, setQuery] = useState('');
   // 불러오기 팝업으로 이어서 등록할 수 있게 저장소에 둠
   const selectedIds = useRegisterDraft((s) => s.selectedIds);

@@ -35,6 +35,8 @@ export interface DraftItem {
 export interface SubscriptionDraft {
   savedAt: string;
   lastStep: RegisterStep;
+  // INPUT_SUBSCRIPTION일 때 입력 중이던 items 순번, null이면 새 직접 입력 (다른 단계는 항상 null)
+  editingItemIndex: number | null;
   items: DraftItem[];
 }
 
@@ -55,6 +57,7 @@ type ManualDraft = Pick<
   'selectedIds' | 'payments' | 'found'
 >;
 
+// 결제 정보 6개는 모두 null(미입력)이거나 모두 입력 (명세)
 const paymentFields = (p?: PaymentInfo) => ({
   amount: p?.amount ?? null,
   billingCycleValue: p?.cycle ?? null,
@@ -63,39 +66,61 @@ const paymentFields = (p?: PaymentInfo) => ({
   paymentMethod: p ? toPaymentMethodCode(p.paidAt) : null,
 });
 
-// 직접 등록(A-02~A-04)의 고른 서비스 + 직접 입력. 분석으로 불러온 구독은 명세 임시저장에 없어 기기에만 둠
-export const toDraftItems = (
+// 직접 등록(A-02~A-04)의 고른 서비스 + 직접 입력, [기기 id, 임시저장 항목]. 분석으로 불러온 구독은 명세 임시저장에 없어 기기에만 둠
+const draftEntries = (
   { selectedIds, payments, found }: ManualDraft,
   services: Service[],
-): DraftItem[] => [
-  ...selectedIds.map((id) => {
+): [string, DraftItem][] => [
+  ...selectedIds.map((id): [string, DraftItem] => {
     const service = services.find((s) => s.id === id);
     const p = payments[id];
-    return {
-      serviceId: id,
-      serviceName: service?.name ?? '',
-      category: toCategoryCode(p?.category ?? service?.category),
-      ...paymentFields(p),
-    };
+    return [
+      id,
+      {
+        serviceId: id,
+        serviceName: service?.name ?? '',
+        category: p ? toCategoryCode(p.category ?? service?.category) : null,
+        ...paymentFields(p),
+      },
+    ];
   }),
   ...Object.entries(payments)
     .filter(([id]) => id.startsWith('custom-') && !found.some((f) => f.id === id))
-    .map(([, p]) => ({
-      serviceId: null,
-      serviceName: p.name ?? '',
-      category: toCategoryCode(p.category),
-      ...paymentFields(p),
-    })),
+    .map(([id, p]): [string, DraftItem] => [
+      id,
+      {
+        serviceId: null,
+        serviceName: p.name ?? '',
+        category: toCategoryCode(p.category),
+        ...paymentFields(p),
+      },
+    ]),
 ];
 
+// 머문 화면 → 명세 lastStep·editingItemIndex. 입력 중인 항목이 임시저장에 없으면 그 목록 화면(A-04)으로
+export const toDraftStep = (
+  lastStep: RegisterStep | undefined,
+  editingId: string | undefined,
+  ids: string[],
+) => {
+  if (lastStep !== 'INPUT_SUBSCRIPTION')
+    return { lastStep: lastStep ?? 'SELECT_SERVICES', editingItemIndex: null };
+  if (editingId === undefined) return { lastStep, editingItemIndex: null };
+  const index = ids.indexOf(editingId);
+  return index >= 0
+    ? { lastStep, editingItemIndex: index }
+    : { lastStep: 'CONFIRM_SUBSCRIPTIONS' as const, editingItemIndex: null };
+};
+
 // 서버 임시저장 → 기기 저장소. 결제 정보를 다 채운 항목만 결제 정보로 (A-03은 일부만 저장하지 않음)
-export const fromDraft = ({ items, lastStep }: SubscriptionDraft) => {
+export const fromDraft = ({ items, lastStep, editingItemIndex }: SubscriptionDraft) => {
   const payments: Record<string, PaymentInfo> = {};
+  const ids = items.map((item, i) => item.serviceId ?? `custom-draft-${i}`);
   items.forEach((item, i) => {
     const { amount, billingCycleValue, billingCycleUnit, nextBillingDate, paymentMethod } = item;
     if (!amount || !billingCycleValue || !billingCycleUnit || !nextBillingDate || !paymentMethod)
       return;
-    payments[item.serviceId ?? `custom-draft-${i}`] = {
+    payments[ids[i]] = {
       // 직접 입력은 이름을 결제 정보에 같이 둠 (useRegisterServices 기준)
       name: item.serviceId ? undefined : item.serviceName,
       category: CATEGORY_LABEL[item.category ?? 'ETC'],
@@ -110,6 +135,7 @@ export const fromDraft = ({ items, lastStep }: SubscriptionDraft) => {
     selectedIds: items.flatMap((item) => (item.serviceId ? [item.serviceId] : [])),
     payments,
     lastStep,
+    editingId: editingItemIndex === null ? undefined : ids[editingItemIndex],
   };
 };
 
@@ -126,7 +152,15 @@ export const useSyncSubscriptionDraft = () => {
     if (!services) return;
     const snapshot = () => {
       const state = useRegisterDraft.getState();
-      return { items: toDraftItems(state, services), lastStep: state.lastStep };
+      const entries = draftEntries(state, services);
+      return {
+        items: entries.map(([, item]) => item),
+        ...toDraftStep(
+          state.lastStep,
+          state.editingId,
+          entries.map(([id]) => id),
+        ),
+      };
     };
     let prev = JSON.stringify(snapshot());
     return useRegisterDraft.subscribe(() => {
@@ -135,8 +169,7 @@ export const useSyncSubscriptionDraft = () => {
       if (key === prev) return;
       const hadItems = JSON.parse(prev).items.length > 0;
       prev = key;
-      if (next.items.length > 0)
-        saveDraft({ items: next.items, lastStep: next.lastStep ?? 'A-02' });
+      if (next.items.length > 0) saveDraft(next);
       else if (hadItems) deleteDraft();
     });
   }, [services, saveDraft, deleteDraft]);

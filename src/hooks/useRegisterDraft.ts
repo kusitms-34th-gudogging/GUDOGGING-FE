@@ -9,7 +9,8 @@ import { useServices } from '@/hooks/useServices';
 
 type FoundSource = 'SCREENSHOT' | 'GMAIL';
 // 직접 등록 중 마지막으로 머문 화면 (서버 임시저장 lastStep, 불러오기로 그 화면에 복원)
-export type RegisterStep = 'A-02' | 'A-03' | 'A-04';
+// SELECT_SERVICES A-02 · CONFIRM_SUBSCRIPTIONS A-04 · INPUT_SUBSCRIPTION A-03·A-03s
+export type RegisterStep = 'SELECT_SERVICES' | 'CONFIRM_SUBSCRIPTIONS' | 'INPUT_SUBSCRIPTION';
 
 interface RegisterDraft {
   selectedIds: string[];
@@ -19,9 +20,13 @@ interface RegisterDraft {
   foundSource?: FoundSource;
   foundChecked?: string[];
   lastStep?: RegisterStep;
-  setLastStep: (step: RegisterStep) => void;
+  // INPUT_SUBSCRIPTION일 때 입력 중이던 항목 id (사전 등록 serviceId 또는 직접 입력 custom-…). 없으면 새 직접 입력
+  editingId?: string;
+  setLastStep: (step: RegisterStep, editingId?: string) => void;
   // 서버 임시저장으로 채움 (다른 기기에서 등록하던 걸 불러올 때)
-  restore: (draft: Pick<RegisterDraft, 'selectedIds' | 'payments' | 'lastStep'>) => void;
+  restore: (
+    draft: Pick<RegisterDraft, 'selectedIds' | 'payments' | 'lastStep' | 'editingId'>,
+  ) => void;
   // 분석 결과를 받으면 등록 가능 항목을 처음부터 전부 체크 (기획 답변)
   setFound: (source: FoundSource, found: FoundSubscription[]) => void;
   setSelectedIds: (ids: string[]) => void;
@@ -39,6 +44,7 @@ const EMPTY = {
   foundSource: undefined,
   foundChecked: undefined,
   lastStep: undefined,
+  editingId: undefined,
 };
 
 export const useRegisterDraft = create<RegisterDraft>()(
@@ -52,7 +58,7 @@ export const useRegisterDraft = create<RegisterDraft>()(
       setFoundChecked: (foundChecked) => set({ foundChecked }),
       addFoundChecked: (ids) =>
         set((s) => ({ foundChecked: [...new Set([...(s.foundChecked ?? []), ...ids])] })),
-      setLastStep: (lastStep) => set({ lastStep }),
+      setLastStep: (lastStep, editingId) => set({ lastStep, editingId }),
       restore: (draft) => set({ ...EMPTY, ...draft }),
       reset: () => set(EMPTY),
     }),
@@ -103,11 +109,11 @@ export const getRegisteredServices = (
     name: payments[id]?.name ?? services.find((s) => s.id === id)?.name ?? '',
   }));
 
-// 직접 등록 화면이 보일 때 머문 화면으로 기록 (서버 임시저장 lastStep)
+// 직접 등록 화면이 보일 때 머문 화면으로 기록 (서버 임시저장 lastStep). step이 없으면 기록 안 함
 // persist의 set은 저장 Promise를 돌려줘서 그대로 반환하면 effect 정리 함수 자리에 Promise가 들어감 → 블록으로 감쌈
-export const useRegisterStep = (step: RegisterStep) =>
+export const useRegisterStep = (step: RegisterStep | undefined, editingId?: string) =>
   useFocusEffect(
     useCallback(() => {
-      useRegisterDraft.getState().setLastStep(step);
-    }, [step]),
+      if (step) useRegisterDraft.getState().setLastStep(step, editingId);
+    }, [step, editingId]),
   );

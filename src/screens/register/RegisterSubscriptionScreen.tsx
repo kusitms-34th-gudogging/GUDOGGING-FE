@@ -53,11 +53,14 @@ const FIRST_SCREEN = {
 const hasDraft = () => hasRegisterDraft(useRegisterDraft.getState());
 
 // 등록 중이던 화면으로 이어감. 스크린샷·Gmail은 분석 결과(A-09), 직접 등록은 머문 화면(lastStep)
-// 정보 입력(A-03)은 어느 서비스를 입력하던 건지 알 수 없어 그 목록인 선택한 구독(A-04)으로
+// 정보 입력 중이었으면 입력하던 항목은 선택한 구독(A-04) 위에, 새 직접 입력은 서비스 선택(A-02) 위에 (명세)
 const resume = () => {
-  const { foundChecked, lastStep } = useRegisterDraft.getState();
+  const { foundChecked, lastStep, editingId } = useRegisterDraft.getState();
   if (foundChecked) return router.push('/register/found');
-  router.push(lastStep === 'A-02' ? '/register/select' : '/register/selected');
+  if (lastStep === 'SELECT_SERVICES') return router.push('/register/select');
+  if (lastStep !== 'INPUT_SUBSCRIPTION') return router.push('/register/selected');
+  router.push(editingId ? '/register/selected' : '/register/select');
+  router.push({ pathname: '/register/input', params: editingId ? { id: editingId } : {} });
 };
 
 export const RegisterSubscriptionScreen = () => {

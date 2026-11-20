@@ -41,7 +41,12 @@ export interface Checkup {
 export const db = {
   subscriptions: [] as Subscription[],
   checkups: [] as Checkup[],
-  draft: null as null | { savedAt: string; lastStep: string; items: unknown[] },
+  draft: null as null | {
+    savedAt: string;
+    lastStep: string;
+    editingItemIndex: number | null;
+    items: unknown[];
+  },
   paymentReminderEnabled: true,
   gmailEmail: null as string | null,
   // 한 번 로그인하면 가입한 계정 (다음 로그인부터 isNewUser false → 온보딩 없이 홈)

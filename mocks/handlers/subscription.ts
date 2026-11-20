@@ -76,8 +76,12 @@ const answersOf = (c: Checkup) => ({
 export const subscriptionHandlers = [
   http.get('/api/v1/subscriptions/drafts', () => ok('임시저장을 조회했습니다.', db.draft)),
   http.put('/api/v1/subscriptions/drafts', async ({ request }) => {
-    const { items, lastStep } = (await request.json()) as { items: unknown[]; lastStep: string };
-    db.draft = { savedAt: nowIso(), lastStep, items };
+    const { items, lastStep, editingItemIndex } = (await request.json()) as {
+      items: unknown[];
+      lastStep: string;
+      editingItemIndex: number | null;
+    };
+    db.draft = { savedAt: nowIso(), lastStep, editingItemIndex, items };
     return ok('임시저장했습니다.', { savedAt: db.draft.savedAt });
   }),
   http.delete('/api/v1/subscriptions/drafts', () => {

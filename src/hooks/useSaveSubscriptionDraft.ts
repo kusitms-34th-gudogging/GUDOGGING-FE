@@ -8,7 +8,11 @@ import { request } from '@/lib/request';
 export const useSaveSubscriptionDraft = () => {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (draft: { items: DraftItem[]; lastStep: RegisterStep }) =>
+    mutationFn: (draft: {
+      items: DraftItem[];
+      lastStep: RegisterStep;
+      editingItemIndex: number | null;
+    }) =>
       request<{ savedAt: string }>('/api/v1/subscriptions/drafts', { method: 'PUT', body: draft }),
     onSuccess: () => client.invalidateQueries({ queryKey: draftKeys.all }),
   });
