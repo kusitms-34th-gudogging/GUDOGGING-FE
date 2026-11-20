@@ -100,11 +100,15 @@ export const HomeScreen = () => {
                     showLogo
                     cost={formatWon(s.amount)}
                     showCost
-                    // 행 전체가 터치 영역 → 그 구독 점검 1/4
-                    iconRightAction={{
-                      accessibilityLabel: `${s.serviceName} 점검하기`,
-                      onPress: () => router.push(`/checkup/${s.subscriptionId}?restart=1`),
-                    }}
+                    // 행 전체가 터치 영역 → 그 구독 점검 1/4. 이번 주기 점검을 마쳤으면 누를 수 없음 (명세 needsCheckup)
+                    iconRightAction={
+                      s.needsCheckup
+                        ? {
+                            accessibilityLabel: `${s.serviceName} 점검하기`,
+                            onPress: () => router.push(`/checkup/${s.subscriptionId}?restart=1`),
+                          }
+                        : undefined
+                    }
                   />
                 ))}
               </View>
@@ -126,8 +130,8 @@ export const HomeScreen = () => {
                       <ListItem
                         key={s.subscriptionId}
                         title={s.serviceName}
-                        // shortcut: 명세 usage.items에 활용도가 없어 결제일 표시, 백엔드에 활용도 추가 요청 후 '유지 추천 n%'로
-                        subtitle={dateLabel(s.nextBillingDate)}
+                        // 화면설계서 구간: 40% 미만 해지 추천, 40–59% 해지 고려 (API 명세의 'n% 유지 추천'보다 우선)
+                        subtitle={`${s.scorePercent}% ${s.scorePercent < 40 ? '해지 추천' : '해지 고려'}`}
                         showSubtitle
                         logo={LOGO}
                         showLogo

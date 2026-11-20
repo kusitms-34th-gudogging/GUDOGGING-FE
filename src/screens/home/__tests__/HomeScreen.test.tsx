@@ -5,13 +5,21 @@ import type { Home } from '@/hooks/useHome';
 import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
 import { HomeScreen } from '@/screens/home/HomeScreen';
 
-const payment = (id: string, name: string, date: string, dDay: number) => ({
+const payment = (id: string, name: string, date: string, dDay: number, needsCheckup = true) => ({
   subscriptionId: id,
   serviceName: name,
   logoUrl: null,
   amount: 10000,
   nextBillingDate: date,
   dDay,
+  needsCheckup,
+});
+const unused = (id: string, name: string, scorePercent: number) => ({
+  subscriptionId: id,
+  serviceName: name,
+  logoUrl: null,
+  amount: 10000,
+  scorePercent,
 });
 
 const home = (over: Partial<Home> = {}): Home => ({
@@ -101,6 +109,18 @@ describe('HomeScreen', () => {
     expect(screen).toHaveSearchParams({ id: 'netflix', restart: '1' });
   });
 
+  it('이번 주기 점검을 마친 구독(needsCheckup false)은 점검으로 갈 수 없다', async () => {
+    await renderHome(
+      home({
+        summary: subscribed,
+        upcomingPayments: [payment('netflix', '넷플릭스', '2026-10-30', 14, false)],
+      }),
+    );
+
+    expect(await screen.findByText('10월 30일 결제 · D-14')).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: '넷플릭스 점검하기' })).not.toBeOnTheScreen();
+  });
+
   it('점검 기록이 없으면 점검 유도 카드로, 응답이 고른 구독의 점검에 간다', async () => {
     const user = await renderHome(
       home({ summary: subscribed, usage: { ...home().usage, nudgeSubscriptionId: 'soon' } }),
@@ -118,13 +138,16 @@ describe('HomeScreen', () => {
           ...home().usage,
           hasCheckup: true,
           monthlyAmount: 13500,
-          items: [payment('netflix', '넷플릭스', '2026-10-17', 1)],
+          items: [unused('netflix', '넷플릭스', 39), unused('tving', '티빙', 40)],
         },
       }),
     );
 
     expect(await screen.findByText('월 13,500원 결제')).toBeOnTheScreen();
     expect(screen.getByText('넷플릭스')).toBeOnTheScreen();
+    // 활용도 구간: 40% 미만 해지 추천, 40–59% 해지 고려
+    expect(screen.getByText('39% 해지 추천')).toBeOnTheScreen();
+    expect(screen.getByText('40% 해지 고려')).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: '점검하러 가기' })).not.toBeOnTheScreen();
   });
 
@@ -135,7 +158,7 @@ describe('HomeScreen', () => {
         usage: {
           ...home().usage,
           hasCheckup: true,
-          items: [payment('netflix', '넷플릭스', '2026-10-17', 1)],
+          items: [unused('netflix', '넷플릭스', 45)],
         },
       }),
     );
