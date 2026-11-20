@@ -4,6 +4,7 @@ import { renderRouter, screen } from 'expo-router/testing-library';
 
 import MypageGmailRoute from '@/app/mypage/gmail';
 import { ToastProvider } from '@/components/common/ToastProvider';
+import { authToken } from '@/lib/authToken';
 import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
 import { MypageScreen } from '@/screens/mypage/MypageScreen';
 
@@ -56,6 +57,7 @@ test('Gmail 연동 행을 누르면 Gmail 연동 화면으로 이동한다', asy
 });
 
 test('로그아웃을 확인하면 로그인 화면으로, 취소하면 그대로다', async () => {
+  await authToken.save({ accessToken: 'access', refreshToken: 'refresh' });
   await renderMypage({ login: () => null });
 
   await userEvent.press(screen.getByRole('button', { name: '로그아웃' }));
@@ -70,7 +72,9 @@ test('로그아웃을 확인하면 로그인 화면으로, 취소하면 그대�
     .mocked(globalThis.fetch)
     .mock.calls.find(([url]) => String(url).endsWith('/api/v1/auth/logout'));
   expect(logoutCall?.[1]?.method).toBe('POST');
+  expect(JSON.parse(String(logoutCall?.[1]?.body))).toEqual({ refreshToken: 'refresh' });
   expect(screen).toHavePathname('/login');
+  expect(await authToken.getRefresh()).toBeNull();
 });
 
 test('회원 탈퇴 행을 누르면 회원 탈퇴 화면으로 이동한다', async () => {
