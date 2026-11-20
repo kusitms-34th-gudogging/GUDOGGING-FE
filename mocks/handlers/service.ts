@@ -1,5 +1,6 @@
 import { http } from 'msw';
 
+import { db } from '../db.ts';
 import { ok } from '../response.ts';
 import { keywordRank } from '../search.ts';
 
@@ -47,15 +48,18 @@ export const services = CATALOG.map(({ id, ...s }) => ({
 export const serviceHandlers = [
   // 명세: 인기순. keyword가 있으면 초성·서비스명 일부·카테고리명으로 검색 (순서는 그대로 인기순)
   // 글자 비교(초성·치는 중인 글자)는 앱이 쓰던 규칙을 옮겨 옴 (mocks/search)
-  // ponytail: 많이 등록한 TOP 5·이미 등록한 서비스 표시는 응답 필드가 명세에 없어 안 함
+  // 지금 구독 중인 서비스는 검색 여부와 상관없이 뺌, 해지한 구독의 서비스는 남김 (백엔드 확인)
   http.get('/api/v1/services', ({ request }) => {
     const keyword = new URL(request.url).searchParams.get('keyword')?.trim() ?? '';
+    const subscribed = new Set(
+      db.subscriptions.filter((s) => s.status === 'ACTIVE').map((s) => s.serviceId),
+    );
     const matches = (i: number) => {
       const s = CATALOG[i];
       return keywordRank([s.name, CATEGORY_NAMES[s.category] ?? ''], keyword) !== undefined;
     };
     return ok('서비스 목록을 조회했습니다.', {
-      services: keyword ? services.filter((_, i) => matches(i)) : services,
+      services: services.filter((s, i) => !subscribed.has(s.serviceId) && (!keyword || matches(i))),
     });
   }),
 ];
