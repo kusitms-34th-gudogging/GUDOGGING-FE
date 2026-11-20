@@ -112,7 +112,7 @@ describe('CheckupCancelScreen', () => {
     await waitFor(() => expect(screen).toHavePathname('/cancel/netflix'));
     expect(decisionBody()).toEqual({
       decision: 'CANCEL',
-      cancelReasons: ['RARELY_USED', 'GOAL_ACHIEVED'],
+      cancelReasons: ['RARELY_USED', 'GOAL_ACHIEVED', 'CUSTOM'],
       cancelReasonText: '가족 계정으로 봐요',
     });
   });
@@ -124,7 +124,7 @@ describe('CheckupCancelScreen', () => {
     await user.press(screen.getByRole('button', { name: '건너뛰기' }));
 
     await waitFor(() => expect(screen).toHavePathname('/cancel/netflix'));
-    expect(decisionBody()).toEqual({ decision: 'CANCEL', cancelReasons: [] });
+    expect(decisionBody()).toEqual({ decision: 'CANCEL' });
   });
 
   it('구독 상세에서 바로 왔으면(점검 없음) 저장 없이 해지 안내로 간다', async () => {
