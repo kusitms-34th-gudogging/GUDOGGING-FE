@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AlertCircleIcon } from '@/assets/icons';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { useWithdraw } from '@/hooks/useWithdraw';
 

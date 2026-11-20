@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState, useSyncExternalStore } from 'react';
-import { Image, Text, View } from 'react-native';
+import { Image, View } from 'react-native';
 
 import { PlusIcon } from '@/assets/icons';
 import { StepRing } from '@/components/checkup/StepRing';
@@ -9,6 +9,7 @@ import { Chip } from '@/components/common/Chip';
 import { Cta } from '@/components/common/Cta';
 import { OptionCard } from '@/components/common/OptionCard';
 import { QueryState } from '@/components/common/QueryState';
+import { Text } from '@/components/common/Text';
 import { TextArea } from '@/components/common/TextArea';
 import { TopBar } from '@/components/common/TopBar';
 import {

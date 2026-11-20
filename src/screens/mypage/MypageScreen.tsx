@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { type ComponentType, Fragment, useState } from 'react';
-import { Image, ScrollView, Text, View } from 'react-native';
+import { Image, ScrollView, View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
 import {
@@ -14,6 +14,7 @@ import {
 import { ChevronRightIcon } from '@/assets/icons';
 import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { useLogout } from '@/hooks/useLogout';
 import { useMe } from '@/hooks/useMe';
@@ -95,7 +96,7 @@ export const MypageScreen = () => {
   return (
     <View className="pt-safe flex-1 bg-bg-default">
       <TopBar title="마이페이지" showAction1={false} showAction2={false} />
-      <ScrollView contentContainerClassName="gap-inset-lg pb-[120px] pt-[22px]">
+      <ScrollView bounces={false} contentContainerClassName="gap-inset-lg pb-[120px] pt-[12px]">
         <View className="ml-screen-x w-[279px] flex-row items-center gap-inline-sm">
           <Image source={PROFILE} className="size-logo-card rounded-full" />
           <View className="flex-1">

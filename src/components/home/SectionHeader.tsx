@@ -1,6 +1,7 @@
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { ChevronRightIcon } from '@/assets/icons';
+import { Text } from '@/components/common/Text';
 
 interface SectionHeaderProps {
   title: string;

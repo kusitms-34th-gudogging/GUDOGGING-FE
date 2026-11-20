@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { AppState, Linking, Text, View } from 'react-native';
+import { AppState, Linking, View } from 'react-native';
 
 import { AlertCircleIcon, Step1Icon, Step2Icon, Step3Icon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
@@ -8,6 +8,7 @@ import { GuideStep } from '@/components/common/GuideStep';
 import { Modal } from '@/components/common/Modal';
 import { QueryState } from '@/components/common/QueryState';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { useCancelGuide } from '@/hooks/useCancelGuide';
 import { useCancelSubscription } from '@/hooks/useCancelSubscription';

@@ -1,7 +1,8 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { LogoAppleColorAsset, LogoGoogleColorAsset } from '@/assets/graphics';
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 // 색·문구는 Apple HIG / Google 브랜드 가이드 고정값이라 토큰을 쓰지 않음

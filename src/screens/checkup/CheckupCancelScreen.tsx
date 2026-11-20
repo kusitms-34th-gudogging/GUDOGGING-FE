@@ -6,13 +6,13 @@ import {
   Platform,
   ScrollView,
   type ScrollViewInstance,
-  Text,
   View,
 } from 'react-native';
 
 import { Cta } from '@/components/common/Cta';
 import { OptionCard } from '@/components/common/OptionCard';
 import { QueryState } from '@/components/common/QueryState';
+import { Text } from '@/components/common/Text';
 import { TextArea } from '@/components/common/TextArea';
 import { TopBar } from '@/components/common/TopBar';
 import { CHECKUP_CATEGORIES, toCheckupCategory } from '@/constants/checkup';
@@ -110,6 +110,7 @@ export const CheckupCancelScreen = ({ id, checkupId }: CheckupCancelScreenProps)
           </View>
           {/* 설계서: 선택지 영역은 최대 높이(360)를 넘기지 않음 */}
           <ScrollView
+            bounces={false}
             ref={scrollRef}
             className="max-h-[360px] shrink"
             contentContainerClassName="gap-stack-md"

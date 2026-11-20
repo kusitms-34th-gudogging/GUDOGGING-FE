@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
 import { useEffect } from 'react';
-import { AccessibilityInfo, Text, View } from 'react-native';
+import { AccessibilityInfo, View } from 'react-native';
 
 import { Cta } from '@/components/common/Cta';
 import { ShakingAlertIcon } from '@/components/common/ShakingAlertIcon';
 import { StatusBlurBackground } from '@/components/common/StatusBlurBackground';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 
 // A-08e 스크린샷·A-12e Gmail이 모션은 같고 문구만 다름

@@ -1,8 +1,9 @@
 import { type Href, router } from 'expo-router';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { BellColorAsset } from '@/assets/graphics';
 import { QueryState } from '@/components/common/QueryState';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { NotificationItem } from '@/components/home/NotificationItem';
 import type { AppNotification } from '@/constants/notification';
@@ -60,7 +61,7 @@ export const HomeNotificationScreen = () => {
           </Text>
         </View>
       ) : (
-        <ScrollView contentContainerClassName="pb-safe gap-screen-x pt-stack-md">
+        <ScrollView bounces={false} contentContainerClassName="pb-safe gap-screen-x pt-stack-md">
           {sections.map((section) => (
             <View key={section.title} className="gap-inset-xs">
               <View className="px-screen-x">

@@ -2,8 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fireEvent, userEvent } from '@testing-library/react-native';
 import { router, Stack } from 'expo-router';
 import { act, renderRouter, screen } from 'expo-router/testing-library';
-import { Keyboard, Pressable, Text } from 'react-native';
+import { Keyboard, Pressable } from 'react-native';
 
+import { Text } from '@/components/common/Text';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
 import { RegisterServiceInputScreen } from '@/screens/register/RegisterServiceInputScreen';

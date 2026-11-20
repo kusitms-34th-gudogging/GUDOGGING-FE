@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { ChevronDownIcon, MoreIcon, TrashIcon } from '@/assets/icons';
 import { Button } from '@/components/common/Button';
@@ -10,9 +11,11 @@ import { Modal } from '@/components/common/Modal';
 import { MoreMenu } from '@/components/common/MoreMenu';
 import { QueryState } from '@/components/common/QueryState';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
+import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
+import { useRowSnap } from '@/hooks/useRowSnap';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/cn';
@@ -63,6 +66,7 @@ export const ManageScreen = () => {
           `${s.unit === '개월' && s.cycle === 1 ? `매월 ${s.nextDate!.getDate()}일` : monthDay(s.nextDate!)} · D-${s.dDay}`
         : `${monthDay(s.cancelledAt!)} 해지 · 총 지출 ${formatWon(s.totalSpent!)}`,
   }));
+  const snap = useRowSnap(items.length);
 
   return (
     <View className="pt-safe pb-safe flex-1 bg-bg-default">
@@ -98,9 +102,9 @@ export const ManageScreen = () => {
           <Button size="sm" label="구독 등록하기" onPress={() => router.push('/register')} />
         </View>
       ) : (
+        // 탭·금액 줄은 고정하고 목록만 스크롤
         <>
-          {/* 아래는 떠 있는 탭바·+ 버튼에 가리지 않게 여백 */}
-          <ScrollView contentContainerClassName="gap-inset-lg px-screen-x pb-[120px] pt-stack-md">
+          <View className="gap-inset-lg px-screen-x pt-stack-md">
             <View className="w-[164px]">
               <SegmentedControl
                 options={[
@@ -116,49 +120,62 @@ export const ManageScreen = () => {
             </View>
             {/* 탭을 바꿔 새 목록이 오기 전엔 이전 탭 데이터라 금액·목록을 숨기고 탭·개수만 둠 */}
             {!isPlaceholderData && (
-              <View className="gap-stack-md">
-                <View className="flex-row items-center justify-between pl-s2">
-                  {selecting ? (
-                    <>
-                      <Text className="text-text-primary text-body2-semibold">
-                        {`${picked.length}개 선택`}
+              <View className="flex-row items-center justify-between pl-s2">
+                {selecting ? (
+                  <>
+                    <Text className="text-text-primary text-body2-semibold">
+                      {`${picked.length}개 선택`}
+                    </Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="선택한 구독 삭제"
+                      disabled={picked.length === 0}
+                      onPress={() => setConfirmOpen(true)}
+                      className={cn(
+                        'flex-row items-center gap-s2 py-inline-xs active:opacity-pressed',
+                        picked.length === 0 && 'opacity-disabled',
+                      )}
+                    >
+                      <Text className="text-text-error text-caption1-regular">삭제</Text>
+                      <TrashIcon className="size-icon-xs text-icon-error" />
+                    </Pressable>
+                  </>
+                ) : (
+                  <>
+                    <Text className="text-text-primary text-body2-semibold">
+                      {tab === 'ACTIVE'
+                        ? `월 ${formatWon(data.monthlyTotal)}`
+                        : `월 ${formatWon(data.monthlyTotal)} 절약`}
+                    </Text>
+                    <View className="flex-row items-center gap-s2 py-inline-xs">
+                      <Text className="text-text-secondary text-caption1-regular">
+                        {tab === 'ACTIVE' ? '결제일 순' : '해지일 순'}
                       </Text>
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel="선택한 구독 삭제"
-                        disabled={picked.length === 0}
-                        onPress={() => setConfirmOpen(true)}
-                        className={cn(
-                          'flex-row items-center gap-s2 py-inline-xs active:opacity-pressed',
-                          picked.length === 0 && 'opacity-disabled',
-                        )}
-                      >
-                        <Text className="text-text-error text-caption1-regular">삭제</Text>
-                        <TrashIcon className="size-icon-xs text-icon-error" />
-                      </Pressable>
-                    </>
-                  ) : (
-                    <>
-                      <Text className="text-text-primary text-body2-semibold">
-                        {tab === 'ACTIVE'
-                          ? `월 ${formatWon(data.monthlyTotal)}`
-                          : `월 ${formatWon(data.monthlyTotal)} 절약`}
-                      </Text>
-                      <View className="flex-row items-center gap-s2 py-inline-xs">
-                        <Text className="text-text-secondary text-caption1-regular">
-                          {tab === 'ACTIVE' ? '결제일 순' : '해지일 순'}
-                        </Text>
-                        <ChevronDownIcon className="size-icon-xs text-icon-secondary" />
-                      </View>
-                    </>
-                  )}
-                </View>
-                <View className="gap-stack-sm">
-                  {items.map((s) =>
-                    selecting ? (
+                      <ChevronDownIcon className="size-icon-xs text-icon-secondary" />
+                    </View>
+                  </>
+                )}
+              </View>
+            )}
+          </View>
+          {/* 캘린더와 같이 스크롤 영역을 떠 있는 탭바(52 + 아래 4) + 간격 12 위에서 끝내고, 아래 끝에 반쯤 걸린 행은 숨김
+              맨 아래까지 내리면 마지막 행이 + 버튼(탭바 위 18 + 48) 위로 올라오게 여백 */}
+          {!isPlaceholderData && (
+            <Animated.View
+              onLayout={snap.onViewportLayout}
+              className="mb-[68px] mt-stack-md flex-1"
+              style={snap.hiddenStyle}
+            >
+              <ScrollView
+                bounces={false}
+                contentContainerClassName="gap-stack-sm px-screen-x pb-[52px]"
+                snapToOffsets={snap.snapOffsets}
+              >
+                {items.map((s, i) => (
+                  <View key={s.id} onLayout={snap.onRowLayout(i)}>
+                    {selecting ? (
                       // 삭제 선택 중엔 행 어디를 눌러도 체크 (상세 이동 없음)
                       <Pressable
-                        key={s.id}
                         accessibilityRole="checkbox"
                         accessibilityLabel={s.name}
                         accessibilityState={{ checked: picked.includes(s.id) }}
@@ -180,7 +197,6 @@ export const ManageScreen = () => {
                     ) : (
                       // 행 전체가 터치 영역 → 구독 상세 (상태에 따라 M-03 · M-05)
                       <ListItem
-                        key={s.id}
                         title={s.name}
                         subtitle={s.subtitle}
                         showSubtitle
@@ -193,12 +209,12 @@ export const ManageScreen = () => {
                           onPress: () => router.push(`/manage/detail/${s.id}`),
                         }}
                       />
-                    ),
-                  )}
-                </View>
-              </View>
-            )}
-          </ScrollView>
+                    )}
+                  </View>
+                ))}
+              </ScrollView>
+            </Animated.View>
+          )}
         </>
       )}
       {/* 탭바(하단 안전 영역 + 4 + 52) 위 18에 + 버튼, 그 위 8에 토스트. 구독이 없으면 + 버튼 자리만 비움 */}

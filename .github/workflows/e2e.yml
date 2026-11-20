@@ -33,7 +33,8 @@ concurrency:
 jobs:
   e2e:
     runs-on: macos-latest
-    timeout-minutes: 60
+    # GitHub runner 빌드가 28~50분 걸려 60분이면 E2E 도중 끊김 (2026-11-19 실행 기준)
+    timeout-minutes: 120
     env:
       # 앱은 runner 안의 목서버를 봄. Release 빌드라 이 값이 번들에 박힘 (개발 빌드는 .env.local이 덮어씀)
       EXPO_PUBLIC_API_URL: http://localhost:9090

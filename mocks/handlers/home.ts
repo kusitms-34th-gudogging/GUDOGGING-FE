@@ -8,6 +8,7 @@ import {
   monthlyAmount,
   nextBilling,
   type Subscription,
+  toDate,
   today,
   toIso,
 } from '../db.ts';
@@ -34,7 +35,13 @@ export const homeHandlers = [
       .toSorted(
         (a, b) => nextBilling(a).getTime() - nextBilling(b).getTime() || b.amount - a.amount,
       );
-    const within7 = active.filter((s) => daysBetween(now, nextBilling(s)) <= 7);
+    // ponytail: 최근 한 주기 안에 점검 기록이 있으면 완료로 봄, 정확한 결제 주기 판정은 서버
+    const checkedThisCycle = (s: Subscription) =>
+      db.checkups.some(
+        (c) =>
+          c.subscriptionId === s.subscriptionId &&
+          billingDates(s, toDate(c.checkedAt), nextBilling(s)).length <= 1,
+      );
     // 활용도 60% 미만이고 '유지하기'를 고르지 않은 구독, 꾸준히 쓰는 구독 제외
     const unused = active.filter((s) => {
       const c = latestCheckup(s.subscriptionId);
@@ -52,29 +59,30 @@ export const homeHandlers = [
         subscriptionCount: active.length,
         logos: active.flatMap((s) => (s.logoUrl ? [s.logoUrl] : [])).slice(0, 10),
       },
-      upcomingPayments: within7.slice(0, 3).map((s) => ({
-        ...payment(s),
-        // ponytail: 최근 한 주기 안에 점검 기록이 있으면 완료로 봄, 정확한 결제 주기 판정은 서버
-        needsCheckup: !db.checkups.some(
-          (c) =>
-            c.subscriptionId === s.subscriptionId &&
-            billingDates(s, new Date(c.checkedAt), nextBilling(s)).length <= 1,
-        ),
-      })),
-      nearestPayment: within7.length === 0 && active[0] ? payment(active[0]) : null,
+      upcomingPayments: active
+        .filter((s) => !s.isSteady && !checkedThisCycle(s))
+        .slice(0, 5)
+        .map(payment),
       usage: {
         hasCheckup: db.checkups.length > 0,
         nudgeSubscriptionId: active.find((s) => !s.isSteady)?.subscriptionId ?? null,
         unusedCount: unused.length,
         monthlyAmount: unusedMonthly,
         yearlyAmount: unusedMonthly * 12,
-        items: unused.slice(0, 2).map((s) => ({
-          subscriptionId: s.subscriptionId,
-          serviceName: s.serviceName,
-          logoUrl: s.logoUrl,
-          amount: s.amount,
-          nextBillingDate: toIso(nextBilling(s)),
-        })),
+        // 활용도 낮은 순, 같으면 결제일 가까운 순 (active가 이미 결제일 순)
+        items: unused
+          .toSorted(
+            (a, b) =>
+              latestCheckup(a.subscriptionId)!.score - latestCheckup(b.subscriptionId)!.score,
+          )
+          .slice(0, 3)
+          .map((s) => ({
+            subscriptionId: s.subscriptionId,
+            serviceName: s.serviceName,
+            logoUrl: s.logoUrl,
+            amount: s.amount,
+            nextBillingDate: toIso(nextBilling(s)),
+          })),
       },
       hasUnreadNotification: notifications.some(
         (n) => !db.readNotificationIds.has(n.notificationId),

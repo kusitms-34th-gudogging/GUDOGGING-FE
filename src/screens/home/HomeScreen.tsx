@@ -1,11 +1,12 @@
 import { router } from 'expo-router';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { BellDotIcon, BellIcon } from '@/assets/icons';
 import { Badge } from '@/components/common/Badge';
 import { FloatingButton } from '@/components/common/FloatingButton';
 import { ListItem } from '@/components/common/ListItem';
 import { QueryState } from '@/components/common/QueryState';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { CheckupPromptCard } from '@/components/home/CheckupPromptCard';
 import { CostCard } from '@/components/home/CostCard';
@@ -25,7 +26,7 @@ const dateLabel = (date: string) => {
   return `${d.getMonth() + 1}월 ${d.getDate()}일 결제`;
 };
 
-// H-01 홈 (등록된 구독 없음) · H-02 홈 (구독 있음) · H-03 홈 (예정 결제 없음 · 점검 유도)
+// H-01 홈 (등록된 구독 없음) · H-02 홈 (구독 있음) · H-03 홈 (점검 유도)
 export const HomeScreen = () => {
   const { data, isError, refetch } = useHome();
   const today = new Date();
@@ -38,15 +39,8 @@ export const HomeScreen = () => {
     );
   }
 
-  const { summary, upcomingPayments, nearestPayment, usage } = data;
+  const { summary, upcomingPayments, usage } = data;
   const isEmpty = summary.subscriptionCount === 0;
-  // 7일 안 결제가 없으면 가장 가까운 1건 (H-03)
-  const within7 = upcomingPayments.length > 0;
-  const upcoming = within7
-    ? upcomingPayments
-    : nearestPayment
-      ? [{ ...nearestPayment, needsCheckup: false }]
-      : [];
 
   return (
     <View testID="home-screen" className="pt-safe flex-1 bg-bg-default">
@@ -63,6 +57,7 @@ export const HomeScreen = () => {
       />
       {/* 아래는 떠 있는 탭바(하단 안전 영역 + 4 + 52)에 가리지 않게 여백. 빈 상태는 화면 높이만큼 채우고 안에서 탭바만큼 뺌 */}
       <ScrollView
+        bounces={false}
         contentContainerClassName={cn('gap-inset-lg pt-stack-md', isEmpty ? 'grow' : 'pb-[120px]')}
       >
         <View className="gap-inline-sm px-screen-x">
@@ -89,40 +84,27 @@ export const HomeScreen = () => {
           <View className="gap-stack-md">
             <View className="gap-stack-md px-screen-x">
               <SectionHeader
-                title="다가오는 결제"
+                title="구독 점검하기"
                 showChevron
                 onPress={() => router.navigate('/calendar')}
               />
-              {!within7 && (
-                <Text className="px-s2 text-text-primary text-body1-semibold">
-                  7일 안에 결제 예정인 구독이 없어요
-                </Text>
-              )}
+              {/* 이번 결제 주기에 아직 점검 안 한 구독만 서버가 내려 줌 (HOM-001) */}
               <View className="gap-stack-sm">
-                {upcoming.map((s) => (
+                {upcomingPayments.map((s) => (
                   <ListItem
                     key={s.subscriptionId}
                     title={s.serviceName}
-                    subtitle={
-                      within7
-                        ? `${dateLabel(s.nextBillingDate)} · D-${s.dDay}`
-                        : dateLabel(s.nextBillingDate)
-                    }
+                    subtitle={`${dateLabel(s.nextBillingDate)} · D-${s.dDay}`}
                     showSubtitle
                     logo={LOGO}
                     showLogo
                     cost={formatWon(s.amount)}
                     showCost
-                    // 행 전체가 터치 영역. 이번 주기에 점검 안 한 구독은 점검으로
-                    // shortcut: 점검한 구독은 구독 상세(M-03) 화면이 없어 이동 없음, 생기면 연결
-                    iconRightAction={
-                      s.needsCheckup
-                        ? {
-                            accessibilityLabel: `${s.serviceName} 점검하기`,
-                            onPress: () => router.push(`/checkup/${s.subscriptionId}?restart=1`),
-                          }
-                        : undefined
-                    }
+                    // 행 전체가 터치 영역 → 그 구독 점검 1/4
+                    iconRightAction={{
+                      accessibilityLabel: `${s.serviceName} 점검하기`,
+                      onPress: () => router.push(`/checkup/${s.subscriptionId}?restart=1`),
+                    }}
                   />
                 ))}
               </View>
@@ -133,13 +115,12 @@ export const HomeScreen = () => {
                 <>
                   <View className="flex-row items-center justify-between">
                     <SectionHeader
-                      title="내 구독 사용 현황"
+                      title="잘 안 쓰는 구독"
                       showChevron
                       onPress={() => router.navigate('/manage')}
                     />
                     <Badge variant="tonal" label={`월 ${formatWon(usage.monthlyAmount)} 결제`} />
                   </View>
-                  {/* shortcut: 항목을 누르면 구독 상세(M-03)로 가야 하는데 화면이 없어 이동 없음 */}
                   <View className="gap-stack-sm">
                     {usage.items.map((s) => (
                       <ListItem
@@ -152,13 +133,18 @@ export const HomeScreen = () => {
                         showLogo
                         cost={formatWon(s.amount)}
                         showCost
+                        // 행 전체가 터치 영역 → 구독 상세 (M-03)
+                        iconRightAction={{
+                          accessibilityLabel: `${s.serviceName} 상세`,
+                          onPress: () => router.push(`/manage/detail/${s.subscriptionId}`),
+                        }}
                       />
                     ))}
                   </View>
                 </>
               ) : (
                 <>
-                  <SectionHeader title="내 구독 사용 현황" />
+                  <SectionHeader title="잘 안 쓰는 구독" />
                   <CheckupPromptCard
                     onPress={() =>
                       usage.nudgeSubscriptionId &&

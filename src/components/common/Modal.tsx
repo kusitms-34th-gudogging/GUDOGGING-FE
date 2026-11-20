@@ -1,4 +1,6 @@
-import { Modal as RNModal, Pressable, Text, View } from 'react-native';
+import { Modal as RNModal, Pressable, View } from 'react-native';
+
+import { Text } from '@/components/common/Text';
 
 interface ModalProps {
   visible: boolean;
@@ -39,10 +41,7 @@ export const Modal = ({
             {title}
           </Text>
           {showDescription && description && (
-            <Text
-              numberOfLines={5}
-              className="text-center text-text-secondary text-caption1-regular"
-            >
+            <Text numberOfLines={5} className="text-center text-text-secondary text-body3-regular">
               {description}
             </Text>
           )}

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Image, type ImageSourcePropType, Pressable, Text, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { EmptyMonoAsset } from '@/assets/graphics';
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 export interface ServiceCardLogo {

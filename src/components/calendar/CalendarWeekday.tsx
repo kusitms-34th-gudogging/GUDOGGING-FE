@@ -1,5 +1,6 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];

@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { CheckIcon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
 import { GuideStep } from '@/components/common/GuideStep';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 
 const GUIDES = [

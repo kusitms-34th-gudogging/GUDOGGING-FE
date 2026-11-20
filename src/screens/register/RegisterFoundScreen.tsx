@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Cta } from '@/components/common/Cta';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';

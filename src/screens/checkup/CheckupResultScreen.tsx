@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Image, ScrollView, Text, View } from 'react-native';
+import { Image, ScrollView, View } from 'react-native';
 
 import { RecommendCard } from '@/components/checkup/RecommendCard';
 import { UsageBreath } from '@/components/checkup/UsageBreath';
@@ -7,6 +7,7 @@ import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
 import { ListItem } from '@/components/common/ListItem';
 import { QueryState } from '@/components/common/QueryState';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { useCheckupResult } from '@/hooks/useCheckups';
 import { useDecideCheckup } from '@/hooks/useDecideCheckup';
@@ -44,7 +45,12 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
         showAction1={false}
         showAction2={false}
       />
-      <ScrollView className="flex-1" contentContainerClassName="px-screen-x pb-section pt-stack-md">
+      {/* 스크롤 내용이 아래 버튼에 바로 붙어 잘려 보이지 않게 버튼 위로 간격 */}
+      <ScrollView
+        bounces={false}
+        className="mb-s12 flex-1"
+        contentContainerClassName="px-screen-x pb-section pt-stack-md"
+      >
         <UsageBreath usage={usage} name={name}>
           <View className="flex-row items-center gap-inline-sm">
             <View className="size-logo-card overflow-hidden rounded-full border-default border-border-subtle">

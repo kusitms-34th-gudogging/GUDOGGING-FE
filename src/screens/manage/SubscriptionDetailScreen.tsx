@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { MoreIcon } from '@/assets/icons';
 import { Badge } from '@/components/common/Badge';
@@ -10,6 +10,7 @@ import { Divider, ServiceHeader } from '@/components/common/DetailParts';
 import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
 import { MoreMenu } from '@/components/common/MoreMenu';
+import { Text } from '@/components/common/Text';
 import { Toggle } from '@/components/common/Toggle';
 import { TopBar } from '@/components/common/TopBar';
 import type { ActiveSubscriptionDetail } from '@/constants/manage';
@@ -65,7 +66,7 @@ export const SubscriptionDetailScreen = ({
           },
         ]}
       />
-      <ScrollView contentContainerClassName="gap-s20 pb-stack-md pt-stack-md">
+      <ScrollView bounces={false} contentContainerClassName="gap-s20 pb-stack-md pt-stack-md">
         <View className="gap-stack-md px-screen-x">
           <ServiceHeader
             name={s.name}

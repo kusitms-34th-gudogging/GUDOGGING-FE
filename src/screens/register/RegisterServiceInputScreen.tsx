@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Image, Keyboard, Pressable, Text, View } from 'react-native';
+import { Image, Keyboard, Pressable, View } from 'react-native';
 
 import { ImageColorAsset, ImageMonoAsset } from '@/assets/graphics';
 import { BottomSheet } from '@/components/common/BottomSheet';
@@ -10,6 +10,7 @@ import { Dropdown } from '@/components/common/Dropdown';
 import { OptionCard } from '@/components/common/OptionCard';
 import { QueryState } from '@/components/common/QueryState';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
+import { Text } from '@/components/common/Text';
 import { TextField } from '@/components/common/TextField';
 import { TopBar } from '@/components/common/TopBar';
 import { FadeScrollView } from '@/components/register/FadeScrollView';

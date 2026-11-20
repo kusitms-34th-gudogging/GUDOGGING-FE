@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { CloseIcon } from '@/assets/icons';
 import { Chip } from '@/components/common/Chip';
@@ -8,6 +8,7 @@ import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
 import { QueryState } from '@/components/common/QueryState';
 import { SearchBar } from '@/components/common/SearchBar';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
@@ -104,19 +105,26 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
             keyboardShouldPersistTaps="handled"
           >
             {results.map((s) => (
-              <ListItem
+              // 행 어디를 눌러도 체크. 접근성 역할은 안쪽 체크박스가 맡아서 행은 터치 영역만 (두 번 읽히지 않게)
+              <Pressable
                 key={s.id}
-                title={s.name}
-                subtitle={s.category}
-                showSubtitle
-                logo={require('@/assets/images/logo_placeholder.png')}
-                showLogo
-                showCheckBox
-                checked={selectedIds.includes(s.id) || lockedIds.includes(s.id)}
-                onCheckedChange={() => toggle(s.id)}
-                checkBoxTestID={`register-service-${s.id}`}
-                checkBoxLocked={lockedIds.includes(s.id)}
-              />
+                accessible={false}
+                disabled={lockedIds.includes(s.id)}
+                onPress={() => toggle(s.id)}
+              >
+                <ListItem
+                  title={s.name}
+                  subtitle={s.category}
+                  showSubtitle
+                  logo={require('@/assets/images/logo_placeholder.png')}
+                  showLogo
+                  showCheckBox
+                  checked={selectedIds.includes(s.id) || lockedIds.includes(s.id)}
+                  onCheckedChange={() => toggle(s.id)}
+                  checkBoxTestID={`register-service-${s.id}`}
+                  checkBoxLocked={lockedIds.includes(s.id)}
+                />
+              </Pressable>
             ))}
             {!!keyword && (
               <AddServiceRow

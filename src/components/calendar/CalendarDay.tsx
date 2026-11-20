@@ -1,6 +1,7 @@
 import { cva } from 'class-variance-authority';
-import { Image, type ImageSourcePropType, Pressable, Text, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 
+import { Text } from '@/components/common/Text';
 import type { CheckupCategory } from '@/constants/checkup';
 import { cn } from '@/utils/cn';
 
@@ -18,6 +19,8 @@ interface CalendarDayProps {
   today?: boolean;
   selected?: boolean;
   disabled?: boolean;
+  /** 일요일이면 날짜를 brand 색으로 (요일 머리글과 같음). 오늘·선택·다른 달 날짜는 그 상태 색이 우선 */
+  sunday?: boolean;
   onPress?: () => void;
   className?: string;
 }
@@ -35,7 +38,7 @@ const BAR_COLORS: Record<CheckupCategory, string> = {
   etc: 'bg-category-etc-icon',
 };
 
-type DayState = 'default' | 'today' | 'selected' | 'disabled';
+type DayState = 'default' | 'sunday' | 'today' | 'selected' | 'disabled';
 
 // 선택이 바뀌면 이전 칸은 흐려지고 새 칸은 진해지며 색이 서서히 바뀜. 배경·글자 각각 transition (transition.md)
 // 슬라이딩 표시(useSlidingIndicator)는 가로 한 줄용이라 주를 넘나드는 달력엔 안 맞아 칸마다 전환
@@ -46,6 +49,7 @@ const circleVariants = cva(
       // 배경 없는 상태도 bg-transparent로 둬야 선택이 풀릴 때 색이 서서히 빠짐
       state: {
         default: 'bg-transparent',
+        sunday: 'bg-transparent',
         today: 'bg-bg-dim',
         selected: 'bg-bg-brand',
         disabled: 'bg-transparent',
@@ -58,6 +62,7 @@ const dateVariants = cva('text-center transition-colors duration-200', {
   variants: {
     state: {
       default: 'text-body3-semibold text-text-primary',
+      sunday: 'text-body3-semibold text-text-brand',
       today: 'text-body3-semibold text-text-inverse',
       selected: 'text-body3-semibold text-text-on-brand',
       disabled: 'text-body3-regular text-text-disabled',
@@ -73,6 +78,7 @@ export const CalendarDay = ({
   today,
   selected,
   disabled,
+  sunday,
   onPress,
   className,
 }: CalendarDayProps) => {
@@ -82,7 +88,9 @@ export const CalendarDay = ({
       ? 'selected'
       : today
         ? 'today'
-        : 'default';
+        : sunday
+          ? 'sunday'
+          : 'default';
   const items = disabled ? [] : subscriptions;
   const more = items.length - MAX_LOGOS;
 

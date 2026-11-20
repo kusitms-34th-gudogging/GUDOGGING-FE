@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { Text } from 'react-native';
 
+import { Text } from '@/components/common/Text';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 
 const renderList = async () => {

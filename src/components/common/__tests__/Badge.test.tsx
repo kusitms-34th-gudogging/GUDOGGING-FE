@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react-native';
-import { Text } from 'react-native';
 
 import { Badge } from '@/components/common/Badge';
+import { Text } from '@/components/common/Text';
 
 // 어느 쪽 아이콘이 그려졌는지 보이게 글자로 그리는 테스트용 아이콘
 const LeftIcon = () => <Text>왼쪽 아이콘</Text>;

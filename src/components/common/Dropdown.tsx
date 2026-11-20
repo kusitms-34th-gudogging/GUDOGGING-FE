@@ -1,8 +1,9 @@
 import type { ComponentType } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
 import { ChevronDownIcon } from '@/assets/icons';
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 import { DropdownOption } from './DropdownOption';

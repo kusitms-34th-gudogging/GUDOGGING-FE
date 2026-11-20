@@ -1,9 +1,10 @@
 import { router, Stack } from 'expo-router';
 import { useEffect } from 'react';
-import { AccessibilityInfo, Text, View } from 'react-native';
+import { AccessibilityInfo, View } from 'react-native';
 
 import { Cta } from '@/components/common/Cta';
 import { StatusBlurBackground } from '@/components/common/StatusBlurBackground';
+import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { SparklingStarsIcon } from '@/components/mypage/SparklingStarsIcon';
 

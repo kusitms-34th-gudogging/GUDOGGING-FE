@@ -2,8 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { userEvent, within } from '@testing-library/react-native';
 import { router, Stack } from 'expo-router';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 
+import { Text } from '@/components/common/Text';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { createQueryWrapper, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
 import { RegisterServiceSelectScreen } from '@/screens/register/RegisterServiceSelectScreen';
@@ -169,6 +170,17 @@ it('검색어를 서버에 보내고, 서버가 준 순서대로 보여 준다',
   );
 });
 
+it('체크박스가 아니라 행(서비스 이름)을 눌러도 체크하고, 다시 누르면 풀린다', async () => {
+  const user = await renderSelect();
+
+  await user.press(screen.getByText('Spotify'));
+  expect(screen.getByRole('checkbox', { name: 'Spotify' })).toBeChecked();
+
+  // 고르면 위에 같은 이름의 칩이 생겨서 행의 카테고리를 누름
+  await user.press(screen.getByText('음악'));
+  expect(useRegisterDraft.getState().selectedIds).toEqual([]);
+});
+
 it('구독 추가하기로 왔으면 이미 불러온 서비스는 체크된 채로 풀리지 않는다', async () => {
   useRegisterDraft.getState().setFound('SCREENSHOT', TEST_FOUND);
   const user = await renderSelect({ more: true });
@@ -177,6 +189,8 @@ it('구독 추가하기로 왔으면 이미 불러온 서비스는 체크된 채
   expect(netflix).toBeChecked();
   expect(netflix).toBeDisabled();
   await user.press(netflix);
+  // 행을 눌러도 잠긴 서비스는 그대로
+  await user.press(screen.getByText('Netflix'));
 
   expect(screen.getByRole('checkbox', { name: 'Netflix' })).toBeChecked();
   expect(useRegisterDraft.getState().selectedIds).toEqual([]);

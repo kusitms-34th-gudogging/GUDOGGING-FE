@@ -1,5 +1,6 @@
-import { type LayoutChangeEvent, Pressable, Text } from 'react-native';
+import { type LayoutChangeEvent, Pressable } from 'react-native';
 
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 interface SegmentProps {

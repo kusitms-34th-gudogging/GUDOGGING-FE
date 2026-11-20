@@ -1,6 +1,7 @@
 import { act, render, screen, userEvent } from '@testing-library/react-native';
-import { AccessibilityInfo, Pressable, Text } from 'react-native';
+import { AccessibilityInfo, Pressable } from 'react-native';
 
+import { Text } from '@/components/common/Text';
 import { ToastOutlet, ToastProvider } from '@/components/common/ToastProvider';
 import { useToast } from '@/hooks/useToast';
 

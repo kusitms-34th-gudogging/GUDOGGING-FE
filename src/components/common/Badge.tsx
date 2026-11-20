@@ -1,9 +1,10 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import type { ComponentType } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
 import { CheckIcon } from '@/assets/icons';
+import { Text } from '@/components/common/Text';
 import { cn } from '@/utils/cn';
 
 const badgeVariants = cva(

@@ -1,11 +1,12 @@
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AlertCircleIcon } from '@/assets/icons';
 import { Cta } from '@/components/common/Cta';
 import { ImageCard } from '@/components/common/ImageCard';
+import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useToast } from '@/hooks/useToast';

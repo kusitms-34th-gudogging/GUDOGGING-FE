@@ -1,7 +1,7 @@
 import { render, screen, userEvent } from '@testing-library/react-native';
-import { Text } from 'react-native';
 
 import { BottomSheet } from '@/components/common/BottomSheet';
+import { Text } from '@/components/common/Text';
 
 // 시트 애니메이션·제스처는 네이티브라 라이브러리 mock으로 내용만 렌더
 jest.mock('@gorhom/bottom-sheet', () => jest.requireActual('@gorhom/bottom-sheet/mock'));

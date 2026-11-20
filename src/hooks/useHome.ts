@@ -18,8 +18,8 @@ export interface Home {
     subscriptionCount: number;
     logos: string[];
   };
-  upcomingPayments: (HomePayment & { needsCheckup: boolean })[];
-  nearestPayment: HomePayment | null;
+  // 이번 결제 주기에 아직 점검 안 한 구독 (꾸준히 쓰는 구독 제외), 최대 5개
+  upcomingPayments: HomePayment[];
   usage: {
     hasCheckup: boolean;
     nudgeSubscriptionId: string | null;

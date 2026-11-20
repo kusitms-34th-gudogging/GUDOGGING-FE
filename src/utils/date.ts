@@ -9,3 +9,19 @@ export const formatDate = (date: Date) =>
   [date.getFullYear(), date.getMonth() + 1, date.getDate()]
     .map((n) => String(n).padStart(2, '0'))
     .join('-');
+
+export const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+
+// 캘린더 달을 이어진 번호(page)로 다뤄서 스와이프 위치를 page × 화면 폭으로 계산
+export const pageOf = (d: Date) => d.getFullYear() * 12 + d.getMonth();
+export const monthOf = (page: number) => new Date(Math.floor(page / 12), page % 12, 1);
+
+// 이번 달 1일이 든 주의 일요일부터 이번 달이 끝나는 주까지
+export const monthCells = (month: Date) => {
+  const first = new Date(month.getFullYear(), month.getMonth(), 1);
+  const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  return Array.from(
+    { length: Math.ceil((first.getDay() + days) / 7) * 7 },
+    (_, i) => new Date(first.getFullYear(), first.getMonth(), i + 1 - first.getDay()),
+  );
+};

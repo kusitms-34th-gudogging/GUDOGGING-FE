@@ -61,6 +61,7 @@ const DialRow = ({ label, index, initiallySelected, scrollY, onPress }: DialRowP
       className="h-[36px] items-end justify-center"
     >
       <Animated.Text
+        allowFontScaling={false} // 시스템 글자 크기 무시 (Text.tsx와 같은 팀 결정)
         className={cn('origin-right', selected ? 'text-head4-bold' : 'text-body1-regular')}
         style={textStyle}
       >
