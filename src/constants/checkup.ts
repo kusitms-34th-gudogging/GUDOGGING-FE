@@ -14,8 +14,7 @@ import {
 export type CheckupCategory =
   'ott' | 'music' | 'shopping' | 'education' | 'productivity' | 'entertainment' | 'etc';
 
-// 문항 1개 (서버가 카테고리에 맞춰 줌). title의 {name}을·{name}으로 같은 조사는 서비스명 받침에 맞춰 바꿈 (utils/josa)
-// hint의 {amount}는 월 구독료, {year}는 1년 구독료, {next}는 다음 결제(예: 11월 17일 · 13,500원)
+// 문항 1개 (서버가 카테고리에 맞춰 서비스명·조사·금액·날짜를 채운 완성 문장으로 줌)
 export interface CheckupQuestion {
   title: string;
   hint: string;

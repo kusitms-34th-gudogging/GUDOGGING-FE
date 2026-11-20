@@ -58,9 +58,11 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
             </View>
             <View className="flex-1">
               <Text className="text-text-primary text-body1-bold">{name} 점검 완료</Text>
-              <Text className="text-text-primary text-caption1-regular">
-                {`${nextDate.getMonth() + 1}월 ${nextDate.getDate()}일 결제 전에 확인했어요`}
-              </Text>
+              {nextDate && (
+                <Text className="text-text-primary text-caption1-regular">
+                  {`${nextDate.getMonth() + 1}월 ${nextDate.getDate()}일 결제 전에 확인했어요`}
+                </Text>
+              )}
             </View>
           </View>
         </UsageBreath>

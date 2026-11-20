@@ -29,7 +29,8 @@ interface CheckupResultResponse {
   checkupId: string;
   subscriptionId: string;
   serviceName: string;
-  nextBillingDate: string;
+  // 구독 종료된 구독의 점검이면 null
+  nextBillingDate: string | null;
   score: number;
   bundles: {
     name: string;
@@ -98,7 +99,7 @@ export const useCheckupResult = (checkupId: string) =>
         id: r.subscriptionId,
         name: r.serviceName,
         category: CATEGORY_LABEL[r.categorySpending.category],
-        nextDate: parseDate(r.nextBillingDate),
+        nextDate: r.nextBillingDate ? parseDate(r.nextBillingDate) : undefined,
       },
       usage: r.score,
       spending: {

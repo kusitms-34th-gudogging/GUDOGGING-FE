@@ -92,6 +92,17 @@ describe('CheckupResultScreen', () => {
     expect(screen.getByText('월 19,900원에 이용')).toBeOnTheScreen();
   });
 
+  it('다음 결제일이 있으면 결제 전 확인 문구를 보여준다', async () => {
+    await renderResult();
+    expect(screen.getByText('11월 17일 결제 전에 확인했어요')).toBeOnTheScreen();
+  });
+
+  it('구독 종료된 구독의 점검(nextBillingDate null)도 결과를 보여준다', async () => {
+    await renderResult({ 'GET /api/v1/checkups/c1': result({ nextBillingDate: null }) });
+
+    expect(screen.queryByText(/결제 전에 확인했어요/)).not.toBeOnTheScreen();
+  });
+
   it('추천 상품이 없으면 더 싸게 영역을 숨긴다', async () => {
     await renderResult({ 'GET /api/v1/checkups/c1': result({ bundles: [] }) });
 

@@ -1,7 +1,6 @@
 // 카테고리별 점검 문항 (화면설계서 K-11~K-66, 메모 K-70). 서버가 카테고리에 맞춰 내려주는 데이터
-// 임의: 서비스명·금액·결제일 자리 표시 형식은 명세에 없어 앱이 쓰던 형식으로 (백엔드 확인 필요)
-//   {name}을·{name}으로처럼 조사는 앱이 서비스명 받침에 맞춰 바꿈
-//   hint의 {amount} 월 구독료 · {year} 1년 구독료 · {next} 다음 결제(예: 11월 17일 · 13,500원)
+// 아래 {name}·{amount} 등은 목서버 안에서만 쓰는 틀. 응답은 fillCheckupText로 채운 완성 문장 (명세)
+//   hint의 {amount} 월 환산 · {year} 연 환산 · {next} 다음 결제(예: 11월 17일 · 13,500원, 1회 결제 금액)
 
 type Category =
   | 'VIDEO_OTT'
@@ -112,3 +111,25 @@ export const CHECKUP_FORMS: Record<
 
 export const checkupForm = (category: string) =>
   CHECKUP_FORMS[category as Category] ?? CHECKUP_FORMS.ETC;
+
+const won = (n: number) => `${n.toLocaleString('ko-KR')}원`;
+// 마지막 글자 받침(종성) 번호. 한글이 아니면 0(받침 없음)
+const jong = (word: string) => {
+  const code = word.charCodeAt(word.length - 1) - 0xac00;
+  return code >= 0 && code <= 11171 ? code % 28 : 0;
+};
+
+// 서비스명(받침에 맞는 을/를·으로/로)·금액·날짜를 채운 완성 문장
+export const fillCheckupText = (
+  text: string,
+  v: { name: string; monthly: number; yearly: number; amount: number; next: Date },
+) => {
+  const j = jong(v.name);
+  return text
+    .replace('{name}을', v.name + (j ? '을' : '를'))
+    .replace('{name}으로', v.name + (j && j !== 8 ? '으로' : '로'))
+    .replace('{name}', v.name)
+    .replace('{amount}', won(v.monthly))
+    .replace('{year}', won(v.yearly))
+    .replace('{next}', `${v.next.getMonth() + 1}월 ${v.next.getDate()}일 · ${won(v.amount)}`);
+};
