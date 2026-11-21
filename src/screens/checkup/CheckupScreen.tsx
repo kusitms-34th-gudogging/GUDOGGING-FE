@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState, useSyncExternalStore } from 'react';
-import { Image, View } from 'react-native';
+import { Image, Keyboard, Pressable, View } from 'react-native';
 
 import { PlusIcon } from '@/assets/icons';
 import { StepRing } from '@/components/checkup/StepRing';
@@ -20,8 +20,6 @@ import {
 import { getCheckupScores, useCheckupDraft } from '@/hooks/useCheckupDraft';
 import { useCheckupForm } from '@/hooks/useCheckups';
 import { useSubmitCheckup } from '@/hooks/useSubmitCheckup';
-import { formatWon } from '@/utils/formatPayment';
-import { fillName } from '@/utils/josa';
 
 // 점수 문항 1~3, 마지막 4/4는 메모(K-70)
 const QUESTION_COUNT = 3;
@@ -66,7 +64,7 @@ const CheckupQuestions = ({
   memo: memoConfig,
   restart,
 }: CheckupQuestionsProps) => {
-  const { id, name, amount, nextDate } = subscription;
+  const { id, name, nextDate } = subscription;
   const category = toCheckupCategory(subscription.category);
   // 같은 결제 주기 안에서만 이어 하기. 주기가 바뀌면 1/4부터
   const cycle = nextDate.toISOString();
@@ -80,17 +78,10 @@ const CheckupQuestions = ({
   const [memo, setMemo] = useState('');
 
   const isMemo = step === MEMO_STEP;
+  // 문항 문구·보조 문구는 서버가 서비스명·조사·금액·날짜를 채운 완성 문장 (명세)
   const question = isMemo
-    ? { title: '{name}에 대해\n남기고 싶은 말이 있나요?', hint: '다음 점검 때 다시 보여드려요' }
+    ? { title: `${name}에 대해\n남기고 싶은 말이 있나요?`, hint: '다음 점검 때 다시 보여드려요' }
     : questions[step];
-  // '월 13,500원 · 1년이면 162,000원', '다음 결제 11월 17일 · 13,500원'
-  const hint = question.hint
-    .replace(
-      '{next}',
-      `${nextDate.getMonth() + 1}월 ${nextDate.getDate()}일 · ${formatWon(amount)}`,
-    )
-    .replace('{amount}', formatWon(amount))
-    .replace('{year}', formatWon(amount * 12));
 
   const goTo = (next: number) => {
     setStep(next);
@@ -136,7 +127,12 @@ const CheckupQuestions = ({
         textAction="건너뛰기"
         onTextActionPress={() => !submit.isPending && finish('')}
       />
-      <View className="flex-1 gap-stack-lg px-screen-x pt-stack-md">
+      {/* 빈 곳을 누르면 키보드를 내림 (4/4 메모). 안쪽 칩·선택지·입력칸은 각자 터치를 가져감 */}
+      <Pressable
+        accessible={false}
+        onPress={() => Keyboard.dismiss()}
+        className="flex-1 gap-stack-lg px-screen-x pt-stack-md"
+      >
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-inline-md">
             <Image
@@ -157,9 +153,9 @@ const CheckupQuestions = ({
               lineBreakStrategyIOS="hangul-word"
               className="text-text-primary text-head2-bold"
             >
-              {fillName(question.title, name)}
+              {question.title}
             </Text>
-            <Text className="text-text-primary text-body2-regular">{hint}</Text>
+            <Text className="text-text-primary text-body2-regular">{question.hint}</Text>
           </View>
           {isMemo ? (
             <View className="gap-inset-sm">
@@ -198,7 +194,7 @@ const CheckupQuestions = ({
             </View>
           )}
         </View>
-      </View>
+      </Pressable>
       <View className="pb-safe px-screen-x">
         {step === 0 ? (
           <Cta

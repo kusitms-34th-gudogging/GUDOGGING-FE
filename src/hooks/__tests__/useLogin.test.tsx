@@ -4,16 +4,6 @@ import * as SecureStore from 'expo-secure-store';
 import { useLogin } from '@/hooks/useLogin';
 import { createQueryWrapper, mockApi } from '@/lib/testing';
 
-// 보안 저장소는 네이티브 모듈이라 메모리로 대신함
-jest.mock('expo-secure-store', () => {
-  const store = new Map<string, string>();
-  return {
-    getItemAsync: async (key: string) => store.get(key) ?? null,
-    setItemAsync: async (key: string, value: string) => void store.set(key, value),
-    deleteItemAsync: async (key: string) => void store.delete(key),
-  };
-});
-
 afterEach(() => jest.restoreAllMocks());
 
 it.each([true, false])(
@@ -34,3 +24,17 @@ it.each([true, false])(
     expect(await SecureStore.getItemAsync('refreshToken')).toBe('refresh');
   },
 );
+
+it.each([
+  ['google', ['idToken']],
+  ['apple', ['identityToken', 'authorizationCode']],
+] as const)('%s 로그인은 명세 요청 바디 필드를 보낸다', async (provider, fields) => {
+  const fetchSpy = mockApi({
+    [`POST /api/v1/auth/${provider}`]: { accessToken: 'a', refreshToken: 'r', isNewUser: false },
+  });
+  const { result } = await renderHook(() => useLogin(), { wrapper: createQueryWrapper() });
+
+  await act(() => result.current.mutateAsync(provider));
+
+  expect(Object.keys(JSON.parse(String(fetchSpy.mock.calls[0][1]?.body)))).toEqual(fields);
+});

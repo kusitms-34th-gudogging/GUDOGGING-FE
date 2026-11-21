@@ -21,7 +21,7 @@ interface RegisterServiceSelectScreenProps {
 }
 
 export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScreenProps) => {
-  useRegisterStep('A-02');
+  useRegisterStep('SELECT_SERVICES');
   const [query, setQuery] = useState('');
   // 불러오기 팝업으로 이어서 등록할 수 있게 저장소에 둠
   const selectedIds = useRegisterDraft((s) => s.selectedIds);
@@ -38,8 +38,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
       selectedIds.includes(id) ? selectedIds.filter((v) => v !== id) : [...selectedIds, id],
     );
   const keyword = query.trim();
-  // 전체 목록(칩 이름 찾기용)과 검색 결과. 검색·순서는 서버가 정함 (명세)
-  // shortcut: 이미 등록한 서비스 제외·많이 등록한 TOP 5는 명세 응답에 필드가 없어 안 함 (노션 확인 요청)
+  // 전체 목록(칩 이름 찾기용)과 검색 결과. 검색·순서·지금 구독 중인 서비스 제외는 서버가 정함 (명세·백엔드 확인)
   const all = useServices();
   const search = useServices(keyword);
   const results = search.data ?? [];

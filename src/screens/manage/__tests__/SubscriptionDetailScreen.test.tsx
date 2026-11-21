@@ -1,5 +1,6 @@
 import { userEvent } from '@testing-library/react-native';
-import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { router } from 'expo-router';
+import { act, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import type { ActiveSubscriptionDetail } from '@/constants/manage';
 import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
@@ -60,6 +61,19 @@ describe('SubscriptionDetailScreen', () => {
     await user.press(screen.getByRole('menuitem', { name: '편집' }));
     expect(screen).toHavePathname('/register/input');
     expect(screen).toHaveSearchParams({ edit: 'netflix' });
+  });
+
+  it('더보기 → 삭제는 확인 모달을 거쳐 이 구독을 삭제하고 이전 화면으로 돌아간다', async () => {
+    const user = await renderDetail(false, { 'DELETE /api/v1/subscriptions': { deletedCount: 1 } });
+    await act(() => router.push('/register/input'));
+    await act(() => router.back());
+
+    await user.press(screen.getByRole('button', { name: '더보기' }));
+    await user.press(screen.getByRole('menuitem', { name: '삭제' }));
+    expect(screen.getByText('Netflix를 삭제할까요?')).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: '삭제하기' }));
+
+    await waitFor(() => expect(bodyOf('DELETE')?.body).toBe('{"subscriptionIds":["netflix"]}'));
   });
 
   it('구독 점검은 점검 화면으로 간다', async () => {

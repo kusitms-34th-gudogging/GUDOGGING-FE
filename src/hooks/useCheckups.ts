@@ -29,7 +29,8 @@ interface CheckupResultResponse {
   checkupId: string;
   subscriptionId: string;
   serviceName: string;
-  nextBillingDate: string;
+  // 구독 종료된 구독의 점검이면 null
+  nextBillingDate: string | null;
   score: number;
   bundles: {
     name: string;
@@ -44,14 +45,12 @@ interface CheckupResultResponse {
     category: ApiCategory;
     monthlyTotal: number;
     items: { serviceName: string; logoUrl: string | null; monthlyAmount: number }[];
-    otherCount: number;
   };
 }
 
-// K-80 같은 카테고리 지출 (점검 중인 구독이 맨 위, 5개 넘으면 4개 + 그 외 n개는 서버가 정리)
+// K-80 같은 카테고리 지출 (점검 중인 구독이 맨 위, '그 외 n개'로 줄이지 않고 전부 나열)
 export interface CategorySpending {
   items: { name: string; monthly: number; current: boolean }[];
-  rest: number;
   total: number;
 }
 
@@ -98,7 +97,7 @@ export const useCheckupResult = (checkupId: string) =>
         id: r.subscriptionId,
         name: r.serviceName,
         category: CATEGORY_LABEL[r.categorySpending.category],
-        nextDate: parseDate(r.nextBillingDate),
+        nextDate: r.nextBillingDate ? parseDate(r.nextBillingDate) : undefined,
       },
       usage: r.score,
       spending: {
@@ -108,7 +107,6 @@ export const useCheckupResult = (checkupId: string) =>
           monthly: s.monthlyAmount,
           current: i === 0,
         })),
-        rest: r.categorySpending.otherCount,
         total: r.categorySpending.monthlyTotal,
       } satisfies CategorySpending,
       recommendations: r.bundles.map((b): CheckupRecommendation => ({

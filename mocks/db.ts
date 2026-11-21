@@ -41,7 +41,12 @@ export interface Checkup {
 export const db = {
   subscriptions: [] as Subscription[],
   checkups: [] as Checkup[],
-  draft: null as null | { savedAt: string; lastStep: string; items: unknown[] },
+  draft: null as null | {
+    savedAt: string;
+    lastStep: string;
+    editingItemIndex: number | null;
+    items: unknown[];
+  },
   paymentReminderEnabled: true,
   gmailEmail: null as string | null,
   // 한 번 로그인하면 가입한 계정 (다음 로그인부터 isNewUser false → 온보딩 없이 홈)
@@ -150,6 +155,37 @@ db.subscriptions.push({
   status: 'ACTIVE',
   canceledAt: null,
   isSteady: false,
+});
+
+// 구독 종료 화면(M-05·캘린더 회색 상세) 확인용으로 처음부터 해지된 구독 1건 + 해지를 고른 마지막 점검
+// 해지일 10일 전이라 캘린더에 지난 결제가 남음
+db.subscriptions.push({
+  subscriptionId: '3f2b8c1e-5a4d-4e7b-9c21-000000000099',
+  serviceId: null,
+  serviceName: '왓챠',
+  logoUrl: null,
+  category: 'VIDEO_OTT',
+  amount: 7900,
+  billingCycleValue: 1,
+  billingCycleUnit: 'MONTH',
+  nextBillingDate: seedDate(-10),
+  paymentMethod: 'WEB_DIRECT',
+  startedAt: seedDate(-10, -6),
+  status: 'ENDED',
+  canceledAt: seedDate(-10),
+  isSteady: false,
+});
+db.checkups.push({
+  checkupId: 'b1d7a2c4-5a4d-4e7b-9c21-000000000099',
+  subscriptionId: '3f2b8c1e-5a4d-4e7b-9c21-000000000099',
+  checkedAt: seedDate(-12),
+  answers: { USAGE: 1, SATISFACTION: 1, PLAN: 1 },
+  answerTexts: { USAGE: '안 봤어요', SATISFACTION: '많이 아까워요', PLAN: '안 쓸 거예요' },
+  memo: '볼 게 없어서 해지',
+  ...scoreCheckup({ USAGE: 1, SATISFACTION: 1, PLAN: 1 }),
+  decision: 'CANCEL',
+  cancelReasons: ['RARELY_USED', 'CUSTOM'],
+  cancelReasonText: '요즘 볼 게 없어요',
 });
 
 // E2E 초기화용: 시드까지 넣은 처음 상태를 복사해 둠 (handlers/e2e.ts)

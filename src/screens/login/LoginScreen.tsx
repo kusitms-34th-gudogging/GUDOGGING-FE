@@ -12,6 +12,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { SocialLoginButton } from '@/components/common/SocialLoginButton';
 import { Text } from '@/components/common/Text';
 import { LOGIN_TRANSITION_SEC, LoginBackdrop } from '@/components/login/LoginBackdrop';
+import { openPolicy } from '@/constants/policy';
 import type { LoginProvider } from '@/types/auth';
 
 interface LoginScreenProps {
@@ -126,7 +127,11 @@ export const LoginScreen = ({ onLogin, onLoggedIn }: LoginScreenProps) => {
           />
           <SocialLoginButton provider="google" onPress={() => handleLogin('google')} />
         </View>
-        <Text className="text-center text-text-tertiary text-caption2-regular">
+        <Text
+          accessibilityRole="link"
+          onPress={openPolicy}
+          className="text-center text-text-tertiary text-caption2-regular"
+        >
           이용약관 및 개인정보 처리방침
         </Text>
       </View>

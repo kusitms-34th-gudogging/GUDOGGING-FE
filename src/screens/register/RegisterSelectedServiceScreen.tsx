@@ -11,7 +11,7 @@ import { useCreateSubscriptions } from '@/hooks/useCreateSubscriptions';
 import { useRegisterDraft, useRegisterServices, useRegisterStep } from '@/hooks/useRegisterDraft';
 
 export const RegisterSelectedServiceScreen = () => {
-  useRegisterStep('A-04');
+  useRegisterStep('CONFIRM_SUBSCRIPTIONS');
   // A-02에서 고른 목록은 저장소가 원본 (구독 추가하기로 바꿔도 바로 반영)
   const serviceIds = useRegisterDraft((s) => s.selectedIds);
   const payments = useRegisterDraft((s) => s.payments);

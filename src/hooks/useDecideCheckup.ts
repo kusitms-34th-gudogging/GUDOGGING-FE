@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invalidateSubscriptionData } from '@/hooks/useSubscriptions';
 import { request } from '@/lib/request';
 
-// 해지 이유 코드. 앱 cancelReasons 배열 순서와 같음 (constants/checkup의 cancel())
+// 해지 이유 코드. 앱 cancelReasons 배열 순서와 같음 (constants/checkup의 cancel()). 직접 입력은 CUSTOM
 export const CANCEL_REASON_CODES = [
   'RARELY_USED',
   'PRICE_BURDEN',
@@ -12,8 +12,10 @@ export const CANCEL_REASON_CODES = [
   'GOAL_ACHIEVED',
 ] as const;
 
+// 해지 이유는 선택: 건너뛰기면 cancelReasons·cancelReasonText를 보내지 않음 (명세)
 type Decision =
-  { decision: 'KEEP' } | { decision: 'CANCEL'; cancelReasons: string[]; cancelReasonText?: string };
+  | { decision: 'KEEP' }
+  | { decision: 'CANCEL'; cancelReasons?: string[]; cancelReasonText?: string };
 
 // 점검 결과 유지/해지 결정 (K-80 유지하기 · K-90 해지 이유)
 export const useDecideCheckup = (checkupId: string) => {

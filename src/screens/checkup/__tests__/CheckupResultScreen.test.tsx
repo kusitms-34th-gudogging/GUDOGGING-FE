@@ -38,12 +38,15 @@ const result = (over: object = {}) => ({
     category: 'VIDEO_OTT',
     monthlyTotal: 28400,
     subscriptionCount: 6,
-    // 점검 중인 구독이 맨 위, 5개 넘으면 4개 + 그 외 n개 (서버가 정리)
+    // 점검 중인 구독이 맨 위. 6개 모두 나열 ('그 외 n개'로 줄이지 않음)
     items: [
       { serviceName: '넷플릭스', logoUrl: null, monthlyAmount: 13500 },
       { serviceName: '유튜브 프리미엄', logoUrl: null, monthlyAmount: 14900 },
+      { serviceName: '티빙', logoUrl: null, monthlyAmount: 0 },
+      { serviceName: '디즈니+', logoUrl: null, monthlyAmount: 0 },
+      { serviceName: '왓챠', logoUrl: null, monthlyAmount: 0 },
+      { serviceName: '웨이브', logoUrl: null, monthlyAmount: 0 },
     ],
-    otherCount: 2,
   },
   ...over,
 });
@@ -71,7 +74,7 @@ afterEach(() => {
 });
 
 describe('CheckupResultScreen', () => {
-  it('같은 카테고리 지출은 응답대로, 점검 중인 구독을 표시하고 그 외 개수를 보여준다', async () => {
+  it('같은 카테고리 지출은 응답대로 전부 나열하고, 점검 중인 구독을 표시한다', async () => {
     await renderResult();
 
     expect(screen.getByText('영상·OTT 구독')).toBeOnTheScreen();
@@ -81,7 +84,8 @@ describe('CheckupResultScreen', () => {
     expect(
       within(screen.getByText('넷플릭스').parent!).getByText('현재 점검 중'),
     ).toBeOnTheScreen();
-    expect(screen.getByText('그 외 2개')).toBeOnTheScreen();
+    expect(screen.getByText('웨이브')).toBeOnTheScreen();
+    expect(screen.queryByText(/그 외/)).not.toBeOnTheScreen();
   });
 
   it('번들 추천은 절약 금액과 번들 가격으로 보여준다', async () => {
@@ -90,6 +94,19 @@ describe('CheckupResultScreen', () => {
     expect(screen.getByText('같은 넷플릭스, 더 싸게')).toBeOnTheScreen();
     expect(screen.getByText('넷플릭스 + 티빙')).toBeOnTheScreen();
     expect(screen.getByText('월 19,900원에 이용')).toBeOnTheScreen();
+    // 추천 개수는 보여 주지 않음
+    expect(screen.queryByText(/추천 \d+개/)).not.toBeOnTheScreen();
+  });
+
+  it('다음 결제일이 있으면 결제 전 확인 문구를 보여준다', async () => {
+    await renderResult();
+    expect(screen.getByText('11월 17일 결제 전에 확인했어요')).toBeOnTheScreen();
+  });
+
+  it('구독 종료된 구독의 점검(nextBillingDate null)도 결과를 보여준다', async () => {
+    await renderResult({ 'GET /api/v1/checkups/c1': result({ nextBillingDate: null }) });
+
+    expect(screen.queryByText(/결제 전에 확인했어요/)).not.toBeOnTheScreen();
   });
 
   it('추천 상품이 없으면 더 싸게 영역을 숨긴다', async () => {

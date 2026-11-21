@@ -48,20 +48,21 @@ describe('useSyncSubscriptionDraft', () => {
     expect(draftCalls()).toEqual([]);
 
     // 머문 화면만 바뀌고 담을 구독이 없으면 보내지 않음
-    await act(() => useRegisterDraft.getState().setLastStep('A-02'));
+    await act(() => useRegisterDraft.getState().setLastStep('SELECT_SERVICES'));
     await act(() => useRegisterDraft.getState().setSelectedIds(['netflix']));
 
     await waitFor(() => expect(draftCalls()).toHaveLength(1));
     expect(draftCalls().at(-1)).toEqual({
       method: 'PUT',
       body: {
-        lastStep: 'A-02',
-        // 결제 정보 입력 전엔 null, 카테고리는 서비스 카테고리
+        lastStep: 'SELECT_SERVICES',
+        editingItemIndex: null,
+        // 결제 정보 입력 전엔 카테고리까지 6개 모두 null (명세)
         items: [
           {
             serviceId: 'netflix',
             serviceName: 'Netflix',
-            category: 'VIDEO_OTT',
+            category: null,
             amount: null,
             billingCycleValue: null,
             billingCycleUnit: null,
@@ -112,6 +113,43 @@ describe('useSyncSubscriptionDraft', () => {
           paymentMethod: 'APP_STORE',
         },
       ]),
+    );
+  });
+
+  it('정보 입력 중이면 입력 중인 항목의 순번을, 새 직접 입력이면 null을 보낸다', async () => {
+    await startSync();
+    await act(() => {
+      useRegisterDraft.getState().setSelectedIds(['netflix', 'tving']);
+      useRegisterDraft.getState().setLastStep('INPUT_SUBSCRIPTION', 'tving');
+    });
+    await waitFor(() =>
+      expect(draftCalls().at(-1)?.body).toMatchObject({
+        lastStep: 'INPUT_SUBSCRIPTION',
+        editingItemIndex: 1,
+      }),
+    );
+
+    await act(() => useRegisterDraft.getState().setLastStep('INPUT_SUBSCRIPTION'));
+    await waitFor(() =>
+      expect(draftCalls().at(-1)?.body).toMatchObject({
+        lastStep: 'INPUT_SUBSCRIPTION',
+        editingItemIndex: null,
+      }),
+    );
+  });
+
+  it('입력 중인 항목이 임시저장 목록에 없으면 선택한 구독 화면으로 보낸다', async () => {
+    await startSync();
+    await act(() => {
+      useRegisterDraft.getState().setSelectedIds(['netflix']);
+      useRegisterDraft.getState().setLastStep('INPUT_SUBSCRIPTION', 'found-youtube');
+    });
+
+    await waitFor(() =>
+      expect(draftCalls().at(-1)?.body).toMatchObject({
+        lastStep: 'CONFIRM_SUBSCRIPTIONS',
+        editingItemIndex: null,
+      }),
     );
   });
 

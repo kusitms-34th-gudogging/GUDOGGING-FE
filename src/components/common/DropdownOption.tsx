@@ -9,6 +9,8 @@ interface DropdownOptionProps {
   selected: boolean;
   // 삭제처럼 되돌릴 수 없는 동작은 빨간 글자
   destructive?: boolean;
+  // 구독 종료처럼 회색 화면에서는 회색 글자
+  muted?: boolean;
   onSelect: () => void;
   className?: string;
   testID?: string;
@@ -18,6 +20,7 @@ export const DropdownOption = ({
   label,
   selected,
   destructive,
+  muted,
   onSelect,
   className,
   testID,
@@ -37,7 +40,7 @@ export const DropdownOption = ({
       numberOfLines={1}
       className={cn(
         'flex-1',
-        destructive ? 'text-text-error' : 'text-text-primary',
+        destructive ? 'text-text-error' : muted ? 'text-text-secondary' : 'text-text-primary',
         selected ? 'text-body2-semibold' : 'text-body2-regular',
       )}
     >

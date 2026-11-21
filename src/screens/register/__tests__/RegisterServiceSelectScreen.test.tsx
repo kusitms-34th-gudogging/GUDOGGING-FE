@@ -221,7 +221,7 @@ it('보이면 머문 화면을 서비스 선택(A-02)으로 기록하고, 화면
   const consoleError = jest.spyOn(console, 'error');
   await renderSelect();
 
-  expect(useRegisterDraft.getState().lastStep).toBe('A-02');
+  expect(useRegisterDraft.getState().lastStep).toBe('SELECT_SERVICES');
   // effect가 Promise를 돌려주면 React가 console.error로 알림
   expect(consoleError.mock.calls.flat().join(' ')).not.toContain('must not return anything');
 });

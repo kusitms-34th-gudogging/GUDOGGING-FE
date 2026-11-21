@@ -42,7 +42,7 @@ export const RegisterDoneScreen = ({ serviceIds }: RegisterDoneScreenProps) => {
       if (await AccessibilityInfo.isReduceMotionEnabled()) return setLastFrame(1);
       lottieRef.current?.play();
       timer = setTimeout(
-        () => void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light),
+        () => void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
         HAPTIC_MS,
       );
     });

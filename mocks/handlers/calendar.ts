@@ -41,9 +41,7 @@ export const calendarHandlers = [
       return { date, totalAmount: total(payments), payments: payments.map((p) => p.payment) };
     });
     return ok('월별 결제 일정을 조회했습니다.', {
-      monthlyTotal: total(list),
       currentMonthTotal: total(monthPayments(now.getFullYear(), now.getMonth() + 1)),
-      paymentCount: list.length,
       days,
     });
   }),

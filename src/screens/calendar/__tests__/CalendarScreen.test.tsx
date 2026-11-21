@@ -47,9 +47,7 @@ const mockCalendar = () =>
     const params = new URL(String(input)).searchParams;
     const key = `${params.get('year')}-${params.get('month')?.padStart(2, '0')}`;
     const data = {
-      monthlyTotal: 0,
       currentMonthTotal: 142400,
-      paymentCount: 0,
       days: MONTHS[key] ?? [],
     };
     return new Response(JSON.stringify({ code: 200, data }));

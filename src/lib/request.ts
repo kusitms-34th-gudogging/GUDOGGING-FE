@@ -43,7 +43,8 @@ const send = async (
   return (json as { data: unknown } | undefined)?.data;
 };
 
-// 리프레시 토큰으로 새 토큰을 받아 저장. 없거나 만료면 토큰을 지우고 null (명세: 만료 시 401)
+// 리프레시 토큰으로 새 토큰을 받아 저장. 없으면 null, 만료·재사용(명세 40102, HTTP 401)이면 토큰을 지우고 null
+// 네트워크 끊김·5xx는 세션이 끝난 게 아니라 토큰을 남기고 그대로 던짐 (지우면 로그아웃돼 버림)
 const reissue = async () => {
   const refreshToken = await authToken.getRefresh();
   if (!refreshToken) return null;
@@ -55,7 +56,8 @@ const reissue = async () => {
     )) as AuthTokens;
     await authToken.save(tokens);
     return tokens.accessToken;
-  } catch {
+  } catch (error) {
+    if (!(error instanceof ApiError) || error.status !== 401) throw error;
     await authToken.clear();
     return null;
   }
@@ -70,8 +72,11 @@ const reissueOnce = () => {
   return reissuing;
 };
 
+// 앱 실행 때 로그인 세션 확인 (S-01). 재발급되면 true, 리프레시 토큰이 없거나 만료면 false
+export const restoreSession = async () => (await reissueOnce()) !== null;
+
 // 저장한 액세스 토큰을 붙여 보내고, 401이면 토큰을 재발급해 한 번만 다시 보냄
-// shortcut: 재발급도 실패하면 에러만 던짐, 로그인 화면으로 보내는 건 세션 확인(S-01) 붙일 때
+// shortcut: 앱 사용 중 재발급이 실패하면 에러만 던짐, 로그인 화면으로 보내는 건 기획 생기면
 export const request = async <T>(path: string, options: RequestOptions = {}) => {
   try {
     return (await send(path, options, await authToken.getAccess())) as T;

@@ -1,16 +1,6 @@
 import { authToken } from '@/lib/authToken';
 import { ApiError, request } from '@/lib/request';
 
-// 보안 저장소는 네이티브 모듈이라 메모리로 대신함
-jest.mock('expo-secure-store', () => {
-  const store = new Map<string, string>();
-  return {
-    getItemAsync: async (key: string) => store.get(key) ?? null,
-    setItemAsync: async (key: string, value: string) => void store.set(key, value),
-    deleteItemAsync: async (key: string) => void store.delete(key),
-  };
-});
-
 const mockFetch = (status: number, body?: string) =>
   jest.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(body ?? null, { status }));
 
@@ -110,6 +100,15 @@ describe('request 인증', () => {
     expect(error).toMatchObject({ status: 401 });
     expect(await authToken.getAccess()).toBeNull();
     expect(await authToken.getRefresh()).toBeNull();
+  });
+
+  it('재발급이 5xx로 실패하면 토큰을 남기고 그 에러를 던진다 (로그아웃되지 않음)', async () => {
+    mockServer(() => json(502, null));
+
+    const error = await request('/api/v1/home').catch((e: unknown) => e);
+
+    expect(error).toMatchObject({ status: 502 });
+    expect(await authToken.getRefresh()).toBe('old-refresh');
   });
 
   it('동시에 여러 요청이 401이어도 재발급은 한 번만 한다', async () => {

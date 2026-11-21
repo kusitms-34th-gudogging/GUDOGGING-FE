@@ -60,14 +60,15 @@ export const CheckupCancelScreen = ({ id, checkupId }: CheckupCancelScreenProps)
   const submit = (withReasons: boolean) => {
     if (!checkupId) return goGuide();
     const text = customOn ? custom.trim() : '';
+    const codes = picked.map((r) => CANCEL_REASON_CODES[reasons.indexOf(r)]);
     decide.mutate(
-      {
-        decision: 'CANCEL',
-        cancelReasons: withReasons
-          ? picked.map((r) => CANCEL_REASON_CODES[reasons.indexOf(r)])
-          : [],
-        ...(withReasons && text && { cancelReasonText: text }),
-      },
+      withReasons
+        ? {
+            decision: 'CANCEL',
+            cancelReasons: text ? [...codes, 'CUSTOM'] : codes,
+            ...(text && { cancelReasonText: text }),
+          }
+        : { decision: 'CANCEL' },
       { onSuccess: goGuide },
     );
   };

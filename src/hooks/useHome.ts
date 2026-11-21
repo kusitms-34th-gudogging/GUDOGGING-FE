@@ -9,6 +9,8 @@ interface HomePayment {
   amount: number;
   nextBillingDate: string;
   dDay: number;
+  // 이번 결제 주기 점검 미완료면 true ('구독 점검' 노출)
+  needsCheckup: boolean;
 }
 
 export interface Home {
@@ -26,7 +28,10 @@ export interface Home {
     unusedCount: number;
     monthlyAmount: number;
     yearlyAmount: number;
-    items: Omit<HomePayment, 'dDay'>[];
+    // 최근 점검 활용도 낮은 순, 최대 3개
+    items: (Pick<HomePayment, 'subscriptionId' | 'serviceName' | 'logoUrl' | 'amount'> & {
+      scorePercent: number;
+    })[];
   };
   hasUnreadNotification: boolean;
 }

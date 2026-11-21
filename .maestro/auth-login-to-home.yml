@@ -22,4 +22,4 @@ appId: com.subscribers.gudogging
     id: 'add-subscription-skip'
 - assertVisible:
     id: 'home-screen'
-# 재실행 후 로그인 유지는 세션 확인(S-01) 구현 후 추가. 지금은 실행마다 로그인 화면부터 (src/app/(tabs)/index.tsx)
+# 재실행 후 로그인 유지(S-01)는 아직 E2E 없음, 단위 테스트 src/lib/__tests__/launch.test.tsx

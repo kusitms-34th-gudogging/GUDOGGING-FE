@@ -12,12 +12,12 @@ const tokens = {
 const login = () => {
   const isNewUser = !db.registered;
   db.registered = true;
-  return ok('로그인했습니다.', { ...tokens, isNewUser });
+  return ok('로그인되었습니다.', { ...tokens, isNewUser });
 };
 
 export const authHandlers = [
   http.post('/api/v1/auth/apple', login),
   http.post('/api/v1/auth/google', login),
-  http.post('/api/v1/auth/reissue', () => ok('토큰을 재발급했습니다.', tokens)),
+  http.post('/api/v1/auth/reissue', () => ok('토큰이 재발급되었습니다.', tokens)),
   http.post('/api/v1/auth/logout', () => ok('로그아웃했습니다.')),
 ];

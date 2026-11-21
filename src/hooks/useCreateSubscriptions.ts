@@ -31,7 +31,7 @@ export const useCreateSubscriptions = () => {
           subscriptions: subscriptions.map(({ serviceId, name, payment: p }) => ({
             serviceId: serviceId ?? null,
             serviceName: name,
-            // 직접 입력해도 고른 카테고리를 보냄 (명세 확인 요청 중: 직접 입력은 ETC로 보낸다는 설명과 다름)
+            // 직접 입력은 입력 화면 기본값이 기타(ETC)이고, 고르면 고른 카테고리 (명세: 앱이 기본값 ETC로 보냄)
             category: toCategoryCode(p.category),
             amount: p.amount,
             billingCycleValue: p.cycle,

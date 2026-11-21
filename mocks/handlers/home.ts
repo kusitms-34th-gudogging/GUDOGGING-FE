@@ -13,7 +13,7 @@ import {
   toIso,
 } from '../db.ts';
 import { ok } from '../response.ts';
-import { notifications } from './notification.ts';
+import { visibleNotifications } from './notification.ts';
 
 const sumBetween = (subs: Subscription[], from: Date, to: Date) =>
   subs.reduce((sum, s) => sum + s.amount * billingDates(s, from, to).length, 0);
@@ -25,6 +25,8 @@ const payment = (s: Subscription) => ({
   amount: s.amount,
   nextBillingDate: toIso(nextBilling(s)),
   dDay: daysBetween(today(), nextBilling(s)),
+  // 목록이 이미 미점검 구독만이라 항상 true
+  needsCheckup: true,
 });
 
 export const homeHandlers = [
@@ -81,10 +83,10 @@ export const homeHandlers = [
             serviceName: s.serviceName,
             logoUrl: s.logoUrl,
             amount: s.amount,
-            nextBillingDate: toIso(nextBilling(s)),
+            scorePercent: latestCheckup(s.subscriptionId)!.score,
           })),
       },
-      hasUnreadNotification: notifications.some(
+      hasUnreadNotification: visibleNotifications().some(
         (n) => !db.readNotificationIds.has(n.notificationId),
       ),
     });

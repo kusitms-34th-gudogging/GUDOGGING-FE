@@ -76,8 +76,12 @@ const answersOf = (c: Checkup) => ({
 export const subscriptionHandlers = [
   http.get('/api/v1/subscriptions/drafts', () => ok('임시저장을 조회했습니다.', db.draft)),
   http.put('/api/v1/subscriptions/drafts', async ({ request }) => {
-    const { items, lastStep } = (await request.json()) as { items: unknown[]; lastStep: string };
-    db.draft = { savedAt: nowIso(), lastStep, items };
+    const { items, lastStep, editingItemIndex } = (await request.json()) as {
+      items: unknown[];
+      lastStep: string;
+      editingItemIndex: number | null;
+    };
+    db.draft = { savedAt: nowIso(), lastStep, editingItemIndex, items };
     return ok('임시저장했습니다.', { savedAt: db.draft.savedAt });
   }),
   http.delete('/api/v1/subscriptions/drafts', () => {
@@ -148,7 +152,7 @@ export const subscriptionHandlers = [
     });
   }),
   http.post('/api/v1/subscriptions', async ({ request }) => {
-    // 같은 서비스 중복 등록도 받음 (명세에 막는 규칙 없음)
+    // 이미 구독 중인 서비스 중복 등록은 서버가 거부하지만(명세) 오류 코드가 명세에 없어 목서버는 받음
     const body = (await request.json()) as { subscriptions: NewSubscription[] };
     const created = body.subscriptions.map((s): Subscription => ({
       ...s,
@@ -294,8 +298,13 @@ export const subscriptionHandlers = [
   http.patch('/api/v1/subscriptions/:subscriptionId/reactivate', async ({ params, request }) => {
     const s = findSubscription(params.subscriptionId as string);
     if (!s) return notFound();
-    const { nextBillingDate } = (await request.json()) as { nextBillingDate: string };
-    Object.assign(s, { status: 'ACTIVE', canceledAt: null, nextBillingDate });
+    // 입력한 정보로 덮어쓰고 시작일은 재등록일 (명세). 사전 등록 서비스면 serviceName 무시
+    const { serviceName, ...rest } = (await request.json()) as Partial<Subscription>;
+    Object.assign(s, rest, serviceName && !s.serviceId && { serviceName }, {
+      status: 'ACTIVE',
+      canceledAt: null,
+      startedAt: toIso(today()),
+    });
     return ok('구독을 재등록했습니다.', { subscriptionId: s.subscriptionId, status: s.status });
   }),
   http.patch('/api/v1/subscriptions/:subscriptionId/steady', async ({ params, request }) => {

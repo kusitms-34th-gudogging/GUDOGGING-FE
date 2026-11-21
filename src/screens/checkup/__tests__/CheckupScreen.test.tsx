@@ -1,12 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fireEvent, userEvent } from '@testing-library/react-native';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { Keyboard } from 'react-native';
 
 import { getCheckupScores, useCheckupDraft } from '@/hooks/useCheckupDraft';
 import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
 import { CheckupScreen } from '@/screens/checkup/CheckupScreen';
 
-// 점검 문항 조회 응답 (서버가 카테고리에 맞춰 준 문구, 화면설계서 K-11~K-70)
+// 점검 문항 조회 응답 (서버가 서비스명·조사·금액·날짜를 채운 완성 문장, 화면설계서 K-11~K-70)
 const q = (type: string, label: string, hint: string | null, texts: string[]) => ({
   type,
   label,
@@ -14,22 +15,22 @@ const q = (type: string, label: string, hint: string | null, texts: string[]) =>
   // 순서가 섞여 와도 점수 순(1점 부정부터)으로 보여줌
   options: texts.map((text, i) => ({ score: i + 1, text })).reverse(),
 });
-const value = (label: string) =>
-  q('SATISFACTION', label, '월 {amount} · 1년이면 {year}', [
+const value = (label: string, hint: string) =>
+  q('SATISFACTION', label, hint, [
     '많이 아까워요',
     '조금 아까워요',
     '보통이에요',
     '구독료만큼 가치 있어요',
     '구독료보다 더 가치 있어요',
   ]);
-const PLAN = q('PLAN', '다음 달에도 {name}을 이용할 계획이 있나요?', '다음 결제 {next}', [
-  '안 쓸 거예요',
-  '거의 안 쓸 것 같아요',
-  '아직 잘 모르겠어요',
-  '아마 계속 쓸 것 같아요',
-  '꼭 계속 쓸 거예요',
-]);
-const USAGE = '최근 한 달 동안 {name}을 얼마나 자주 이용했나요?';
+const plan = (name: string, hint: string) =>
+  q('PLAN', `다음 달에도 ${name} 이용할 계획이 있나요?`, hint, [
+    '안 쓸 거예요',
+    '거의 안 쓸 것 같아요',
+    '아직 잘 모르겠어요',
+    '아마 계속 쓸 것 같아요',
+    '꼭 계속 쓸 거예요',
+  ]);
 const NETFLIX = {
   id: 'netflix',
   serviceName: '넷플릭스',
@@ -37,15 +38,14 @@ const NETFLIX = {
   amount: 13500,
   nextBillingDate: '2026-11-17',
   questions: [
-    q('USAGE', USAGE, '에피소드, 영화 모두 1편으로 세어 주세요', [
-      '안 봤어요',
-      '1~2편',
-      '3~5편',
-      '6~10편',
-      '11편 이상',
-    ]),
-    value('{name}에서 본 콘텐츠, 구독료만큼 가치 있었나요?'),
-    PLAN,
+    q(
+      'USAGE',
+      '최근 한 달 동안 넷플릭스를 얼마나 자주 이용했나요?',
+      '에피소드, 영화 모두 1편으로 세어 주세요',
+      ['안 봤어요', '1~2편', '3~5편', '6~10편', '11편 이상'],
+    ),
+    value('넷플릭스에서 본 콘텐츠, 구독료만큼 가치 있었나요?', '월 13,500원 · 1년이면 162,000원'),
+    plan('넷플릭스를', '다음 결제 11월 17일 · 13,500원'),
   ],
   memoPlaceholder: '예: 시즌 3 공개돼서 이번 달은 유지할래요',
   memoChips: ['보고 싶은 작품이 있어요', '이번 달은 바빴어요', '비싸지면 해지할래요'],
@@ -116,7 +116,7 @@ describe('CheckupScreen', () => {
     expect(screen.getByRole('button', NEXT)).toBeEnabled();
   });
 
-  it('서버가 준 카테고리 문항을 쓰고, 이름 조사·보조 문구의 구독료·결제일을 채운다', async () => {
+  it('서버가 준 카테고리 문항과 보조 문구를 그대로 보여 준다', async () => {
     const icloud = {
       ...NETFLIX,
       id: 'icloud',
@@ -125,15 +125,14 @@ describe('CheckupScreen', () => {
       amount: 1100,
       nextBillingDate: '2026-11-02',
       questions: [
-        q('USAGE', USAGE, '하루에 여러 번 써도 1일로 세어 주세요. 자동으로 쓴 날도 포함해요', [
-          '안 썼어요',
-          '한 달에 1~3일',
-          '주 1~2일',
-          '주 3~5일',
-          '거의 매일',
-        ]),
-        value('{name}, 구독료만큼 가치 있었나요?'),
-        PLAN,
+        q(
+          'USAGE',
+          '최근 한 달 동안 iCloud+를 얼마나 자주 이용했나요?',
+          '하루에 여러 번 써도 1일로 세어 주세요. 자동으로 쓴 날도 포함해요',
+          ['안 썼어요', '한 달에 1~3일', '주 1~2일', '주 3~5일', '거의 매일'],
+        ),
+        value('iCloud+, 구독료만큼 가치 있었나요?', '월 1,100원 · 1년이면 13,200원'),
+        plan('iCloud+를', '다음 결제 11월 2일 · 1,100원'),
       ],
     };
     const user = await renderCheckup({ subscription: icloud });
@@ -165,6 +164,16 @@ describe('CheckupScreen', () => {
     expect(
       screen.getByText('최근 한 달 동안 넷플릭스를 얼마나 자주 이용했나요?'),
     ).toBeOnTheScreen();
+  });
+
+  it('메모 입력 중 빈 곳을 누르면 키보드를 내린다', async () => {
+    answerAll();
+    const user = await renderCheckup();
+    const dismiss = jest.spyOn(Keyboard, 'dismiss');
+
+    await user.press(screen.getByText('넷플릭스에 대해\n남기고 싶은 말이 있나요?'));
+
+    expect(dismiss).toHaveBeenCalled();
   });
 
   it('3문항을 다 답했으면 4/4 메모부터, 칩은 입력란에 이어 붙고 건너뛰기가 보인다', async () => {

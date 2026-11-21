@@ -11,5 +11,14 @@ jest.mock(
   'react-native-gesture-handler/lib/module/handlers/gestures/installUIRuntimeBindings',
   () => ({ installUIRuntimeBindings: () => {} }),
 );
+// 보안 저장소(로그인 토큰)는 네이티브 모듈이라 메모리로 대신함. 테스트 파일마다 새로 비어 있음
+jest.mock('expo-secure-store', () => {
+  const store = new Map<string, string>();
+  return {
+    getItemAsync: async (key: string) => store.get(key) ?? null,
+    setItemAsync: async (key: string, value: string) => void store.set(key, value),
+    deleteItemAsync: async (key: string) => void store.delete(key),
+  };
+});
 // request()가 base URL 없으면 에러. API 테스트는 fetch를 mock해서 실제로 나가지 않음
 process.env.EXPO_PUBLIC_API_URL = 'https://api.test';

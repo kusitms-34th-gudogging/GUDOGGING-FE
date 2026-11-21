@@ -1,9 +1,11 @@
 import { userEvent } from '@testing-library/react-native';
 import { Slot } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
+import { Linking } from 'react-native';
 
 import MypageGmailRoute from '@/app/mypage/gmail';
 import { ToastProvider } from '@/components/common/ToastProvider';
+import { authToken } from '@/lib/authToken';
 import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
 import { MypageScreen } from '@/screens/mypage/MypageScreen';
 
@@ -56,6 +58,7 @@ test('Gmail 연동 행을 누르면 Gmail 연동 화면으로 이동한다', asy
 });
 
 test('로그아웃을 확인하면 로그인 화면으로, 취소하면 그대로다', async () => {
+  await authToken.save({ accessToken: 'access', refreshToken: 'refresh' });
   await renderMypage({ login: () => null });
 
   await userEvent.press(screen.getByRole('button', { name: '로그아웃' }));
@@ -70,7 +73,9 @@ test('로그아웃을 확인하면 로그인 화면으로, 취소하면 그대�
     .mocked(globalThis.fetch)
     .mock.calls.find(([url]) => String(url).endsWith('/api/v1/auth/logout'));
   expect(logoutCall?.[1]?.method).toBe('POST');
+  expect(JSON.parse(String(logoutCall?.[1]?.body))).toEqual({ refreshToken: 'refresh' });
   expect(screen).toHavePathname('/login');
+  expect(await authToken.getRefresh()).toBeNull();
 });
 
 test('회원 탈퇴 행을 누르면 회원 탈퇴 화면으로 이동한다', async () => {
@@ -79,4 +84,16 @@ test('회원 탈퇴 행을 누르면 회원 탈퇴 화면으로 이동한다', a
   await userEvent.press(screen.getByRole('button', { name: '회원 탈퇴' }));
 
   expect(screen).toHavePathname('/mypage/withdraw');
+});
+
+test('이용 약관 및 개인정보 처리방침은 노션 페이지를 브라우저로 연다', async () => {
+  const open = jest.spyOn(Linking, 'openURL').mockResolvedValue();
+  await renderMypage({});
+
+  await userEvent.press(screen.getByRole('button', { name: '이용 약관 및 개인정보 처리방침' }));
+
+  expect(open).toHaveBeenCalledWith(
+    'https://pear-yew-dc3.notion.site/41fe0bd8b68780fcb12fea088ac232ff?source=copy_link',
+  );
+  expect(screen.queryByRole('button', { name: '개인정보 처리방침' })).not.toBeOnTheScreen();
 });

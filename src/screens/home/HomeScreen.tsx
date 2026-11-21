@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 
+import { CalendarColorAsset, EditColorAsset } from '@/assets/graphics';
 import { BellDotIcon, BellIcon } from '@/assets/icons';
 import { Badge } from '@/components/common/Badge';
 import { FloatingButton } from '@/components/common/FloatingButton';
@@ -8,11 +9,11 @@ import { ListItem } from '@/components/common/ListItem';
 import { QueryState } from '@/components/common/QueryState';
 import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
-import { CheckupPromptCard } from '@/components/home/CheckupPromptCard';
 import { CostCard } from '@/components/home/CostCard';
 import { HomeEmptyState } from '@/components/home/HomeEmptyState';
 import { SectionHeader } from '@/components/home/SectionHeader';
 import { ServiceCard } from '@/components/home/ServiceCard';
+import { StateCard } from '@/components/home/StateCard';
 import { useHome } from '@/hooks/useHome';
 import { cn } from '@/utils/cn';
 import { parseDate } from '@/utils/date';
@@ -43,7 +44,10 @@ export const HomeScreen = () => {
   const isEmpty = summary.subscriptionCount === 0;
 
   return (
-    <View testID="home-screen" className="pt-safe flex-1 bg-bg-default">
+    <View
+      testID="home-screen"
+      className={cn('pt-safe flex-1 bg-bg-default', !isEmpty && 'pb-safe')}
+    >
       <TopBar
         variant="main"
         title="홈"
@@ -55,10 +59,12 @@ export const HomeScreen = () => {
           onPress: () => router.push('/notification'),
         }}
       />
-      {/* 아래는 떠 있는 탭바(하단 안전 영역 + 4 + 52)에 가리지 않게 여백. 빈 상태는 화면 높이만큼 채우고 안에서 탭바만큼 뺌 */}
+      {/* 캘린더·구독 관리처럼 스크롤 영역을 떠 있는 탭바(52 + 아래 4) + 간격 12 위에서 끝냄 (아래 끝 내용은 잘려 보여도 됨)
+          맨 아래 여백은 없음 (+ 버튼이 마지막 행 금액을 가려도 됨). 빈 상태는 화면 높이만큼 채우고 안에서 탭바만큼 뺌 */}
       <ScrollView
         bounces={false}
-        contentContainerClassName={cn('gap-inset-lg pt-stack-md', isEmpty ? 'grow' : 'pb-[120px]')}
+        className={cn(!isEmpty && 'mb-[68px]')}
+        contentContainerClassName={cn('gap-inset-lg pt-stack-md', isEmpty && 'grow')}
       >
         <View className="gap-inline-sm px-screen-x">
           <Text accessibilityRole="header" className="px-s2 text-text-primary text-body1-bold">
@@ -88,30 +94,44 @@ export const HomeScreen = () => {
                 showChevron
                 onPress={() => router.navigate('/calendar')}
               />
-              {/* 이번 결제 주기에 아직 점검 안 한 구독만 서버가 내려 줌 (HOM-001) */}
-              <View className="gap-stack-sm">
-                {upcomingPayments.map((s) => (
-                  <ListItem
-                    key={s.subscriptionId}
-                    title={s.serviceName}
-                    subtitle={`${dateLabel(s.nextBillingDate)} · D-${s.dDay}`}
-                    showSubtitle
-                    logo={LOGO}
-                    showLogo
-                    cost={formatWon(s.amount)}
-                    showCost
-                    // 행 전체가 터치 영역 → 그 구독 점검 1/4
-                    iconRightAction={{
-                      accessibilityLabel: `${s.serviceName} 점검하기`,
-                      onPress: () => router.push(`/checkup/${s.subscriptionId}?restart=1`),
-                    }}
-                  />
-                ))}
-              </View>
+              {/* 이번 결제 주기에 아직 점검 안 한 구독만 서버가 내려 줌 (HOM-001). 다 점검했으면 완료 카드 (H-03.1) */}
+              {upcomingPayments.length === 0 ? (
+                <StateCard
+                  title={'구독 점검 완료!\n이번 달 결제 일정을 확인해요'}
+                  buttonLabel="캘린더 확인하기"
+                  Asset={CalendarColorAsset}
+                  onPress={() => router.navigate('/calendar')}
+                />
+              ) : (
+                <View className="gap-stack-sm">
+                  {upcomingPayments.map((s) => (
+                    <ListItem
+                      key={s.subscriptionId}
+                      title={s.serviceName}
+                      subtitle={`${dateLabel(s.nextBillingDate)} · D-${s.dDay}`}
+                      showSubtitle
+                      logo={LOGO}
+                      showLogo
+                      cost={formatWon(s.amount)}
+                      showCost
+                      // 행 전체가 터치 영역 → 그 구독 점검 1/4. 이번 주기 점검을 마쳤으면 누를 수 없음 (명세 needsCheckup)
+                      iconRightAction={
+                        s.needsCheckup
+                          ? {
+                              accessibilityLabel: `${s.serviceName} 점검하기`,
+                              onPress: () => router.push(`/checkup/${s.subscriptionId}?restart=1`),
+                            }
+                          : undefined
+                      }
+                    />
+                  ))}
+                </View>
+              )}
             </View>
             <View className="h-[2px] bg-bg-subtle" />
             <View className="gap-stack-md px-screen-x">
-              {usage.hasCheckup ? (
+              {/* 잘 안 쓰는 구독이 없으면(점검 기록이 없거나 다 잘 쓰는 중) 점검 유도 카드 (H-03) */}
+              {usage.items.length > 0 ? (
                 <>
                   <View className="flex-row items-center justify-between">
                     <SectionHeader
@@ -126,8 +146,8 @@ export const HomeScreen = () => {
                       <ListItem
                         key={s.subscriptionId}
                         title={s.serviceName}
-                        // shortcut: 명세 usage.items에 활용도가 없어 결제일 표시, 백엔드에 활용도 추가 요청 후 '유지 추천 n%'로
-                        subtitle={dateLabel(s.nextBillingDate)}
+                        // 화면설계서 구간: 40% 미만 해지 추천, 40–59% 해지 고려 (API 명세의 'n% 유지 추천'보다 우선)
+                        subtitle={`${s.scorePercent}% ${s.scorePercent < 40 ? '해지 추천' : '해지 고려'}`}
                         showSubtitle
                         logo={LOGO}
                         showLogo
@@ -144,8 +164,16 @@ export const HomeScreen = () => {
                 </>
               ) : (
                 <>
-                  <SectionHeader title="잘 안 쓰는 구독" />
-                  <CheckupPromptCard
+                  <SectionHeader
+                    title="잘 안 쓰는 구독"
+                    showChevron
+                    onPress={() => router.navigate('/manage')}
+                  />
+                  <StateCard
+                    title={'결제 전 30초 질문,\n잘 쓰는 구독을 가려 드려요'}
+                    buttonLabel="점검하러 가기"
+                    Asset={EditColorAsset}
+                    buttonTestID="home-checkup"
                     onPress={() =>
                       usage.nudgeSubscriptionId &&
                       router.push(`/checkup/${usage.nudgeSubscriptionId}?restart=1`)
