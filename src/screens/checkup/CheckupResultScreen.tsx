@@ -93,24 +93,14 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
                   />
                 );
               })}
-              {spending.rest > 0 && (
-                <Text className="px-s2 text-text-secondary text-caption1-regular">
-                  그 외 {spending.rest}개
-                </Text>
-              )}
             </View>
           </View>
 
           {recommendations.length > 0 && (
             <View className="gap-stack-md">
-              <View className="flex-row items-center justify-between">
-                <Text className="px-s2 text-text-primary text-body1-semibold">
-                  같은 {name}, 더 싸게
-                </Text>
-                <Text className="px-inset-2xs text-text-secondary text-caption2-regular">
-                  추천 {recommendations.length}개
-                </Text>
-              </View>
+              <Text className="px-s2 text-text-primary text-body1-semibold">
+                같은 {name}, 더 싸게
+              </Text>
               {/* 화면 끝까지 스크롤되게 좌우 여백을 상쇄하고 안쪽에서 다시 줌 */}
               <ScrollView
                 horizontal

@@ -124,12 +124,11 @@ export const checkupHandlers = [
         category: s.category,
         monthlyTotal: sameCategory.reduce((sum, v) => sum + monthlyAmount(v), 0),
         subscriptionCount: sameCategory.length,
-        items: sameCategory.slice(0, sameCategory.length > 5 ? 4 : 5).map((v) => ({
+        items: sameCategory.map((v) => ({
           serviceName: v.serviceName,
           logoUrl: v.logoUrl,
           monthlyAmount: monthlyAmount(v),
         })),
-        otherCount: sameCategory.length > 5 ? sameCategory.length - 4 : 0,
       },
     });
   }),
