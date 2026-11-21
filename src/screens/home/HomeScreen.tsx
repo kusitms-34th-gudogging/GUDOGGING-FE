@@ -44,7 +44,10 @@ export const HomeScreen = () => {
   const isEmpty = summary.subscriptionCount === 0;
 
   return (
-    <View testID="home-screen" className="pt-safe flex-1 bg-bg-default">
+    <View
+      testID="home-screen"
+      className={cn('pt-safe flex-1 bg-bg-default', !isEmpty && 'pb-safe')}
+    >
       <TopBar
         variant="main"
         title="홈"
@@ -56,10 +59,12 @@ export const HomeScreen = () => {
           onPress: () => router.push('/notification'),
         }}
       />
-      {/* 아래는 떠 있는 탭바(하단 안전 영역 + 4 + 52)에 가리지 않게 여백. 빈 상태는 화면 높이만큼 채우고 안에서 탭바만큼 뺌 */}
+      {/* 캘린더·구독 관리처럼 스크롤 영역을 떠 있는 탭바(52 + 아래 4) + 간격 12 위에서 끝냄 (아래 끝 내용은 잘려 보여도 됨)
+          맨 아래 여백은 없음 (+ 버튼이 마지막 행 금액을 가려도 됨). 빈 상태는 화면 높이만큼 채우고 안에서 탭바만큼 뺌 */}
       <ScrollView
         bounces={false}
-        contentContainerClassName={cn('gap-inset-lg pt-stack-md', isEmpty ? 'grow' : 'pb-[120px]')}
+        className={cn(!isEmpty && 'mb-[68px]')}
+        contentContainerClassName={cn('gap-inset-lg pt-stack-md', isEmpty && 'grow')}
       >
         <View className="gap-inline-sm px-screen-x">
           <Text accessibilityRole="header" className="px-s2 text-text-primary text-body1-bold">
