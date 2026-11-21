@@ -18,6 +18,8 @@ import { formatDate, parseDate } from '@/utils/date';
 import type { HomeSubscription } from '@/utils/homeSummary';
 
 export type SubscriptionStatus = 'ACTIVE' | 'ENDED';
+// 없으면 서버 기본(구독 중 결제일 순 · 구독 종료 해지일 순), 금액 높은 순은 두 탭 모두 (명세)
+export type SubscriptionSort = 'AMOUNT_DESC';
 
 interface SubscriptionListResponse {
   count: number;
@@ -78,7 +80,8 @@ interface SubscriptionDetailResponse {
 
 export const subscriptionKeys = {
   all: ['subscriptions'] as const,
-  list: (status: SubscriptionStatus) => [...subscriptionKeys.all, 'list', { status }] as const,
+  list: (status: SubscriptionStatus, sort?: SubscriptionSort) =>
+    [...subscriptionKeys.all, 'list', { status, sort }] as const,
   detail: (id: string) => [...subscriptionKeys.all, 'detail', id] as const,
 };
 
@@ -90,11 +93,14 @@ export const invalidateSubscriptionData = (client: QueryClient) =>
     client.invalidateQueries({ queryKey: calendarKeys.all }),
   ]);
 
-export const useSubscriptions = (status: SubscriptionStatus) =>
+export const useSubscriptions = (status: SubscriptionStatus, sort?: SubscriptionSort) =>
   useQuery({
-    queryKey: subscriptionKeys.list(status),
+    queryKey: subscriptionKeys.list(status, sort),
     queryFn: ({ signal }) =>
-      request<SubscriptionListResponse>(`/api/v1/subscriptions?status=${status}`, { signal }),
+      request<SubscriptionListResponse>(
+        `/api/v1/subscriptions?status=${status}${sort ? `&sort=${sort}` : ''}`,
+        { signal },
+      ),
     // 탭을 바꿔 처음 부를 때 화면 전체가 로딩으로 바뀌지 않게 이전 탭 데이터를 유지 (화면은 isPlaceholderData면 목록을 숨김)
     placeholderData: keepPreviousData,
     select: (data) => ({

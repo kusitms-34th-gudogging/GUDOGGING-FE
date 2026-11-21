@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 import { ChevronDownIcon, MoreIcon, TrashIcon } from '@/assets/icons';
 import { Button } from '@/components/common/Button';
@@ -16,7 +16,7 @@ import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
 import { useRowSnap } from '@/hooks/useRowSnap';
-import { useSubscriptions } from '@/hooks/useSubscriptions';
+import { type SubscriptionSort, useSubscriptions } from '@/hooks/useSubscriptions';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/cn';
 import { formatWon } from '@/utils/formatPayment';
@@ -30,7 +30,16 @@ const monthDay = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
 // M-01 등록된 구독 없음 · M-02 구독 중 탭(.1 더보기 · .2 삭제 선택 · .3 삭제 모달) · M-04 구독 종료 탭
 export const ManageScreen = () => {
   const [tab, setTab] = useState<Tab>('ACTIVE');
-  const { data, isError, refetch, isPlaceholderData } = useSubscriptions(tab);
+  const [sort, setSort] = useState<SubscriptionSort>();
+  const [sortOpen, setSortOpen] = useState(false);
+  // 정렬 메뉴가 열리면 화살표가 위로 돌아감 (SVG에 rotate 클래스를 주면 NativeWind가 렌더 에러를 내서 감싼 View를 회전)
+  const chevronStyle = useAnimatedStyle(
+    () => ({
+      transform: [{ rotate: withTiming(sortOpen ? '180deg' : '0deg', { duration: 200 }) }],
+    }),
+    [sortOpen],
+  );
+  const { data, isError, refetch, isPlaceholderData } = useSubscriptions(tab, sort);
   const deleteSubscriptions = useDeleteSubscriptions();
   const { show } = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -55,8 +64,9 @@ export const ManageScreen = () => {
       onError: () => show({ type: 'error', message: '구독을 삭제하지 못했어요' }),
     });
 
-  // 정렬(결제일 순 · 해지일 순)은 서버 기본값
-  // shortcut: 정렬 기준 바꾸는 메뉴는 옵션이 정해지지 않아 고정
+  // 정렬 (M-02.4): 기본은 탭마다 결제일 순 · 해지일 순(서버 기본값), 금액 높은 순은 두 탭 모두
+  const defaultSortLabel = tab === 'ACTIVE' ? '결제일 순' : '해지일 순';
+  const sortLabel = sort ? '금액 높은 순' : defaultSortLabel;
   // 탭을 막 바꿔 이전 탭 데이터(placeholder)면 형식이 안 맞아 만들지 않음 (구독 중엔 해지일이 없음)
   const items = (isPlaceholderData ? [] : (data?.subscriptions ?? [])).map((s) => ({
     ...s,
@@ -84,6 +94,18 @@ export const ManageScreen = () => {
           selecting
             ? { label: '선택 취소', onSelect: stopSelecting }
             : { label: '삭제', destructive: true, onSelect: () => setSelecting(true) },
+        ]}
+      />
+      {/* 정렬 줄 바로 아래 오른쪽 (Figma M-02.4: 안전 영역 아래 166, 화면 오른쪽 20) */}
+      <MoreMenu
+        visible={sortOpen}
+        onClose={() => setSortOpen(false)}
+        selected={sortLabel}
+        size="sm"
+        className="mr-s4 mt-[166px]"
+        options={[
+          { label: defaultSortLabel, onSelect: () => setSort(undefined) },
+          { label: '금액 높은 순', onSelect: () => setSort('AMOUNT_DESC') },
         ]}
       />
       {!data ? (
@@ -114,6 +136,8 @@ export const ManageScreen = () => {
                 selected={tab}
                 onSelect={(next) => {
                   setTab(next);
+                  // 탭마다 기본 정렬이 달라 바꾸면 기본으로
+                  setSort(undefined);
                   stopSelecting();
                 }}
               />
@@ -147,12 +171,17 @@ export const ManageScreen = () => {
                         ? `월 ${formatWon(data.monthlyTotal)}`
                         : `월 ${formatWon(data.monthlyTotal)} 절약`}
                     </Text>
-                    <View className="flex-row items-center gap-s2 py-inline-xs">
-                      <Text className="text-text-secondary text-caption1-regular">
-                        {tab === 'ACTIVE' ? '결제일 순' : '해지일 순'}
-                      </Text>
-                      <ChevronDownIcon className="size-icon-xs text-icon-secondary" />
-                    </View>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`정렬: ${sortLabel}`}
+                      onPress={() => setSortOpen(true)}
+                      className="flex-row items-center gap-s2 py-inline-xs active:opacity-pressed"
+                    >
+                      <Text className="text-text-secondary text-caption1-regular">{sortLabel}</Text>
+                      <Animated.View style={chevronStyle}>
+                        <ChevronDownIcon className="size-icon-xs text-icon-secondary" />
+                      </Animated.View>
+                    </Pressable>
                   </>
                 )}
               </View>

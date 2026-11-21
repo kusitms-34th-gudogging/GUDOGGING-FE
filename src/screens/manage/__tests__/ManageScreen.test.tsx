@@ -167,6 +167,26 @@ describe('ManageScreen', () => {
     expect(await screen.findByText('월 7,900원 절약')).toBeOnTheScreen();
   });
 
+  it('정렬을 금액 높은 순으로 바꾸면 그 정렬로 다시 요청하고, 탭을 바꾸면 그 탭 기본 정렬로 돌아간다', async () => {
+    const spy = mockLists();
+    const user = await renderManage();
+    await screen.findByText('월 39,000원');
+    const requested = () => spy.mock.calls.map(([input]) => String(input)).at(-1);
+
+    await user.press(screen.getByRole('button', { name: '정렬: 결제일 순' }));
+    // 지금 정렬에 체크, 구독 중 탭은 결제일 순 · 금액 높은 순
+    expect(screen.getByRole('menuitem', { name: '결제일 순' })).toBeSelected();
+    await user.press(screen.getByRole('menuitem', { name: '금액 높은 순' }));
+
+    expect(requested()).toContain('status=ACTIVE&sort=AMOUNT_DESC');
+    expect(await screen.findByRole('button', { name: '정렬: 금액 높은 순' })).toBeOnTheScreen();
+
+    await user.press(screen.getByRole('tab', { name: '구독 종료 1' }));
+    await user.press(await screen.findByRole('button', { name: '정렬: 해지일 순' }));
+    expect(screen.getByRole('menuitem', { name: '해지일 순' })).toBeSelected();
+    expect(requested()).not.toContain('sort=');
+  });
+
   it('더보기 → 삭제로 고른 구독만 확인 모달을 거쳐 삭제 API로 보낸다', async () => {
     const fetchSpy = mockLists();
     const user = await renderManage();
