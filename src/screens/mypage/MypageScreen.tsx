@@ -8,7 +8,6 @@ import {
   BellColorAsset,
   CheckColorAsset,
   CheckupColorAsset,
-  EditColorAsset,
   MailColorAsset,
 } from '@/assets/graphics';
 import { ChevronRightIcon } from '@/assets/icons';
@@ -16,6 +15,7 @@ import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
 import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
+import { openPolicy } from '@/constants/policy';
 import { useLogout } from '@/hooks/useLogout';
 import { useMe } from '@/hooks/useMe';
 
@@ -58,8 +58,11 @@ const getSections = (openLogout: () => void): { title: string; items: MenuItem[]
   {
     title: '약관 및 정책',
     items: [
-      { title: '이용 약관', icon: assetSlot(CheckupColorAsset) },
-      { title: '개인정보 처리방침', icon: assetSlot(EditColorAsset) },
+      {
+        title: '이용 약관 및 개인정보 처리방침',
+        icon: assetSlot(CheckupColorAsset),
+        onPress: openPolicy,
+      },
     ],
   },
   {
@@ -81,7 +84,6 @@ const getSections = (openLogout: () => void): { title: string; items: MenuItem[]
   },
 ];
 
-// shortcut: 약관 행 이동은 아직 없음, 약관 화면 생기면 onPress 연결
 // 계정 정보를 못 불러와도 메뉴는 쓸 수 있게 계정 칸만 비워 둠
 export const MypageScreen = () => {
   const { data: me } = useMe();

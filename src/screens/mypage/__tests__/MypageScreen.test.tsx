@@ -1,6 +1,7 @@
 import { userEvent } from '@testing-library/react-native';
 import { Slot } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
+import { Linking } from 'react-native';
 
 import MypageGmailRoute from '@/app/mypage/gmail';
 import { ToastProvider } from '@/components/common/ToastProvider';
@@ -83,4 +84,16 @@ test('회원 탈퇴 행을 누르면 회원 탈퇴 화면으로 이동한다', a
   await userEvent.press(screen.getByRole('button', { name: '회원 탈퇴' }));
 
   expect(screen).toHavePathname('/mypage/withdraw');
+});
+
+test('이용 약관 및 개인정보 처리방침은 노션 페이지를 브라우저로 연다', async () => {
+  const open = jest.spyOn(Linking, 'openURL').mockResolvedValue();
+  await renderMypage({});
+
+  await userEvent.press(screen.getByRole('button', { name: '이용 약관 및 개인정보 처리방침' }));
+
+  expect(open).toHaveBeenCalledWith(
+    'https://pear-yew-dc3.notion.site/41fe0bd8b68780fcb12fea088ac232ff?source=copy_link',
+  );
+  expect(screen.queryByRole('button', { name: '개인정보 처리방침' })).not.toBeOnTheScreen();
 });
