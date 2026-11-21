@@ -7,9 +7,7 @@ import { type ApiCycleUnit, type ApiPaymentMethod, CYCLE_UNIT, PAID_AT_OF } from
 import type { HomeSubscription } from '@/utils/homeSummary';
 
 interface CalendarResponse {
-  monthlyTotal: number;
   currentMonthTotal: number;
-  paymentCount: number;
   days: {
     date: string;
     totalAmount: number;
