@@ -50,7 +50,7 @@ interface RegisterServiceInputScreenProps {
   found?: FoundSubscription;
   // 불러온 구독 확인의 구독 추가하기에서 직접 입력으로 왔으면 그 화면으로 바로 돌아감
   more?: boolean;
-  // 지난 구독 재등록(M-05): 그 구독 정보로 채우고 다음 결제일만 바꿔 재등록 (명세 reactivate는 결제일만 받음)
+  // 지난 구독 재등록(M-05): 그 구독 정보로 채우고 고친 정보로 재등록 (명세: 필드는 구독 정보 수정과 같음)
   reactivateId?: string;
   // 구독 편집(M-03 더보기 > 편집): 그 구독 정보로 채우고 수정해 저장
   editId?: string;
@@ -103,9 +103,6 @@ const ServiceInputForm = ({
   const existing = reactivate ?? edit;
   const init = saved ?? found?.payment ?? existing;
   const [name, setName] = useState(saved?.name ?? existing?.name ?? '');
-  // 재등록은 다음 결제일만 바꿀 수 있어 나머지는 잠금
-  // shortcut: 드롭다운·결제한 곳은 Figma에 잠금 상태가 없어 눌러도 반응만 안 함, 디자인 나오면 disabled 모양 추가
-  const locked = !!reactivate;
   const reactivateSubscription = useReactivateSubscription(reactivate?.id ?? '');
   const updateSubscription = useUpdateSubscription(edit?.id ?? '');
   const [category, setCategory] = useState<string | undefined>(
@@ -148,7 +145,7 @@ const ServiceInputForm = ({
     Keyboard.dismiss();
   };
   // shortcut: 직접 입력한 구독은 서비스명 수정 가능(명세)인데 상세 응답에 구분 값이 없어 편집은 모두 이름 고정, 응답에 생기면 직접 입력만 입력란으로
-  const headerName = edit?.name ?? (found ? undefined : service?.name);
+  const headerName = existing?.name ?? (found ? undefined : service?.name);
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -172,7 +169,7 @@ const ServiceInputForm = ({
             onPress={closeMenuAndKeyboard}
             className="grow gap-screen-x"
           >
-            {/* 편집도 사전 등록 서비스(A-03)처럼 서비스명은 보여 주기만 함 */}
+            {/* 편집·재등록도 사전 등록 서비스(A-03)처럼 서비스명은 보여 주기만 함 */}
             {headerName && (
               <View className="flex-row items-center gap-inline-sm">
                 <Image
@@ -183,7 +180,7 @@ const ServiceInputForm = ({
               </View>
             )}
             <View className="gap-stack-lg">
-              {(isCustom || found) && !edit && (
+              {(isCustom || found) && !existing && (
                 <TextField
                   testID="register-input-name"
                   label="서비스명"
@@ -192,7 +189,6 @@ const ServiceInputForm = ({
                   maxLength={30}
                   value={name}
                   onChangeText={setName}
-                  disabled={locked}
                   onFocus={closeMenu}
                 />
               )}
@@ -204,7 +200,7 @@ const ServiceInputForm = ({
                 open={categoryOpen}
                 onPress={() => {
                   Keyboard.dismiss();
-                  if (!locked) setCategoryOpen((o) => !o);
+                  setCategoryOpen((o) => !o);
                 }}
                 options={CATEGORIES}
                 onSelect={(v) => {
@@ -223,7 +219,6 @@ const ServiceInputForm = ({
                   setAmountChecked(true);
                 }}
                 error={!amountChecked}
-                disabled={locked}
                 helper="금액을 정확히 읽지 못했어요. 실제 결제 금액을 확인해 주세요."
                 showHelper={!amountChecked}
                 onFocus={closeMenu}
@@ -236,7 +231,6 @@ const ServiceInputForm = ({
                   value={cycle}
                   onChangeText={(t) => setCycle(t.replace(/\D/g, ''))}
                   error={cycle !== '' && (cycleNum < 1 || cycleNum > 31)}
-                  disabled={locked}
                   onFocus={closeMenu}
                   className="flex-1"
                 />
@@ -246,7 +240,6 @@ const ServiceInputForm = ({
                   placeholder="단위"
                   value={unit}
                   onPress={() => {
-                    if (locked) return;
                     closeMenuAndKeyboard();
                     setDraftUnit(undefined);
                     setUnitSheet(true);
@@ -272,7 +265,7 @@ const ServiceInputForm = ({
                   options={PAID_AT}
                   selected={paidAt}
                   onSelect={(v) => {
-                    if (!locked) setPaidAt(v);
+                    setPaidAt(v);
                     closeMenuAndKeyboard();
                   }}
                 />
@@ -293,28 +286,27 @@ const ServiceInputForm = ({
           disabled={!valid || reactivateSubscription.isPending || updateSubscription.isPending}
           onPress={() => {
             if (!category) return;
-            // 재등록: 같은 구독을 새 다음 결제일로 구독 중으로. 성공하면 상세로 돌아가 구독 중(M-03)으로 바뀐 걸 보여 줌
+            // 재등록·편집: 저장하면 상세로 돌아가 구독 중(M-03)·바뀐 정보를 보여 줌
             // shortcut: 실패 안내는 디자인에 없어 화면에 남음
-            if (reactivate) {
-              return reactivateSubscription.mutate(nextDate, {
+            if (existing) {
+              const input = {
+                name,
+                category,
+                amount: Number(amount),
+                cycle: cycleNum,
+                unit,
+                nextDate,
+                paidAt,
+              };
+              const back = {
                 onSuccess: () => {
                   allowLeave();
                   router.back();
                 },
-              });
-            }
-            // 편집: 저장하면 상세로 돌아가 바뀐 정보를 보여 줌
-            // shortcut: 실패 안내는 디자인에 없어 화면에 남음
-            if (edit) {
-              return updateSubscription.mutate(
-                { name, category, amount: Number(amount), cycle: cycleNum, unit, nextDate, paidAt },
-                {
-                  onSuccess: () => {
-                    allowLeave();
-                    router.back();
-                  },
-                },
-              );
+              };
+              return reactivate
+                ? reactivateSubscription.mutate(input, back)
+                : updateSubscription.mutate(input, back);
             }
             const id = serviceId ?? `custom-${Date.now()}`;
             setPayment(id, {
