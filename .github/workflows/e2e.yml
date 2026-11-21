@@ -39,6 +39,8 @@ jobs:
       # 앱은 runner 안의 목서버를 봄. Release 빌드라 이 값이 번들에 박힘 (개발 빌드는 .env.local이 덮어씀)
       EXPO_PUBLIC_API_URL: http://localhost:9090
       CI: 1
+      # 기본 15초(ms 단위)면 첫 플로우에서 iOS 드라이버가 늦게 떠 실패함 (2026-11-21 실행)
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 180000
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

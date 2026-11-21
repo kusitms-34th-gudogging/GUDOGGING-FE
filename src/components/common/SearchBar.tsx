@@ -42,6 +42,8 @@ export const SearchBar = ({
     <Icon className="size-icon-sm text-icon-secondary" />
     <TextInput
       allowFontScaling={false} // 시스템 글자 크기 무시 (Text.tsx와 같은 팀 결정)
+      // 서비스명 검색이라 자동 교정·자동완성이 'Melon'을 'Melony'로 바꾸지 않게
+      autoCorrect={false}
       {...inputProps}
       value={value}
       onChangeText={onChangeText}
