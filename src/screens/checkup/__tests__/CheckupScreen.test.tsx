@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fireEvent, userEvent } from '@testing-library/react-native';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { Keyboard } from 'react-native';
 
 import { getCheckupScores, useCheckupDraft } from '@/hooks/useCheckupDraft';
 import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
@@ -163,6 +164,16 @@ describe('CheckupScreen', () => {
     expect(
       screen.getByText('최근 한 달 동안 넷플릭스를 얼마나 자주 이용했나요?'),
     ).toBeOnTheScreen();
+  });
+
+  it('메모 입력 중 빈 곳을 누르면 키보드를 내린다', async () => {
+    answerAll();
+    const user = await renderCheckup();
+    const dismiss = jest.spyOn(Keyboard, 'dismiss');
+
+    await user.press(screen.getByText('넷플릭스에 대해\n남기고 싶은 말이 있나요?'));
+
+    expect(dismiss).toHaveBeenCalled();
   });
 
   it('3문항을 다 답했으면 4/4 메모부터, 칩은 입력란에 이어 붙고 건너뛰기가 보인다', async () => {

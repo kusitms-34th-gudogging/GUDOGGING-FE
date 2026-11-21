@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState, useSyncExternalStore } from 'react';
-import { Image, View } from 'react-native';
+import { Image, Keyboard, Pressable, View } from 'react-native';
 
 import { PlusIcon } from '@/assets/icons';
 import { StepRing } from '@/components/checkup/StepRing';
@@ -127,7 +127,12 @@ const CheckupQuestions = ({
         textAction="건너뛰기"
         onTextActionPress={() => !submit.isPending && finish('')}
       />
-      <View className="flex-1 gap-stack-lg px-screen-x pt-stack-md">
+      {/* 빈 곳을 누르면 키보드를 내림 (4/4 메모). 안쪽 칩·선택지·입력칸은 각자 터치를 가져감 */}
+      <Pressable
+        accessible={false}
+        onPress={() => Keyboard.dismiss()}
+        className="flex-1 gap-stack-lg px-screen-x pt-stack-md"
+      >
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-inline-md">
             <Image
@@ -189,7 +194,7 @@ const CheckupQuestions = ({
             </View>
           )}
         </View>
-      </View>
+      </Pressable>
       <View className="pb-safe px-screen-x">
         {step === 0 ? (
           <Cta
