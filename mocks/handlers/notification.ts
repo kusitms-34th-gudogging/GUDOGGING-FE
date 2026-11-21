@@ -15,10 +15,14 @@ export const notifications = [
   },
 ];
 
+// 구독을 삭제하면 그 구독의 알림도 사라짐 (명세: 구독 선택 삭제)
+export const visibleNotifications = () =>
+  notifications.filter((n) => db.subscriptions.some((s) => s.subscriptionId === n.subscriptionId));
+
 export const notificationHandlers = [
   http.get('/api/v1/notifications', () =>
     ok('알림 목록을 조회했습니다.', {
-      notifications: notifications.map((n) => ({
+      notifications: visibleNotifications().map((n) => ({
         ...n,
         read: db.readNotificationIds.has(n.notificationId),
       })),
