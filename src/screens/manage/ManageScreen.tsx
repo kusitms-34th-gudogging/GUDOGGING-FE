@@ -246,11 +246,15 @@ export const ManageScreen = () => {
           )}
         </>
       )}
-      {/* 탭바(하단 안전 영역 + 4 + 52) 위 18에 + 버튼, 그 위 8에 토스트. 구독이 없으면 + 버튼 자리만 비움 */}
-      <View pointerEvents="box-none" className="pb-safe absolute inset-x-0 bottom-0">
-        <View pointerEvents="box-none">
-          <ToastOutlet className="bottom-0 pb-stack-sm" />
+      {/* 토스트는 탭바(하단 안전 영역 + 4 + 52) 위 12 (Figma). 안전 영역 위 68에 높이 0인 기준점을 두고 그 위로 */}
+      {/* + 버튼과 겹치면 토스트가 위 */}
+      <View pointerEvents="box-none" className="pb-safe absolute inset-x-0 bottom-0 z-10">
+        <View pointerEvents="box-none" className="mb-[68px]">
+          <ToastOutlet className="bottom-0" />
         </View>
+      </View>
+      {/* 탭바 위 18에 + 버튼. 구독이 없으면 + 버튼 자리만 비움 */}
+      <View pointerEvents="box-none" className="pb-safe absolute inset-x-0 bottom-0">
         <View pointerEvents="box-none" className="mb-[74px] items-end px-screen-x">
           {isEmpty ? (
             <View className="size-s48" />
