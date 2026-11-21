@@ -1,0 +1,29 @@
+import { http } from 'msw';
+
+// 서버에 나온 API만 개발 서버로 넘기고 나머지는 목 응답. `pnpm mock:dev`일 때만 등록 (handlers.ts)
+// API가 나오면 경로를 여기 추가하고, 다 나오면 앱 EXPO_PUBLIC_API_URL을 개발 서버로 바꾸고 mocks/ 삭제
+// 로그아웃(/auth/logout)은 아직 개발 서버에 없어 목 응답
+const PROXY_PATHS = ['/api/v1/auth/apple', '/api/v1/auth/google', '/api/v1/auth/reissue'];
+
+const upstream = process.env.DEV_API_URL;
+
+// fetch가 압축을 풀어 주므로 길이·인코딩 헤더는 원본과 안 맞음 → 빼고 돌려줌
+const DROP_HEADERS = ['content-encoding', 'content-length', 'transfer-encoding'];
+
+export const proxyHandlers = upstream
+  ? PROXY_PATHS.map((path) =>
+      http.all(path, async ({ request }) => {
+        const { pathname, search } = new URL(request.url);
+        const headers = new Headers(request.headers);
+        headers.delete('host');
+        const res = await fetch(`${upstream}${pathname}${search}`, {
+          method: request.method,
+          headers,
+          body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.arrayBuffer(),
+        });
+        const resHeaders = new Headers(res.headers);
+        DROP_HEADERS.forEach((name) => resHeaders.delete(name));
+        return new Response(await res.arrayBuffer(), { status: res.status, headers: resHeaders });
+      }),
+    )
+  : [];

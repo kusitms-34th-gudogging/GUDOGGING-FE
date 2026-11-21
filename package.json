@@ -6,6 +6,7 @@
     "@expo/metro-runtime": "~58.0.17",
     "@gorhom/bottom-sheet": "^5.2.14",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-google-signin/google-signin": "^17.0.0",
     "@shopify/react-native-skia": "2.14.0",
     "@tanstack/react-query": "^5.105.3",
     "class-variance-authority": "^0.7.1",
@@ -68,6 +69,7 @@
   "scripts": {
     "start": "expo start",
     "mock": "node mocks/server.ts",
+    "mock:dev": "DEV_API_URL=https://dev-api.gudogging.com node mocks/server.ts",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
