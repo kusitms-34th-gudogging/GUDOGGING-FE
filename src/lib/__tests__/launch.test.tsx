@@ -1,4 +1,4 @@
-import { act } from '@testing-library/react-native';
+import { act, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
@@ -45,13 +45,17 @@ it('저장된 토큰 없이 앱을 열면 로그인 화면부터 보여 준다',
 
 it('리프레시 토큰이 유효하면 로그인 없이 홈에 머문다', async () => {
   await authToken.save(tokens);
-  mockApi({ 'POST /api/v1/auth/reissue': tokens });
+  // 재발급이 실패해도 홈에 머물러서, 새 토큰이 저장됐는지로 재발급 성공을 확인
+  mockApi({
+    'POST /api/v1/auth/reissue': { accessToken: 'new-access', refreshToken: 'new-refresh' },
+  });
 
   await renderRouter(routes, { initialUrl: '/', wrapper: createQueryWrapper() });
 
   // 홈 API는 막아 둬서 홈 화면은 에러 상태로 그려짐 → 그 문구로 세션 확인이 끝났는지 기다림
   await screen.findByText('정보를 불러오지 못했어요');
   expect(screen).toHavePathname('/');
+  await waitFor(async () => expect(await authToken.getRefresh()).toBe('new-refresh'));
 });
 
 it('리프레시 토큰이 만료(401)면 로그인 화면으로 보낸다', async () => {

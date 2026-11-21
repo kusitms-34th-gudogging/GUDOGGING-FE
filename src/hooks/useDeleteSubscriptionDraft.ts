@@ -7,6 +7,8 @@ import { request } from '@/lib/request';
 export const useDeleteSubscriptionDraft = () => {
   const client = useQueryClient();
   return useMutation({
+    // 저장과 같은 scope: 저장 뒤 삭제가 먼저 끝나 초안이 되살아나지 않게
+    scope: { id: 'subscription-draft' },
     mutationFn: () => request('/api/v1/subscriptions/drafts', { method: 'DELETE' }),
     onSuccess: () => client.setQueryData(draftKeys.all, null),
   });

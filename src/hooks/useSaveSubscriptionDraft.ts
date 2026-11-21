@@ -8,6 +8,8 @@ import { request } from '@/lib/request';
 export const useSaveSubscriptionDraft = () => {
   const client = useQueryClient();
   return useMutation({
+    // 저장·삭제를 보낸 순서대로 하나씩 처리. 앞선 저장이 늦게 끝나 최신 초안을 덮어쓰지 않게
+    scope: { id: 'subscription-draft' },
     mutationFn: (draft: {
       items: DraftItem[];
       lastStep: RegisterStep;
