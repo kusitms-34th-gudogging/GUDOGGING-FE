@@ -4,6 +4,7 @@ import { renderRouter, screen } from 'expo-router/testing-library';
 
 import HomeRoute from '@/app/(tabs)/index';
 import LoginRoute from '@/app/login';
+import { ToastProvider } from '@/components/common/ToastProvider';
 import { authToken } from '@/lib/authToken';
 import { launch } from '@/lib/launch';
 import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
@@ -34,7 +35,15 @@ afterEach(async () => {
 });
 const tokens = { accessToken: 'access', refreshToken: 'refresh' };
 
-const routes = { '(tabs)/index': HomeRoute, login: LoginRoute, onboarding: () => null };
+const routes = {
+  '(tabs)/index': HomeRoute,
+  login: () => (
+    <ToastProvider>
+      <LoginRoute />
+    </ToastProvider>
+  ),
+  onboarding: () => null,
+};
 
 it('저장된 토큰 없이 앱을 열면 로그인 화면부터 보여 준다', async () => {
   await renderRouter(routes, { initialUrl: '/', wrapper: createQueryWrapper() });

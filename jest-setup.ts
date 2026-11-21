@@ -11,6 +11,11 @@ jest.mock(
   'react-native-gesture-handler/lib/module/handlers/gestures/installUIRuntimeBindings',
   () => ({ installUIRuntimeBindings: () => {} }),
 );
+// Google 로그인은 네이티브 모듈이라 쓰는 함수만 대신함 (로그인 화면을 그리는 테스트가 import만 해도 필요)
+// 응답은 테스트에서 jest.mocked(GoogleSignin.signIn)으로 정함
+jest.mock('@react-native-google-signin/google-signin', () => ({
+  GoogleSignin: { configure: jest.fn(), signIn: jest.fn() },
+}));
 // 보안 저장소(로그인 토큰)는 네이티브 모듈이라 메모리로 대신함. 테스트 파일마다 새로 비어 있음
 jest.mock('expo-secure-store', () => {
   const store = new Map<string, string>();
