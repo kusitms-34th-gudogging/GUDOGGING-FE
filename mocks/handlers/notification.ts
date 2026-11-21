@@ -11,6 +11,7 @@ export const notifications = [
     title: '넷플릭스 외 2건, 63,400원 결제 예정',
     body: '7일 안에 빠져나갈 구독료를 확인하세요.',
     subscriptionId: '3f2b8c1e-5a4d-4e7b-9c21-000000000001',
+    logoUrl: 'https://cdn.gudogging.com/logos/netflix.png',
     sentAt: '2026-11-16T09:00:00',
   },
 ];

@@ -12,6 +12,8 @@ interface NotificationListResponse {
     title: string;
     body: string;
     subscriptionId: string;
+    // 직접 입력한 구독은 null, 여러 건 묶음이면 금액이 가장 큰 구독의 로고
+    logoUrl: string | null;
     sentAt: string;
     read: boolean;
   }[];
@@ -23,7 +25,7 @@ const KIND: Record<ApiNotificationType, NotificationKind> = {
   CANCEL_CONFIRM: 'cancel-confirm',
 };
 
-// shortcut: 명세에 서비스 로고가 없어 기본 로고, 응답에 logoUrl 생기면 교체
+// shortcut: 목서버 로고 URL이 실제 이미지가 아니라 placeholder, 실제 로고 URL이 오면 { uri: logoUrl }로
 const LOGO = require('@/assets/images/logo_placeholder.png');
 
 export const notificationKeys = {
