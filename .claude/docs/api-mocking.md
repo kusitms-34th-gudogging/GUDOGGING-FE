@@ -13,6 +13,7 @@ http.get('/api/v1/home', () => ok('홈 정보를 조회했습니다.', { summary
 http.post('/api/v1/subscriptions', () => ok('구독을 등록했습니다.', { ... }, 201)),
 ```
 
+- 서버에 나온 API만 개발 서버로: `pnpm mock:dev`. `mocks/handlers/proxy.ts`의 `PROXY_PATHS`에 있는 경로는 개발 서버로 그대로 넘기고 나머지는 목 응답. 로그인 토큰은 개발 서버 것이지만 목 핸들러는 토큰을 안 봐서 같이 써도 됨. API가 나오면 경로 추가. Render 공용 목서버는 `pnpm mock` 그대로라 영향 없음
 - E2E용 상태 초기화 `POST /e2e/reset`은 `E2E=1 pnpm mock`일 때만 등록 (`mocks/handlers/e2e.ts`). 사용법은 `.claude/rules/e2e-test.md`
 - 고정 경로(`/subscriptions/drafts`)는 `/:subscriptionId`보다 먼저 등록 (MSW는 먼저 맞는 핸들러로 응답)
 

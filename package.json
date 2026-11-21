@@ -69,6 +69,7 @@
   "scripts": {
     "start": "expo start",
     "mock": "node mocks/server.ts",
+    "mock:dev": "DEV_API_URL=https://dev-api.gudogging.com node mocks/server.ts",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
