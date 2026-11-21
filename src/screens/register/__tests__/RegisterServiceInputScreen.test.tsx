@@ -265,7 +265,14 @@ it('지난 구독 재등록은 기존 정보로 채우고, 고친 정보를 재�
   await user.type(screen.getByLabelText('결제 금액'), '9900');
   await user.press(screen.getByRole('tab', { name: '웹·직접 결제' }));
 
-  // 다음 결제일은 새로 정해야 해서 지난 결제일이 아니라 오늘
+  // 다음 결제일은 새로 정해야 해서 비어 있고, 고르기 전엔 저장 불가
+  expect(screen.getByRole('button', { name: '다음 결제일' })).not.toHaveAccessibilityValue({
+    text: '2026.10.16',
+  });
+  expect(screen.getByRole('button', { name: '저장하기' })).toBeDisabled();
+  // 날짜 시트를 열면 오늘부터, 확인하면 채워짐
+  await user.press(screen.getByRole('button', { name: '다음 결제일' }));
+  await user.press(screen.getByTestId('register-date-confirm'));
   expect(screen.getByRole('button', { name: '다음 결제일' })).toHaveAccessibilityValue({
     text: '2026.11.12',
   });

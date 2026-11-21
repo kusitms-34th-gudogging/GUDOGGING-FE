@@ -116,9 +116,11 @@ const ServiceInputForm = ({
   // 값이 없으면(분석이 못 읽은 불러온 구독 포함) 기본값: 1개월 · 오늘 · 웹·직접 결제
   const [cycle, setCycle] = useState(String(init?.cycle ?? 1));
   const [unit, setUnit] = useState(init?.unit ?? '개월');
-  // 재등록은 다음 결제일을 새로 정해야 해서 오늘부터
-  const [nextDate, setNextDate] = useState(
-    saved?.nextDate ?? found?.payment.nextDate ?? edit?.nextDate ?? startOfToday(),
+  // 재등록은 다음 결제일을 새로 정해야 해서 비워 두고 고르게 함
+  const [nextDate, setNextDate] = useState<Date | undefined>(
+    reactivate
+      ? undefined
+      : (saved?.nextDate ?? found?.payment.nextDate ?? edit?.nextDate ?? startOfToday()),
   );
   const [paidAt, setPaidAt] = useState<PaidAt>(init?.paidAt ?? 'web');
   // 확인 필요(결제 정보 입력 필요)로 들어오면 금액 에러를 켜 두고, 금액을 고치면 끔 (Figma A-15)
@@ -136,7 +138,8 @@ const ServiceInputForm = ({
   const cycleNum = Number(cycle);
   const nameValid = !isCustom || !!found || (name.trim().length >= 1 && name.trim().length <= 30);
   // 금액 에러 표시는 안내일 뿐, 금액이 있으면 그대로 저장 가능 (화면설계서 A-15)
-  const valid = nameValid && !!category && Number(amount) > 0 && cycleNum >= 1 && cycleNum <= 31;
+  const valid =
+    nameValid && !!category && Number(amount) > 0 && cycleNum >= 1 && cycleNum <= 31 && !!nextDate;
   const closeMenu = () => setCategoryOpen(false);
   // 입력칸이 아닌 곳(빈 곳·드롭다운·결제한 곳)을 누르면 키보드도 내림. 숫자 키패드는 완료 키가 없음
   // 다른 입력칸을 누를 땐 키보드가 그 칸으로 넘어가야 해서 입력칸 onFocus는 closeMenu만
@@ -251,11 +254,11 @@ const ServiceInputForm = ({
                 testID="register-input-date"
                 label="다음 결제일"
                 placeholder="다음 결제일을 선택해 주세요"
-                value={formatDate(nextDate)}
+                value={nextDate && formatDate(nextDate)}
                 showIcon={false}
                 onPress={() => {
                   closeMenuAndKeyboard();
-                  setDraftDate(nextDate);
+                  setDraftDate(nextDate ?? startOfToday());
                   setDateSheet(true);
                 }}
               />
@@ -285,7 +288,7 @@ const ServiceInputForm = ({
           label={found ? '수정 완료' : '저장하기'}
           disabled={!valid || reactivateSubscription.isPending || updateSubscription.isPending}
           onPress={() => {
-            if (!category) return;
+            if (!category || !nextDate) return;
             // 재등록·편집: 저장하면 상세로 돌아가 구독 중(M-03)·바뀐 정보를 보여 줌
             // shortcut: 실패 안내는 디자인에 없어 화면에 남음
             if (existing) {
