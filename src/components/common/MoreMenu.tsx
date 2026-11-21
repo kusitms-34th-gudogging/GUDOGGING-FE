@@ -11,6 +11,7 @@ import { cn } from '@/utils/cn';
 interface MoreMenuOption {
   label: string;
   destructive?: boolean;
+  muted?: boolean;
   onSelect: () => void;
 }
 
@@ -69,6 +70,7 @@ export const MoreMenu = ({
             key={option.label}
             label={option.label}
             destructive={option.destructive}
+            muted={option.muted}
             selected={option.label === selected}
             onSelect={() => {
               onClose();

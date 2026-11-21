@@ -53,6 +53,7 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
 
   // 삭제하기: 구독과 점검 기록을 지우고 캘린더로 돌아감 (C-04). 완료 토스트 없음 (화면설계서)
   // shortcut: 실패 안내는 디자인에 없어 모달만 닫힘, 디자인 나오면 안내 추가
+  const ended = !p.nextDate;
   const onDelete = () => deleteSubscriptions.mutate([p.id], { onSuccess: () => router.back() });
 
   return (
@@ -64,15 +65,25 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
         showAction2={false}
         action1={{ icon: MoreIcon, accessibilityLabel: '더보기', onPress: () => setMenuOpen(true) }}
       />
-      {/* shortcut: 편집 화면이 아직 없어 편집은 메뉴만 닫힘 */}
+      {/* 구독 중이면 편집·삭제, 구독 종료면 삭제만 (편집 API는 구독 중만 받음). 편집은 구독 관리 상세와 같은 화면 */}
       <MoreMenu
         visible={menuOpen}
         onClose={close}
         options={[
-          { label: '편집', onSelect: close },
+          ...(!ended
+            ? [
+                {
+                  label: '편집',
+                  onSelect: () =>
+                    router.push({ pathname: '/register/input', params: { edit: p.id } }),
+                },
+              ]
+            : []),
           {
             label: '삭제',
-            destructive: true,
+            // 구독 종료면 회색 화면이라 빨간색 대신 회색
+            destructive: !ended,
+            muted: ended,
             onSelect: () => {
               close();
               setDeleteOpen(true);
@@ -93,13 +104,15 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
       />
       <ScrollView bounces={false} contentContainerClassName="gap-s20 pb-[14px] pt-stack-md">
         <View className="gap-stack-md px-screen-x">
+          {/* 기준일(고른 날짜) 기준 상태. 다음 결제일이 없으면 구독 종료라 구독 종료 상세(M-05)처럼 회색 (C-03, 서버가 계산) */}
           <ServiceHeader
             name={p.name}
-            status="구독 중"
+            status={ended ? '구독 종료' : '구독 중'}
             category={p.categoryLabel}
-            badgeVariant="tonal"
+            badgeVariant={ended ? 'mono' : 'tonal'}
           />
           <DetailCostCard
+            tone={ended ? 'mono' : 'brand'}
             label="결제 예정"
             amount={formatWon(p.amount)}
             subText={`연 환산 ${formatWon(monthly(p) * 12)}`}
@@ -132,7 +145,10 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
                   >
                     최근 점검
                   </Text>
-                  <Badge variant="tonal" label={`${monthDay(p.lastCheckup.checkedAt)} 점검`} />
+                  <Badge
+                    variant={ended ? 'mono' : 'tonal'}
+                    label={`${monthDay(p.lastCheckup.checkedAt)} 점검`}
+                  />
                 </View>
                 <View className="gap-s2">
                   <InfoRow title="점검 결과" value={p.lastCheckup.result} />

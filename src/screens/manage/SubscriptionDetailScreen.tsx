@@ -16,6 +16,7 @@ import { TopBar } from '@/components/common/TopBar';
 import type { ActiveSubscriptionDetail } from '@/constants/manage';
 import { PAID_AT } from '@/constants/services';
 import { useCancelSubscription } from '@/hooks/useCancelSubscription';
+import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
 import { useSetSteadySubscription } from '@/hooks/useSetSteadySubscription';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
 import { monthly } from '@/utils/homeSummary';
@@ -36,6 +37,8 @@ export const SubscriptionDetailScreen = ({
   confirmCancel = false,
 }: SubscriptionDetailScreenProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const deleteSubscriptions = useDeleteSubscriptions();
   const [confirmOpen, setConfirmOpen] = useState(confirmCancel);
   // 토글은 바로 바뀌고 저장 실패하면 되돌림
   // shortcut: 실패 안내(토스트)는 디자인에 없어 되돌리기만, 디자인 나오면 안내 추가
@@ -64,7 +67,23 @@ export const SubscriptionDetailScreen = ({
             label: '편집',
             onSelect: () => router.push({ pathname: '/register/input', params: { edit: s.id } }),
           },
+          {
+            label: '삭제',
+            destructive: true,
+            onSelect: () => setDeleteOpen(true),
+          },
         ]}
+      />
+      {/* 삭제 확인 (C-04와 같은 문구). 삭제 완료 토스트 없음 */}
+      <Modal
+        visible={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        buttons="both"
+        title={fillName('{name}을 삭제할까요?', s.name)}
+        description="삭제하면 모든 정보가 사라져요."
+        cancelLabel="취소"
+        confirmLabel="삭제하기"
+        onConfirm={() => deleteSubscriptions.mutate([s.id], { onSuccess: () => router.back() })}
       />
       <ScrollView bounces={false} contentContainerClassName="gap-s20 pb-stack-md pt-stack-md">
         <View className="gap-stack-md px-screen-x">

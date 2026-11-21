@@ -43,6 +43,7 @@ const renderDetail = async (routes: Record<string, unknown> = {}) => {
       'calendar/detail/[id]': () => (
         <CalendarDetailScreen id="netflix" date={new Date(2026, 10, 17)} />
       ),
+      'register/input': () => null,
     },
     { initialUrl: '/', wrapper: createQueryWrapper() },
   );
@@ -122,6 +123,35 @@ it('더보기를 누르면 편집·삭제 메뉴가 보인다', async () => {
 
   expect(screen.getByText('편집')).toBeOnTheScreen();
   expect(screen.getByText('삭제')).toBeOnTheScreen();
+});
+
+it('구독 중이면 편집으로 구독 관리 상세와 같은 정보 편집 화면에 간다', async () => {
+  const user = await renderDetail();
+
+  await user.press(screen.getByRole('button', { name: '더보기' }));
+  await user.press(screen.getByRole('menuitem', { name: '편집' }));
+
+  expect(screen).toHavePathname('/register/input');
+  expect(screen).toHaveSearchParams({ edit: 'netflix' });
+});
+
+it('구독 종료(다음 결제일 null)면 더보기에 삭제만 있다', async () => {
+  const user = await renderDetail({
+    'GET /api/v1/subscriptions/netflix': detail({
+      status: 'ENDED',
+      nextBillingDate: null,
+      canceledAt: '2026-11-10',
+    }),
+  });
+
+  await user.press(screen.getByRole('button', { name: '더보기' }));
+
+  expect(screen.queryByRole('menuitem', { name: '편집' })).not.toBeOnTheScreen();
+  expect(screen.getByRole('menuitem', { name: '삭제' })).toBeOnTheScreen();
+  expect(screen.getByText('구독 종료')).toBeOnTheScreen();
+
+  // 캘린더 상세는 구독 중·종료 모두 하단 버튼(재등록하기 등)이 없음
+  expect(screen.queryByRole('button', { name: '재등록하기' })).not.toBeOnTheScreen();
 });
 
 it('삭제를 누르면 확인 모달이 뜨고, 취소하면 삭제하지 않는다', async () => {

@@ -8,13 +8,16 @@ import { Cta } from '@/components/common/Cta';
 import { DetailCostCard } from '@/components/common/DetailCostCard';
 import { Divider, ServiceHeader } from '@/components/common/DetailParts';
 import { ListItem } from '@/components/common/ListItem';
+import { Modal } from '@/components/common/Modal';
 import { MoreMenu } from '@/components/common/MoreMenu';
 import { Text } from '@/components/common/Text';
 import { TextArea } from '@/components/common/TextArea';
 import { TopBar } from '@/components/common/TopBar';
 import type { EndedSubscriptionDetail } from '@/constants/manage';
 import { PAID_AT } from '@/constants/services';
+import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
+import { fillName } from '@/utils/josa';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const dotDate = (d: Date) => `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
@@ -30,6 +33,8 @@ export const EndedSubscriptionDetailScreen = ({
   subscription: s,
 }: EndedSubscriptionDetailScreenProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const deleteSubscriptions = useDeleteSubscriptions();
 
   return (
     <View testID="manage-detail-ended" className="pt-safe pb-safe flex-1 bg-bg-default">
@@ -40,11 +45,25 @@ export const EndedSubscriptionDetailScreen = ({
         showAction2={false}
         action1={{ icon: MoreIcon, accessibilityLabel: '더보기', onPress: () => setMenuOpen(true) }}
       />
-      {/* shortcut: 지난 구독 더보기 메뉴는 디자인에 없어 구독 중(M-03)과 같은 '편집', 편집 화면이 없어 이동 없음 */}
+      {/* 구독 종료는 편집 없이 삭제만 (편집 API는 구독 중만 받음) */}
       <MoreMenu
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
-        options={[{ label: '편집', onSelect: () => {} }]}
+        options={[
+          // 구독 종료 화면은 회색이라 삭제도 빨간색 대신 회색
+          { label: '삭제', muted: true, onSelect: () => setDeleteOpen(true) },
+        ]}
+      />
+      {/* 삭제 확인 (C-04와 같은 문구). 삭제 완료 토스트 없음 */}
+      <Modal
+        visible={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        buttons="both"
+        title={fillName('{name}을 삭제할까요?', s.name)}
+        description="삭제하면 모든 정보가 사라져요."
+        cancelLabel="취소"
+        confirmLabel="삭제하기"
+        onConfirm={() => deleteSubscriptions.mutate([s.id], { onSuccess: () => router.back() })}
       />
       <ScrollView bounces={false} contentContainerClassName="gap-s20 pb-stack-md pt-stack-md">
         <View className="gap-stack-md px-screen-x">
