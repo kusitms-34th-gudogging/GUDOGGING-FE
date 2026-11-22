@@ -8,6 +8,7 @@ import { FloatingButton } from '@/components/common/FloatingButton';
 import { ListItem } from '@/components/common/ListItem';
 import { QueryState } from '@/components/common/QueryState';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { CostCard } from '@/components/home/CostCard';
 import { HomeEmptyState } from '@/components/home/HomeEmptyState';
@@ -34,6 +35,7 @@ export const HomeScreen = () => {
     return (
       <View className="pt-safe flex-1 bg-bg-default">
         <QueryState isError={isError} onRetry={refetch} />
+        <ToastOutlet placement="bottom" />
       </View>
     );
   }
@@ -201,6 +203,8 @@ export const HomeScreen = () => {
           />
         </View>
       )}
+      {/* 상세에서 삭제(S-2) 후 돌아오면 토스트. 탭바 위 12, 구독 관리와 같음. + 버튼과 겹치면 토스트가 위 */}
+      <ToastOutlet placement="bottom" />
     </View>
   );
 };

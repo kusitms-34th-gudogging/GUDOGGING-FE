@@ -14,6 +14,7 @@ import { OptionCard } from '@/components/common/OptionCard';
 import { QueryState } from '@/components/common/QueryState';
 import { Text } from '@/components/common/Text';
 import { TextArea } from '@/components/common/TextArea';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { CHECKUP_CATEGORIES, toCheckupCategory } from '@/constants/checkup';
 import { serviceLogo } from '@/constants/services';
@@ -43,6 +44,7 @@ export const CheckupCancelScreen = ({ id, checkupId }: CheckupCancelScreenProps)
     return (
       <View className="pt-safe flex-1 bg-bg-default">
         <QueryState isError={isError} onRetry={refetch} />
+        <ToastOutlet placement="bottom" />
       </View>
     );
   }
@@ -101,11 +103,7 @@ export const CheckupCancelScreen = ({ id, checkupId }: CheckupCancelScreenProps)
         </View>
         <View className="shrink gap-inset-lg">
           <View className="max-w-[308px] gap-[6px]">
-            <Text
-              accessibilityRole="header"
-              lineBreakStrategyIOS="hangul-word"
-              className="text-text-primary text-head2-bold"
-            >
+            <Text accessibilityRole="header" className="text-text-primary text-head2-bold">
               {fillName('{name}을 해지하려는 이유를 알려주세요', name)}
             </Text>
             <Text className="text-text-primary text-body2-regular">여러 개 고를 수 있어요</Text>
@@ -149,6 +147,7 @@ export const CheckupCancelScreen = ({ id, checkupId }: CheckupCancelScreenProps)
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
+      <ToastOutlet placement="aboveCta" />
       <View className="pb-safe px-screen-x">
         <Cta
           testID="cancel-reason-submit"

@@ -2,8 +2,9 @@ import { userEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { act, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import type { EndedSubscriptionDetail } from '@/constants/manage';
-import { createQueryWrapper, mockApi } from '@/lib/testing';
+import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
 import { EndedSubscriptionDetailScreen } from '@/screens/manage/EndedSubscriptionDetailScreen';
 
 const watcha: EndedSubscriptionDetail = {
@@ -29,11 +30,11 @@ const watcha: EndedSubscriptionDetail = {
   },
 };
 
-const renderDetail = async (subscription = watcha) => {
-  mockApi({ 'DELETE /api/v1/subscriptions': { deletedCount: 1 } });
+const renderDetail = async (subscription = watcha, del: unknown = { deletedCount: 1 }) => {
+  mockApi({ 'DELETE /api/v1/subscriptions': del });
   await renderRouter(
     {
-      index: () => null,
+      index: () => <ToastOutlet />,
       'manage/detail/[id]': () => <EndedSubscriptionDetailScreen subscription={subscription} />,
       'register/input': () => null,
     },
@@ -73,8 +74,20 @@ describe('EndedSubscriptionDetailScreen', () => {
     await user.press(screen.getByRole('button', { name: '삭제하기' }));
 
     await waitFor(() => expect(screen).toHavePathname('/'));
+    expect(await screen.findByText('왓챠를 삭제했어요')).toBeOnTheScreen();
     const del = jest.mocked(globalThis.fetch).mock.calls.find(([, i]) => i?.method === 'DELETE');
     expect(JSON.parse(String(del?.[1]?.body))).toEqual({ subscriptionIds: ['watcha'] });
+  });
+
+  it('삭제에 실패하면 상세에 남고 삭제 실패 토스트를 띄운다', async () => {
+    const user = await renderDetail(watcha, apiError(500));
+
+    await user.press(screen.getByRole('button', { name: '더보기' }));
+    await user.press(screen.getByRole('menuitem', { name: '삭제' }));
+    await user.press(screen.getByRole('button', { name: '삭제하기' }));
+
+    expect(await screen.findByText('삭제하지 못했어요')).toBeOnTheScreen();
+    expect(screen).toHavePathname('/manage/detail/watcha');
   });
 
   it('재등록하기는 이 구독 정보로 채운 구독 정보 입력으로 간다', async () => {

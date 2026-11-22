@@ -8,6 +8,7 @@ import { Button } from '@/components/common/Button';
 import { ListItem } from '@/components/common/ListItem';
 import { QueryState } from '@/components/common/QueryState';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { serviceLogo } from '@/constants/services';
 import { useCheckupResult } from '@/hooks/useCheckups';
@@ -27,6 +28,7 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
     return (
       <View className="pt-safe flex-1 bg-bg-default">
         <QueryState isError={isError} onRetry={refetch} />
+        <ToastOutlet placement="bottom" />
       </View>
     );
   }
@@ -117,6 +119,7 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
         </View>
       </ScrollView>
 
+      <ToastOutlet placement="aboveCta" />
       <View className="pb-safe px-screen-x">
         <View className="mb-[14px] flex-row gap-inline-sm">
           <Button

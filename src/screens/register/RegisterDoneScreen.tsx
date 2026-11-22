@@ -13,6 +13,7 @@ import { AccessibilityInfo, View } from 'react-native';
 import { Cta } from '@/components/common/Cta';
 import { ListItem } from '@/components/common/ListItem';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { serviceLogo } from '@/constants/services';
@@ -145,6 +146,7 @@ export const RegisterDoneScreen = () => {
           </FadeScrollView>
         </View>
       </View>
+      <ToastOutlet placement="aboveCta" />
       <View className="pb-safe px-screen-x">
         <Cta testID="register-done" label="확인" onPress={finish} className="mb-[14px]" />
       </View>

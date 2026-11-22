@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { QueryState } from '@/components/common/QueryState';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { Toggle } from '@/components/common/Toggle';
 import { TopBar } from '@/components/common/TopBar';
 import { useNotificationSettings } from '@/hooks/useNotificationSettings';
@@ -53,6 +54,7 @@ export const MypageNotificationScreen = ({
           <Toggle value={enabled} onValueChange={toggle} accessibilityLabel="구독 점검 알림" />
         </View>
       )}
+      <ToastOutlet placement="bottom" />
     </View>
   );
 };

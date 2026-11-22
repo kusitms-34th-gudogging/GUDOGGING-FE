@@ -6,6 +6,7 @@ import { AlertCircleIcon } from '@/assets/icons';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useWithdraw } from '@/hooks/useWithdraw';
 
@@ -43,6 +44,7 @@ export const MypageWithdrawScreen = () => {
           </Text>
         </View>
       </View>
+      <ToastOutlet placement="aboveCta" />
       <View className="pb-safe px-screen-x">
         <View className="mb-[14px] flex-row gap-inline-sm">
           <Button variant="tonal" label="취소" onPress={() => router.back()} className="flex-1" />

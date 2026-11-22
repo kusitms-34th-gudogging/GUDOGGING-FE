@@ -14,6 +14,7 @@ import { ChevronRightIcon } from '@/assets/icons';
 import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { openPolicy } from '@/constants/policy';
 import { useLogout } from '@/hooks/useLogout';
@@ -149,6 +150,7 @@ export const MypageScreen = () => {
         confirmTestID="mypage-logout-confirm"
         onConfirm={logout}
       />
+      <ToastOutlet placement="bottom" />
     </View>
   );
 };

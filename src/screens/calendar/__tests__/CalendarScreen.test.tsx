@@ -1,4 +1,4 @@
-import { act, render, screen, userEvent } from '@testing-library/react-native';
+import { act, screen, userEvent } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import type { ReactNode } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -64,7 +64,7 @@ const Providers = () => {
 };
 
 const renderCalendar = async () => {
-  await render(<CalendarScreen />, { wrapper: Providers() });
+  await renderRouter({ index: CalendarScreen }, { initialUrl: '/', wrapper: Providers() });
   // 이번 달 응답이 와야 배지가 보임
   await screen.findByText(/이번 달 결제 합계/);
   return userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
@@ -227,7 +227,7 @@ it('스와이프로 다른 달에 가면 1일이 선택되고, 결제 합계 배
 
 it('불러오지 못하면 다시 시도로 다시 요청한다', async () => {
   failing = true;
-  await render(<CalendarScreen />, { wrapper: Providers() });
+  await renderRouter({ index: CalendarScreen }, { initialUrl: '/', wrapper: Providers() });
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
   failing = false;
