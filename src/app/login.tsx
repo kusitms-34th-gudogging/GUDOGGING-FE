@@ -25,7 +25,7 @@ export default function LoginRoute() {
         } catch (error) {
           // 취소는 조용히 L-01로, 그 외 실패는 안내 후 다시 시도할 수 있게 L-01로
           if (!(error instanceof LoginCanceledError)) {
-            show({ type: 'error', message: '로그인하지 못했어요. 다시 시도해 주세요.' });
+            show({ type: 'error', message: '로그인에 실패했어요' });
           }
           throw error;
         }
