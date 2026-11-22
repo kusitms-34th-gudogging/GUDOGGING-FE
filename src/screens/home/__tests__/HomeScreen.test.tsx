@@ -162,11 +162,11 @@ describe('HomeScreen', () => {
     expect(screen.queryByText(/원 결제$/)).not.toBeOnTheScreen();
   });
 
-  it('잘 안 쓰는 구독이 없어도 제목 화살표를 누르면 구독 관리로 간다', async () => {
-    const user = await renderHome(home({ summary: subscribed }));
+  it('잘 안 쓰는 구독이 없으면 제목은 화살표 없이 눌리지도 않는다', async () => {
+    await renderHome(home({ summary: subscribed }));
 
-    await user.press(await screen.findByRole('button', { name: '잘 안 쓰는 구독' }));
-    expect(screen).toHavePathname('/manage');
+    expect(await screen.findByRole('header', { name: '잘 안 쓰는 구독' })).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: '잘 안 쓰는 구독' })).not.toBeOnTheScreen();
   });
 
   it('점검 기록이 있으면 잘 안 쓰는 구독과 월 합계를 보여 준다', async () => {
