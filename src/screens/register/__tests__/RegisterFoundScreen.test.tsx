@@ -3,7 +3,14 @@ import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { apiError, createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
+import {
+  apiError,
+  createQueryWrapper,
+  mockApi,
+  TEST_FOUND,
+  TEST_SERVICES,
+  ToastLayout,
+} from '@/lib/testing';
 import { RegisterFoundScreen } from '@/screens/register/RegisterFoundScreen';
 
 const CTA = { name: '선택한 구독 등록하기' };
@@ -23,6 +30,7 @@ const postedNames = () => {
 const renderFound = async () => {
   await renderRouter(
     {
+      _layout: ToastLayout,
       'register/found': () => <RegisterFoundScreen />,
       'register/done': () => null,
     },
@@ -172,7 +180,7 @@ describe('RegisterFoundScreen', () => {
     );
   });
 
-  it('등록에 실패하면 불러온 구독 확인에 남는다', async () => {
+  it('등록에 실패하면 안내하고 불러온 구독 확인에 남는다', async () => {
     mockApi({
       'GET /api/v1/services': { services: TEST_SERVICES },
       'POST /api/v1/subscriptions': apiError(409),
@@ -184,5 +192,6 @@ describe('RegisterFoundScreen', () => {
 
     await waitFor(() => expect(screen.getByRole('button', CTA)).toBeEnabled());
     expect(screen).toHavePathname('/register/found');
+    expect(await screen.findByText('구독 등록에 실패했어요')).toBeOnTheScreen();
   });
 });

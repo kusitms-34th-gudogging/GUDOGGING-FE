@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Slot } from 'expo-router';
 import type { ReactNode } from 'react';
 
+import { ToastProvider } from '@/components/common/ToastProvider';
 import type { FoundSubscription } from '@/constants/services';
 
 // API 쓰는 화면 테스트 공통 (.claude/docs/testing/api-hooks.md)
@@ -103,3 +105,10 @@ export const TEST_FOUND: FoundSubscription[] = [
     },
   },
 ];
+
+// 토스트를 띄우는 화면의 renderRouter 루트 레이아웃 (앱에선 루트 _layout이 감쌈)
+export const ToastLayout = () => (
+  <ToastProvider>
+    <Slot />
+  </ToastProvider>
+);

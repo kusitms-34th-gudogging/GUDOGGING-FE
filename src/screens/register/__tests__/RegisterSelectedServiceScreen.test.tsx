@@ -4,7 +4,7 @@ import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import type { PaymentInfo } from '@/constants/services';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { apiError, createQueryWrapper, mockApi, TEST_SERVICES } from '@/lib/testing';
+import { apiError, createQueryWrapper, mockApi, TEST_SERVICES, ToastLayout } from '@/lib/testing';
 import { RegisterSelectedServiceScreen } from '@/screens/register/RegisterSelectedServiceScreen';
 
 const PAYMENT: PaymentInfo = {
@@ -20,6 +20,7 @@ const renderSelected = async (routes: Record<string, unknown> = {}) => {
   mockApi({ 'GET /api/v1/services': { services: TEST_SERVICES }, ...routes });
   await renderRouter(
     {
+      _layout: ToastLayout,
       'register/selected': () => <RegisterSelectedServiceScreen />,
       'register/done': () => null,
       'register/select': () => null,
@@ -123,7 +124,7 @@ describe('RegisterSelectedServiceScreen', () => {
     });
   });
 
-  it('등록에 실패하면 선택한 구독 화면에 남는다', async () => {
+  it('등록에 실패하면 안내하고 선택한 구독 화면에 남는다', async () => {
     useRegisterDraft.getState().setPayment('netflix', PAYMENT);
     useRegisterDraft.getState().setPayment('youtube', PAYMENT);
     const user = await renderSelected({ 'POST /api/v1/subscriptions': apiError(409) });
@@ -134,6 +135,7 @@ describe('RegisterSelectedServiceScreen', () => {
       expect(screen.getByRole('button', { name: '2개 구독 등록하기' })).toBeEnabled(),
     );
     expect(screen).toHavePathname('/register/selected');
+    expect(await screen.findByText('구독 등록에 실패했어요')).toBeOnTheScreen();
   });
 
   // 이어서 등록은 선택한 구독 화면으로 바로 들어와 앞 화면이 서비스 선택이 아님
