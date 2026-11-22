@@ -199,7 +199,7 @@ const ServiceInputForm = ({
             {headerName && (
               <View className="flex-row items-center gap-inline-sm">
                 <Image
-                  source={serviceLogo(existing ? undefined : service?.logoUrl)}
+                  source={serviceLogo((existing ?? service)?.logoUrl)}
                   className="size-logo-card rounded-full"
                 />
                 <Text className="text-text-primary text-body2-semibold">{headerName}</Text>
