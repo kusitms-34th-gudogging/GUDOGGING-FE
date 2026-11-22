@@ -65,7 +65,7 @@ it('스크린샷을 올려 분석하고, 결과를 저장해 불러온 구독 �
   mockApi({
     [SCREENSHOT]: {
       candidates: [
-        candidate(),
+        candidate({ logoUrl: 'https://cdn.gudogging.com/logos/youtube.png' }),
         candidate({
           serviceId: 'chatgpt',
           serviceName: 'ChatGPT Plus',
@@ -97,6 +97,7 @@ it('스크린샷을 올려 분석하고, 결과를 저장해 불러온 구독 �
       id: 'found-0',
       serviceId: 'youtube',
       name: 'YouTube Premium',
+      logoUrl: 'https://cdn.gudogging.com/logos/youtube.png',
       payment: {
         category: '영상·OTT',
         amount: 14900,
