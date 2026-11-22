@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { AccessibilityInfo, View } from 'react-native';
 
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { CategoryPullBackground } from '@/components/register/CategoryPullBackground';
 import type { FoundSubscription } from '@/constants/services';
@@ -89,6 +90,7 @@ export const RegisterAnalyzeScreen = ({
         showAction1={false}
         showAction2={false}
       />
+      <ToastOutlet placement="bottom" />
     </View>
   );
 };

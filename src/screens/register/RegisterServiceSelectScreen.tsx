@@ -9,6 +9,7 @@ import { ListItem } from '@/components/common/ListItem';
 import { QueryState } from '@/components/common/QueryState';
 import { SearchBar } from '@/components/common/SearchBar';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
@@ -138,6 +139,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
           </FadeScrollView>
         </View>
       </View>
+      <ToastOutlet placement="aboveCta" />
       <View className="pb-safe px-screen-x">
         <Cta
           testID="register-select-done"

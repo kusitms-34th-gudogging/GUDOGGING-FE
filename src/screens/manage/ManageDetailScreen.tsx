@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { QueryState } from '@/components/common/QueryState';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { useSubscription } from '@/hooks/useSubscriptions';
 import { EndedSubscriptionDetailScreen } from '@/screens/manage/EndedSubscriptionDetailScreen';
 import { SubscriptionDetailScreen } from '@/screens/manage/SubscriptionDetailScreen';
@@ -19,6 +20,7 @@ export const ManageDetailScreen = ({ id, confirmCancel }: ManageDetailScreenProp
     return (
       <View className="pt-safe flex-1 bg-bg-default">
         <QueryState isError={isError} onRetry={refetch} />
+        <ToastOutlet placement="bottom" />
       </View>
     );
   }

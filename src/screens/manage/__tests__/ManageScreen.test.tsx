@@ -1,6 +1,6 @@
 import { act, userEvent } from '@testing-library/react-native';
 import { router, Slot, Stack } from 'expo-router';
-import { renderRouter, screen } from 'expo-router/testing-library';
+import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import SubscriptionDetailRoute from '@/app/manage/detail/[id]';
 import { ToastProvider } from '@/components/common/ToastProvider';
@@ -295,5 +295,93 @@ describe('ManageScreen', () => {
     await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
     await user.press(await screen.findByRole('button', { name: '빠른 결제 상세' }));
     expect(await screen.findByRole('button', { name: '재등록하기' })).toBeOnTheScreen();
+  });
+
+  it('해지 완료 후 상세가 구독 종료 화면으로 먼저 바뀌어도 해지 완료 토스트를 띄운다', async () => {
+    let canceled = false;
+    const detail = {
+      subscriptionId: 'a',
+      serviceName: '빠른 결제',
+      category: 'VIDEO_OTT',
+      amount: 29000,
+      billingCycleValue: 1,
+      billingCycleUnit: 'MONTH',
+      nextBillingDate: '2026-10-17',
+      startedAt: '2026-01-17',
+      paymentMethod: 'APP_STORE',
+      isSteady: false,
+      totalPaidAmount: 261000,
+      latestCheckup: null,
+      pastCheckupAverage: null,
+    };
+    const spy = mockLists({ 'PATCH /api/v1/subscriptions/a/cancel': null });
+    const base = spy.getMockImplementation()!;
+    spy.mockImplementation(async (input, init) => {
+      const url = String(input);
+      if (init?.method === 'PATCH') canceled = true;
+      if (url.endsWith('/api/v1/subscriptions/a')) {
+        const data = canceled
+          ? { ...detail, status: 'ENDED', canceledAt: '2026-10-10' }
+          : { ...detail, status: 'ACTIVE', canceledAt: null };
+        return new Response(JSON.stringify({ code: 200, data }));
+      }
+      // 뒤에 남은 목록 재조회가 늦게 끝나 상세 화면이 먼저 바뀌는 상황
+      if (canceled && url.includes('/api/v1/subscriptions?')) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+      return base(input, init);
+    });
+    const user = await renderManage(true, StackToastLayout);
+    await screen.findByRole('button', { name: '빠른 결제 상세' });
+    await act(() => router.push('/manage/detail/a?confirmCancel=1'));
+
+    await user.press(await screen.findByRole('button', { name: '해지 완료' }));
+    expect(await screen.findByRole('button', { name: '재등록하기' })).toBeOnTheScreen();
+    await act(() => jest.advanceTimersByTimeAsync(1000));
+
+    expect(await screen.findByText('빠른 결제를 해지했어요')).toBeOnTheScreen();
+  });
+
+  it('상세에서 삭제하면 목록으로 돌아와 삭제 완료 토스트를 띄운다', async () => {
+    // 실서버처럼 삭제 뒤엔 상세 조회가 404
+    let deleted = false;
+    const detailA = {
+      subscriptionId: 'a',
+      status: 'ACTIVE',
+      serviceName: '빠른 결제',
+      category: 'VIDEO_OTT',
+      amount: 29000,
+      billingCycleValue: 1,
+      billingCycleUnit: 'MONTH',
+      nextBillingDate: '2026-10-17',
+      startedAt: '2026-01-17',
+      paymentMethod: 'APP_STORE',
+      isSteady: false,
+      canceledAt: null,
+      totalPaidAmount: 261000,
+      latestCheckup: null,
+      pastCheckupAverage: null,
+    };
+    const spy = mockLists({
+      'GET /api/v1/subscriptions/a': detailA,
+      'DELETE /api/v1/subscriptions': { deletedCount: 1 },
+    });
+    const base = spy.getMockImplementation()!;
+    spy.mockImplementation(async (input, init) => {
+      if (init?.method === 'DELETE') deleted = true;
+      if (deleted && String(input).endsWith('/api/v1/subscriptions/a')) {
+        return new Response(JSON.stringify({ code: 40404, data: null }), { status: 404 });
+      }
+      return base(input, init);
+    });
+    const user = await renderManage(true, StackToastLayout);
+
+    await user.press(await screen.findByRole('button', { name: '빠른 결제 상세' }));
+    await user.press(await screen.findByRole('button', { name: '더보기' }));
+    await user.press(screen.getByRole('menuitem', { name: '삭제' }));
+    await user.press(screen.getByRole('button', { name: '삭제하기' }));
+
+    await waitFor(() => expect(screen).toHavePathname('/'));
+    expect(await screen.findByText('빠른 결제를 삭제했어요')).toBeOnTheScreen();
   });
 });

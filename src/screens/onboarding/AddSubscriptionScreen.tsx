@@ -8,6 +8,7 @@ import { Cta } from '@/components/common/Cta';
 import { GuideStep } from '@/components/common/GuideStep';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import type { LoginProvider } from '@/types/auth';
 
@@ -103,6 +104,7 @@ export const AddSubscriptionScreen = ({
         </View>
       </View>
 
+      <ToastOutlet placement="aboveCta" />
       <View className="px-screen-x">
         {opened && onAddScreenshots ? (
           <View className="mb-[14px] flex-row gap-inline-sm">

@@ -6,6 +6,7 @@ import { Cta } from '@/components/common/Cta';
 import { GuideStep } from '@/components/common/GuideStep';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { startGmailAnalysis } from '@/hooks/useAnalyzeSubscriptions';
 
@@ -40,6 +41,7 @@ export const RegisterGmailGuideScreen = () => (
         </Text>
       </View>
     </View>
+    <ToastOutlet placement="aboveCta" />
     <View className="pb-safe px-screen-x">
       <Cta label="Gmail 연동하기" onPress={startGmailAnalysis} className="mb-[14px]" />
     </View>

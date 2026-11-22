@@ -1,4 +1,5 @@
-import { render, screen, userEvent, waitFor } from '@testing-library/react-native';
+import { screen, userEvent, waitFor } from '@testing-library/react-native';
+import { renderRouter } from 'expo-router/testing-library';
 
 import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
 import { MypageNotificationScreen } from '@/screens/mypage/MypageNotificationScreen';
@@ -12,9 +13,10 @@ const renderSettings = async (
   update: unknown = { paymentReminderEnabled: !enabled },
 ) => {
   mockApi({ [SETTINGS]: { paymentReminderEnabled: enabled }, [UPDATE]: update });
-  await render(<MypageNotificationScreen onRequestPermission={onRequestPermission} />, {
-    wrapper: createQueryWrapper(),
-  });
+  await renderRouter(
+    { index: () => <MypageNotificationScreen onRequestPermission={onRequestPermission} /> },
+    { initialUrl: '/', wrapper: createQueryWrapper() },
+  );
   await screen.findByRole('switch');
 };
 const reminder = () => screen.getByRole('switch', { name: '구독 점검 알림' });

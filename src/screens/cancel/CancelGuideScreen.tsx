@@ -9,9 +9,11 @@ import { Modal } from '@/components/common/Modal';
 import { QueryState } from '@/components/common/QueryState';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useCancelGuide } from '@/hooks/useCancelGuide';
 import { useCancelSubscription } from '@/hooks/useCancelSubscription';
+import { useToast } from '@/hooks/useToast';
 import { fillName } from '@/utils/josa';
 
 const STEP_ICONS = [Step1Icon, Step2Icon, Step3Icon];
@@ -24,6 +26,7 @@ interface CancelGuideScreenProps {
 export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) => {
   const { data: guide, isError, refetch } = useCancelGuide(subscriptionId);
   const cancelSubscription = useCancelSubscription();
+  const { show } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   // 스토어·해지 페이지로 나갔다가 앱으로 돌아오면 모달 자동 노출
   const [awaitingReturn, setAwaitingReturn] = useState(false);
@@ -42,6 +45,7 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
     return (
       <View className="pt-safe flex-1 bg-bg-default">
         <QueryState isError={isError} onRetry={refetch} />
+        <ToastOutlet placement="bottom" />
       </View>
     );
   }
@@ -52,14 +56,20 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
     if (!guide.url) return setConfirmOpen(true);
     Linking.openURL(guide.url)
       .then(() => setAwaitingReturn(true))
-      .catch(() => {});
+      .catch(() => show({ type: 'error', message: '페이지를 열지 못했어요' }));
   };
 
   // 해지 완료 처리(구독 종료·해지일 저장·점검 알림 중단) 후 해지를 시작한 구독 상세로. 상세는 구독 종료(M-05)로 바뀜
-  // shortcut: 실패 안내는 디자인에 없어 모달만 닫힘, 디자인 나오면 안내 추가
   const onComplete = () =>
     cancelSubscription.mutate(subscriptionId, {
-      onSuccess: () => router.dismissTo(`/manage/detail/${subscriptionId}`),
+      onSuccess: () => {
+        router.dismissTo(`/manage/detail/${subscriptionId}`);
+        show(
+          { type: 'success', message: fillName('{name}을 해지했어요', name) },
+          { nextScreen: true },
+        );
+      },
+      onError: () => show({ type: 'error', message: '저장하지 못했어요' }),
     });
 
   return (
@@ -77,25 +87,16 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
           description={`${name} · ${guide.payment}`}
         />
         <View className="gap-stack-lg">
-          {guide.steps.length > 0 ? (
-            <View className="gap-stack-md">
-              {guide.steps.map((step, i) => (
-                <GuideStep
-                  key={step}
-                  icon={STEP_ICONS[i]}
-                  iconClassName="text-icon-primary"
-                  label={fillName(step, name)}
-                />
-              ))}
-            </View>
-          ) : (
-            <Text
-              lineBreakStrategyIOS="hangul-word"
-              className="text-text-primary text-body2-semibold"
-            >
-              {fillName(guide.message, name)}
-            </Text>
-          )}
+          <View className="gap-stack-md">
+            {guide.steps.map((step, i) => (
+              <GuideStep
+                key={step}
+                icon={STEP_ICONS[i]}
+                iconClassName="text-icon-primary"
+                label={fillName(step, name)}
+              />
+            ))}
+          </View>
           {guide.notice && (
             <View className="flex-row items-start gap-inline-sm">
               <View className="py-[2px]">
@@ -107,6 +108,8 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
             </View>
           )}
         </View>
+        {/* 페이지 열기·해지 완료 실패 토스트는 CTA 위 */}
+        <ToastOutlet className="bottom-0 pb-stack-sm" />
       </View>
       <View className="pb-safe px-screen-x">
         <Cta testID="cancel-guide-cta" label={guide.cta} onPress={onCta} className="mb-[14px]" />

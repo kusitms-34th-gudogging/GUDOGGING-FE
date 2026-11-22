@@ -8,6 +8,7 @@ import { Cta } from '@/components/common/Cta';
 import { GuideStep } from '@/components/common/GuideStep';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 
 // Apple 계정의 전체 구독 목록 (App Store 구독 관리)
@@ -53,6 +54,7 @@ export const RegisterScreenshotGuideScreen = () => {
           </Text>
         </View>
       </View>
+      <ToastOutlet placement="aboveCta" />
       <View className="pb-safe px-screen-x">
         {opened ? (
           <View className="mb-[14px] flex-row gap-inline-sm">

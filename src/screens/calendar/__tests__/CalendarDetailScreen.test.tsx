@@ -2,6 +2,7 @@ import { act, userEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
 import { CalendarDetailScreen } from '@/screens/calendar/CalendarDetailScreen';
 
@@ -41,7 +42,7 @@ const renderDetail = async (routes: Record<string, unknown> = {}) => {
   mockApi({ 'GET /api/v1/subscriptions/netflix': detail(), ...routes });
   await renderRouter(
     {
-      index: () => null,
+      index: () => <ToastOutlet />,
       'calendar/detail/[id]': () => (
         <CalendarDetailScreen id="netflix" date={new Date(2026, 10, 17)} />
       ),
@@ -137,6 +138,31 @@ it('구독 중이면 편집으로 구독 관리 상세와 같은 정보 편집 �
   expect(screen).toHaveSearchParams({ edit: 'netflix' });
 });
 
+it('해지일 당일을 누르면 서버가 구독 중으로 줘도 구독 종료로 보여준다', async () => {
+  // 고른 날짜 2026-11-17 = 해지일, 서버는 당일까지 ACTIVE와 그날 결제일을 줌
+  await renderDetail({
+    'GET /api/v1/subscriptions/netflix': detail({
+      canceledAt: '2026-11-17',
+      nextBillingDate: '2026-11-17',
+    }),
+  });
+
+  expect(screen.getByText('구독 종료')).toBeOnTheScreen();
+  expect(screen.queryByText('다음 결제일')).not.toBeOnTheScreen();
+});
+
+it('해지일 이전 날짜로 들어와 구독 중으로 보여도 이미 해지했으면 더보기에 삭제만 있다', async () => {
+  const user = await renderDetail({
+    'GET /api/v1/subscriptions/netflix': detail({ canceledAt: '2026-11-23' }),
+  });
+
+  await user.press(screen.getByRole('button', { name: '더보기' }));
+
+  expect(screen.getByText('구독 중')).toBeOnTheScreen();
+  expect(screen.queryByRole('menuitem', { name: '편집' })).not.toBeOnTheScreen();
+  expect(screen.getByRole('menuitem', { name: '삭제' })).toBeOnTheScreen();
+});
+
 it('구독 종료(다음 결제일 null)면 더보기에 삭제만 있다', async () => {
   const user = await renderDetail({
     'GET /api/v1/subscriptions/netflix': detail({
@@ -179,6 +205,18 @@ it('삭제하기를 누르면 이 구독을 삭제하고 캘린더로 돌아간�
   await user.press(screen.getByRole('button', { name: '삭제하기' }));
 
   await waitFor(() => expect(screen).toHavePathname('/'));
+  expect(await screen.findByText('넷플릭스를 삭제했어요')).toBeOnTheScreen();
   const del = jest.mocked(globalThis.fetch).mock.calls.find(([, i]) => i?.method === 'DELETE');
   expect(JSON.parse(String(del?.[1]?.body))).toEqual({ subscriptionIds: ['netflix'] });
+});
+
+it('삭제에 실패하면 상세에 남고 삭제 실패 토스트를 띄운다', async () => {
+  const user = await renderDetail({ 'DELETE /api/v1/subscriptions': apiError(500) });
+
+  await user.press(screen.getByRole('button', { name: '더보기' }));
+  await user.press(screen.getByText('삭제'));
+  await user.press(screen.getByRole('button', { name: '삭제하기' }));
+
+  expect(await screen.findByText('삭제하지 못했어요')).toBeOnTheScreen();
+  expect(screen).toHavePathname('/calendar/detail/netflix');
 });

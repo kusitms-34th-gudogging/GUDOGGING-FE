@@ -77,6 +77,16 @@ describe('SubscriptionDetailScreen', () => {
     await waitFor(() => expect(bodyOf('DELETE')?.body).toBe('{"subscriptionIds":["netflix"]}'));
   });
 
+  it('삭제에 실패하면 상세에 남고 삭제 실패 토스트를 띄운다', async () => {
+    const user = await renderDetail(false, { 'DELETE /api/v1/subscriptions': apiError(500) });
+
+    await user.press(screen.getByRole('button', { name: '더보기' }));
+    await user.press(screen.getByRole('menuitem', { name: '삭제' }));
+    await user.press(screen.getByRole('button', { name: '삭제하기' }));
+
+    expect(await screen.findByText('삭제하지 못했어요')).toBeOnTheScreen();
+  });
+
   it('구독 점검은 점검 화면으로 간다', async () => {
     const user = await renderDetail();
 
@@ -108,6 +118,17 @@ describe('SubscriptionDetailScreen', () => {
     await user.press(screen.getByRole('button', { name: '해지 완료' }));
 
     expect(bodyOf('PATCH')?.url).toBe('https://api.test/api/v1/subscriptions/netflix/cancel');
+    expect(await screen.findByText('Netflix를 해지했어요')).toBeOnTheScreen();
+  });
+
+  it('해지 완료 처리에 실패하면 저장 실패 토스트를 띄운다', async () => {
+    const user = await renderDetail(true, {
+      'PATCH /api/v1/subscriptions/netflix/cancel': apiError(500),
+    });
+
+    await user.press(screen.getByRole('button', { name: '해지 완료' }));
+
+    expect(await screen.findByText('저장하지 못했어요')).toBeOnTheScreen();
   });
 
   it('꾸준히 쓰는 구독을 켜면 바로 켜지고 서버에 저장한다', async () => {

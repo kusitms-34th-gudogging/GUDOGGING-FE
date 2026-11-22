@@ -6,6 +6,7 @@ import { Cta } from '@/components/common/Cta';
 import { ShakingAlertIcon } from '@/components/common/ShakingAlertIcon';
 import { StatusBlurBackground } from '@/components/common/StatusBlurBackground';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 
 // A-08e 스크린샷·A-12e Gmail이 모션은 같고 문구만 다름
@@ -54,6 +55,7 @@ export const RegisterFailedScreen = ({ source }: RegisterFailedScreenProps) => {
           <Text className="text-center text-text-primary text-body2-regular">{description}</Text>
         </View>
       </View>
+      <ToastOutlet placement="aboveCta" />
       <View className="pb-safe px-screen-x">
         <Cta
           label="직접 등록하기"
