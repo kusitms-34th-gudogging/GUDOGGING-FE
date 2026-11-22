@@ -1,7 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
 import { File } from 'expo-file-system';
+import { router } from 'expo-router';
 
 import type { FoundSubscription, ReviewField } from '@/constants/services';
+import { requestGmailAuthCode } from '@/lib/account';
 import { request } from '@/lib/request';
 import {
   type ApiCategory,
@@ -25,8 +27,7 @@ interface Candidate {
   nextBillingDate: string | null;
   paymentMethod: ApiPaymentMethod | null;
   needsReview: boolean;
-  // shortcut: Gmail 분석 명세엔 아직 없어 선택, Gmail도 생기면 필수로
-  reviewFields?: ReviewField[];
+  reviewFields: ReviewField[];
 }
 
 // 불러온 구독 항목 id. 직접 입력처럼 다루는 항목(사전 등록 서비스 아님)은 custom- (useRegisterServices 기준)
@@ -44,7 +45,7 @@ const toFound = (c: Candidate, i: number): FoundSubscription => ({
     paidAt: c.paymentMethod ? PAID_AT_OF[c.paymentMethod] : undefined,
   },
   needsReview: c.needsReview,
-  reviewFields: c.reviewFields ?? [],
+  reviewFields: c.reviewFields,
 });
 
 const analyze = async (path: string, body?: FormData) => {
@@ -64,15 +65,23 @@ export const useAnalyzeScreenshots = () =>
     },
   });
 
-// Gmail 연동 후 결제 메일 분석 (A-11 → A-12)
-// shortcut: Google 로그인(OAuth)이 아직 없어 임시 인증 코드로 연동, OAuth 붙이면 받은 authCode로 교체
+// Gmail 연동하기 (A-11): Google 계정 선택·권한 동의 후 결제 메일 분석(A-12)으로
+// 취소하면 그 화면에 그대로, 인증 코드를 못 받으면 분석 실패(A-12e)로 (화면설계서 5-1·5-2)
+export const startGmailAnalysis = async () => {
+  try {
+    const authCode = await requestGmailAuthCode();
+    if (authCode)
+      router.push({ pathname: '/register/analyze', params: { source: 'gmail', authCode } });
+  } catch {
+    router.push({ pathname: '/register/failed', params: { source: 'gmail' } });
+  }
+};
+
+// 받은 인증 코드로 Gmail 연동 → 결제 메일 분석 (A-12)
 export const useAnalyzeGmail = () =>
   useMutation({
-    mutationFn: async () => {
-      await request('/api/v1/gmail/connection', {
-        method: 'POST',
-        body: { authCode: 'pending-oauth' },
-      });
+    mutationFn: async (authCode: string) => {
+      await request('/api/v1/gmail/connection', { method: 'POST', body: { authCode } });
       return analyze('/api/v1/gmail/analyses');
     },
   });

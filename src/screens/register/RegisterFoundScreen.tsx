@@ -73,7 +73,11 @@ export const RegisterFoundScreen = () => {
       <TopBar
         variant="detail"
         title="불러온 구독 확인"
-        onBack={() => router.back()}
+        // 뒤로가기는 분석 결과·수정 정보를 지우고 앞 화면으로 (화면설계서 A-13 1)
+        onBack={() => {
+          useRegisterDraft.getState().reset();
+          router.back();
+        }}
         showAction1={false}
         showAction2={false}
       />

@@ -9,6 +9,8 @@ const PROXY_PATHS = [
   '/api/v1/auth/google',
   '/api/v1/auth/reissue',
   '/api/v1/calendar',
+  '/api/v1/gmail/connection',
+  '/api/v1/gmail/analyses',
   '/api/v1/home',
   '/api/v1/services',
   '/api/v1/subscriptions/drafts',

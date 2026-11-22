@@ -18,10 +18,16 @@ interface RegisterAnalyzeScreenProps {
   source: keyof typeof COPY;
   // 스크린샷 분석이면 고른 이미지 (A-07)
   images?: string[];
+  // Gmail이면 A-11에서 받은 Google 인증 코드
+  authCode?: string;
 }
 const MIN_VISIBLE_MS = 1500;
 
-export const RegisterAnalyzeScreen = ({ source, images = [] }: RegisterAnalyzeScreenProps) => {
+export const RegisterAnalyzeScreen = ({
+  source,
+  images = [],
+  authCode = '',
+}: RegisterAnalyzeScreenProps) => {
   const { title, message } = COPY[source];
   const screenshots = useAnalyzeScreenshots();
   const gmail = useAnalyzeGmail();
@@ -32,8 +38,8 @@ export const RegisterAnalyzeScreen = ({ source, images = [] }: RegisterAnalyzeSc
     const done = (found: FoundSubscription[]) => {
       // 찾은 구독이 없으면 인식 실패(A-08e·A-12e)로
       if (found.length === 0) {
-        // 실패 화면에서 뒤로가기·스와이프 모두 안내(A-06·A-11)로 가게 사이의 스크린샷 확인(A-07)까지 걷어 냄 (기획 답변)
-        router.dismissTo(source === 'gmail' ? '/register/gmail' : '/register/screenshot');
+        // 실패 화면에서 뒤로가기·스와이프 모두 스크린샷 확인(A-07)·Gmail 안내(A-11)로 (화면설계서 A-08e·A-12e)
+        router.dismissTo(source === 'gmail' ? '/register/gmail' : '/register/images');
         return router.push({ pathname: '/register/failed', params: { source } });
       }
       // 분석 결과가 나온 시점부터 이어서 등록할 수 있게 저장 (분석 중에 나가면 처음부터)
@@ -42,7 +48,8 @@ export const RegisterAnalyzeScreen = ({ source, images = [] }: RegisterAnalyzeSc
     };
     // 분석 응답과 최소 노출 시간(1.5초) 중 늦은 쪽에 이동. 분석 중에 나가면 결과를 버림
     const minVisible = new Promise((resolve) => setTimeout(resolve, MIN_VISIBLE_MS));
-    const analysis = source === 'gmail' ? gmail.mutateAsync() : screenshots.mutateAsync(images);
+    const analysis =
+      source === 'gmail' ? gmail.mutateAsync(authCode) : screenshots.mutateAsync(images);
     Promise.all([analysis, minVisible])
       .then(([found]) => !left && done(found as FoundSubscription[]))
       // 읽기 실패·연동 실패도 인식 실패 안내로. 개발 중엔 원인을 Metro에 남김
