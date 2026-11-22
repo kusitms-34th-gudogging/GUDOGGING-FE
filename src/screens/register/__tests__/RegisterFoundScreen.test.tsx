@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { userEvent } from '@testing-library/react-native';
-import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { router } from 'expo-router';
+import { act, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import {
@@ -60,6 +61,24 @@ afterEach(() => {
 });
 
 describe('RegisterFoundScreen', () => {
+  it('뒤로 가면 분석 결과를 지우고 앞 화면으로 돌아간다', async () => {
+    await renderRouter(
+      {
+        _layout: ToastLayout,
+        'register/gmail': () => null,
+        'register/found': () => <RegisterFoundScreen />,
+      },
+      { initialUrl: '/register/gmail', wrapper: createQueryWrapper() },
+    );
+    await act(() => router.push('/register/found'));
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+    await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
+
+    expect(screen).toHavePathname('/register/gmail');
+    expect(useRegisterDraft.getState().found).toEqual([]);
+  });
+
   // 샘플: ChatGPT Plus는 금액을 못 읽어 확인 필요, YouTube Premium은 바로 등록 가능
   it.each([
     ['SCREENSHOT', '구독 정보 입력 필요'],

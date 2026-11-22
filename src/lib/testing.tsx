@@ -1,3 +1,4 @@
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Slot } from 'expo-router';
 import type { ReactNode } from 'react';
@@ -118,3 +119,26 @@ export const ToastLayout = () => (
     <Slot />
   </ToastProvider>
 );
+
+// Gmail 연동 Google 계정 선택 결과 (mock은 jest-setup.ts). null이면 사용자가 취소
+export const mockGmailAuthCode = (code: string | null) =>
+  jest.mocked(GoogleSignin.signIn).mockResolvedValue(
+    code === null
+      ? { type: 'cancelled', data: null }
+      : {
+          type: 'success',
+          data: {
+            idToken: null,
+            serverAuthCode: code,
+            scopes: [],
+            user: {
+              id: '1',
+              email: 'a@gmail.com',
+              name: null,
+              givenName: null,
+              familyName: null,
+              photo: null,
+            },
+          },
+        },
+  );

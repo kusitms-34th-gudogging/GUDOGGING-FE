@@ -31,7 +31,7 @@ it('직접 등록하기를 누르면 서비스 선택(A-02)으로 이동한다',
   expect(screen).toHavePathname('/register/select');
 });
 
-it('스크린샷 실패에서 뒤로 가면 스크린샷 확인을 건너뛰고 안내(A-06)로 간다', async () => {
+it('스크린샷 실패에서 뒤로 가면 스크린샷 확인(A-07)으로 간다', async () => {
   await renderRouter(
     {
       'register/_layout': () => <Stack />,
@@ -47,5 +47,5 @@ it('스크린샷 실패에서 뒤로 가면 스크린샷 확인을 건너뛰고 
   const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
   await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
 
-  expect(screen).toHavePathname('/register/screenshot');
+  expect(screen).toHavePathname('/register/images');
 });

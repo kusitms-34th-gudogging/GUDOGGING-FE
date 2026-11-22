@@ -36,7 +36,11 @@ const renderAnalyze = async (source: 'screenshot' | 'gmail' = 'screenshot') => {
       'register/gmail': () => null,
       'register/images': () => null,
       'register/analyze': () => (
-        <RegisterAnalyzeScreen source={source} images={['file:///a.png', 'file:///b.jpg']} />
+        <RegisterAnalyzeScreen
+          source={source}
+          images={['file:///a.png', 'file:///b.jpg']}
+          authCode="google-auth-code"
+        />
       ),
       'register/failed': () => null,
       'register/found': () => null,
@@ -127,7 +131,7 @@ it.each([
   ['찾은 구독이 없으면', { candidates: [] }],
   ['분석에 실패하면', apiError(400)],
 ])(
-  '%s 실패 화면으로 가고, 그 아래가 안내(A-06)라 스와이프로 돌아가도 A-06이다',
+  '%s 실패 화면으로 가고, 그 아래가 스크린샷 확인(A-07)이라 스와이프로 돌아가도 A-07이다',
   async (_, response) => {
     mockApi({ [SCREENSHOT]: response });
     await renderAnalyze();
@@ -138,11 +142,11 @@ it.each([
 
     // 스와이프 뒤로가기 = 스택에서 한 칸 뒤로
     await act(() => router.back());
-    expect(screen).toHavePathname('/register/screenshot');
+    expect(screen).toHavePathname('/register/images');
   },
 );
 
-it('Gmail은 연동한 뒤 결제 메일을 분석하고, 출처를 Gmail로 저장한다', async () => {
+it('Gmail은 A-11에서 받은 인증 코드로 연동한 뒤 결제 메일을 분석하고, 출처를 Gmail로 저장한다', async () => {
   mockApi({
     'POST /api/v1/gmail/connection': { status: 'CONNECTED', connected: true, email: 'a@gmail.com' },
     'POST /api/v1/gmail/analyses': { candidates: [candidate()] },
@@ -156,5 +160,6 @@ it('Gmail은 연동한 뒤 결제 메일을 분석하고, 출처를 Gmail로 저
     '/api/v1/gmail/connection',
     '/api/v1/gmail/analyses',
   ]);
+  expect(JSON.parse(String(calls()[0][1]?.body))).toEqual({ authCode: 'google-auth-code' });
   expect(useRegisterDraft.getState().foundSource).toBe('GMAIL');
 });
