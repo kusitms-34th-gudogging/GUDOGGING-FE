@@ -16,6 +16,7 @@ import { Text } from '@/components/common/Text';
 import { TextArea } from '@/components/common/TextArea';
 import { TopBar } from '@/components/common/TopBar';
 import { CHECKUP_CATEGORIES, toCheckupCategory } from '@/constants/checkup';
+import { serviceLogo } from '@/constants/services';
 import { CANCEL_REASON_CODES, useDecideCheckup } from '@/hooks/useDecideCheckup';
 import { useSubscription } from '@/hooks/useSubscriptions';
 import { fillName } from '@/utils/josa';
@@ -93,7 +94,7 @@ export const CheckupCancelScreen = ({ id, checkupId }: CheckupCancelScreenProps)
       >
         <View className="flex-row items-center gap-inline-md">
           <Image
-            source={require('@/assets/images/logo_placeholder.png')}
+            source={serviceLogo(subscription.logoUrl)}
             className="size-logo-card rounded-full"
           />
           <Text className="text-text-primary text-body2-semibold">{name}</Text>
