@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import type { AppNotification, NotificationKind } from '@/constants/notification';
+import { serviceLogo } from '@/constants/services';
 import { request } from '@/lib/request';
 
 type ApiNotificationType = 'CHECK_REMINDER' | 'BILLING_REMINDER' | 'CANCEL_CONFIRM';
@@ -25,9 +26,6 @@ const KIND: Record<ApiNotificationType, NotificationKind> = {
   CANCEL_CONFIRM: 'cancel-confirm',
 };
 
-// shortcut: 목서버 로고 URL이 실제 이미지가 아니라 placeholder, 실제 로고 URL이 오면 { uri: logoUrl }로
-const LOGO = require('@/assets/images/logo_placeholder.png');
-
 export const notificationKeys = {
   all: ['notifications'] as const,
 };
@@ -44,7 +42,7 @@ export const useNotifications = () =>
         subscriptionId: n.subscriptionId,
         title: n.title,
         description: n.body,
-        logo: LOGO,
+        logo: serviceLogo(n.logoUrl ?? undefined),
         // 시간대 없는 ISO라 기기 시간대(한국)로 읽힘
         receivedAt: new Date(n.sentAt),
         read: n.read,
