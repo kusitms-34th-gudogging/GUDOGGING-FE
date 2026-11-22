@@ -20,6 +20,7 @@ const PROXY_PATHS = [
   '/api/v1/subscriptions/:subscriptionId/steady',
   '/api/v1/subscriptions/:subscriptionId/cancel-guide',
   '/api/v1/subscriptions/:subscriptionId/cancel',
+  '/api/v1/subscriptions/:subscriptionId/reactivate',
   '/api/v1/subscriptions',
 ];
 
