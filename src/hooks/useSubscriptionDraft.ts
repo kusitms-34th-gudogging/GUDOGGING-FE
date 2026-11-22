@@ -98,18 +98,16 @@ const draftEntries = (
 ];
 
 // 머문 화면 → 명세 lastStep·editingItemIndex. 입력 중인 항목이 임시저장에 없으면 그 목록 화면(A-04)으로
+// editingItemIndex는 INPUT_SUBSCRIPTION일 때만 보냄. 다른 단계에 있으면 서버가 40001 (명세)
 export const toDraftStep = (
   lastStep: RegisterStep | undefined,
   editingId: string | undefined,
   ids: string[],
-) => {
-  if (lastStep !== 'INPUT_SUBSCRIPTION')
-    return { lastStep: lastStep ?? 'SELECT_SERVICES', editingItemIndex: null };
+): { lastStep: RegisterStep; editingItemIndex?: number | null } => {
+  if (lastStep !== 'INPUT_SUBSCRIPTION') return { lastStep: lastStep ?? 'SELECT_SERVICES' };
   if (editingId === undefined) return { lastStep, editingItemIndex: null };
   const index = ids.indexOf(editingId);
-  return index >= 0
-    ? { lastStep, editingItemIndex: index }
-    : { lastStep: 'CONFIRM_SUBSCRIPTIONS' as const, editingItemIndex: null };
+  return index >= 0 ? { lastStep, editingItemIndex: index } : { lastStep: 'CONFIRM_SUBSCRIPTIONS' };
 };
 
 // 서버 임시저장 → 기기 저장소. 결제 정보를 다 채운 항목만 결제 정보로 (A-03은 일부만 저장하지 않음)

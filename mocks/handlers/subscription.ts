@@ -79,9 +79,9 @@ export const subscriptionHandlers = [
     const { items, lastStep, editingItemIndex } = (await request.json()) as {
       items: unknown[];
       lastStep: string;
-      editingItemIndex: number | null;
+      editingItemIndex?: number | null;
     };
-    db.draft = { savedAt: nowIso(), lastStep, editingItemIndex, items };
+    db.draft = { savedAt: nowIso(), lastStep, editingItemIndex: editingItemIndex ?? null, items };
     return ok('임시저장했습니다.', { savedAt: db.draft.savedAt });
   }),
   http.delete('/api/v1/subscriptions/drafts', () => {
