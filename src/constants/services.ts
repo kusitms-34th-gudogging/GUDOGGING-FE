@@ -26,6 +26,8 @@ export interface FoundSubscription {
   // 사전 등록 서비스로 인식됐으면 그 서비스 id
   serviceId?: string;
   name: string;
+  // 사전 등록 서비스 로고. 없으면 기본 이미지
+  logoUrl?: string;
   payment: Partial<PaymentInfo>;
   // 읽지 못했거나 불확실한 값이 있어 확인 필요
   needsReview?: boolean;

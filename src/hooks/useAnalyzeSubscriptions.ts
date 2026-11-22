@@ -17,6 +17,7 @@ import { parseDate } from '@/utils/date';
 interface Candidate {
   serviceId: string | null;
   serviceName: string;
+  logoUrl: string | null;
   category: ApiCategory;
   amount: number | null;
   billingCycleValue: number | null;
@@ -33,6 +34,7 @@ const toFound = (c: Candidate, i: number): FoundSubscription => ({
   id: c.serviceId ? `found-${i}` : `custom-found-${i}`,
   serviceId: c.serviceId ?? undefined,
   name: c.serviceName,
+  logoUrl: c.logoUrl ?? undefined,
   payment: {
     category: CATEGORY_LABEL[c.category],
     amount: c.amount ?? undefined,

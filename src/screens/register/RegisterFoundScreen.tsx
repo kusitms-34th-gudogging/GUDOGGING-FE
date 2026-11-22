@@ -41,6 +41,8 @@ export const RegisterFoundScreen = () => {
         id: f.id,
         serviceId: name === f.name ? f.serviceId : undefined,
         name,
+        // 이름을 바꿨으면 다른 서비스로 보므로 로고도 기본 이미지
+        logoUrl: name === f.name ? f.logoUrl : undefined,
         payment: readyPayment(
           payments[f.id] ?? (f.needsReview ? undefined : (f.payment as PaymentInfo)),
         ),
@@ -51,6 +53,7 @@ export const RegisterFoundScreen = () => {
       // 직접 입력(custom-)은 사전 등록 서비스가 아님
       serviceId: s.id.startsWith('custom-') ? undefined : s.id,
       name: s.name,
+      logoUrl: s.logoUrl,
       payment: readyPayment(payments[s.id]),
     })),
   ];
@@ -93,6 +96,7 @@ export const RegisterFoundScreen = () => {
                     <PaymentListItem
                       key={f.id}
                       name={f.name}
+                      logoUrl={f.logoUrl}
                       // 스크린샷은 서비스명도 확인 대상이라 '구독 정보', Gmail은 '결제 정보' (설계서 A-09·A-13)
                       emptySubtitle={
                         foundSource === 'GMAIL' ? '결제 정보 입력 필요' : '구독 정보 입력 필요'
@@ -115,6 +119,7 @@ export const RegisterFoundScreen = () => {
                 <PaymentListItem
                   key={f.id}
                   name={f.name}
+                  logoUrl={f.logoUrl}
                   payment={f.payment}
                   emptySubtitle=""
                   onEdit={() => edit(f.id)}
