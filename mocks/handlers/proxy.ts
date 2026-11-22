@@ -3,7 +3,15 @@ import { http } from 'msw';
 // 서버에 나온 API만 개발 서버로 넘기고 나머지는 목 응답. `pnpm mock:dev`일 때만 등록 (handlers.ts)
 // API가 나오면 경로를 여기 추가하고, 다 나오면 앱 EXPO_PUBLIC_API_URL을 개발 서버로 바꾸고 mocks/ 삭제
 // 로그아웃(/auth/logout)은 아직 개발 서버에 없어 목 응답
-const PROXY_PATHS = ['/api/v1/auth/apple', '/api/v1/auth/google', '/api/v1/auth/reissue'];
+// /subscriptions는 등록(POST)과 같은 경로라 구독 목록 조회(GET)·삭제(DELETE)도 개발 서버로 감
+const PROXY_PATHS = [
+  '/api/v1/auth/apple',
+  '/api/v1/auth/google',
+  '/api/v1/auth/reissue',
+  '/api/v1/services',
+  '/api/v1/subscriptions/drafts',
+  '/api/v1/subscriptions',
+];
 
 const upstream = process.env.DEV_API_URL;
 
@@ -21,6 +29,8 @@ export const proxyHandlers = upstream
           headers,
           body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.arrayBuffer(),
         });
+        // 개발 서버로 넘긴 요청을 터미널에서 확인 (목 응답은 안 찍힘)
+        console.log(`[dev] ${request.method} ${pathname}${search} → ${res.status}`);
         const resHeaders = new Headers(res.headers);
         DROP_HEADERS.forEach((name) => resHeaders.delete(name));
         return new Response(await res.arrayBuffer(), { status: res.status, headers: resHeaders });
