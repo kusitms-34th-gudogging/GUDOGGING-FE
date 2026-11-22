@@ -107,7 +107,7 @@ export const MypageScreen = () => {
             <Text className="text-text-secondary text-caption1-regular">{me?.loginProvider}</Text>
           </View>
         </View>
-        <View className="w-full gap-stack-md">
+        <View className="w-full gap-screen-x">
           {sections.map((section, index) => (
             <Fragment key={section.title}>
               {index > 0 && <View className="h-[0.6px] bg-border-subtle" />}
