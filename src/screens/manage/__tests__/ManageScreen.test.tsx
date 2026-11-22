@@ -1,5 +1,5 @@
 import { act, userEvent } from '@testing-library/react-native';
-import { Slot } from 'expo-router';
+import { router, Slot, Stack } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
 import SubscriptionDetailRoute from '@/app/manage/detail/[id]';
@@ -87,10 +87,17 @@ const ToastLayout = () => (
   </ToastProvider>
 );
 
-const renderManage = async (detail = false) => {
+// 다른 화면에 갔다 와도 구독 관리가 뒤에 남아 있는 앱 구조 (Slot은 화면을 갈아 끼움)
+const StackToastLayout = () => (
+  <ToastProvider>
+    <Stack />
+  </ToastProvider>
+);
+
+const renderManage = async (detail = false, layout = ToastLayout) => {
   await renderRouter(
     {
-      _layout: ToastLayout,
+      _layout: layout,
       index: () => <ManageScreen />,
       'register/index': () => null,
       'manage/detail/[id]': detail ? SubscriptionDetailRoute : () => null,
@@ -210,6 +217,32 @@ describe('ManageScreen', () => {
     expect(screen.queryByText('1개 선택')).not.toBeOnTheScreen();
   });
 
+  it('삭제 선택 중엔 + 버튼을 숨긴다', async () => {
+    mockLists();
+    const user = await renderManage();
+    expect(await screen.findByRole('button', { name: '구독 추가' })).toBeOnTheScreen();
+
+    await user.press(screen.getByRole('button', { name: '더보기' }));
+    await user.press(screen.getByRole('menuitem', { name: '삭제' }));
+
+    expect(screen.queryByRole('button', { name: '구독 추가' })).not.toBeOnTheScreen();
+  });
+
+  it('삭제 선택 중 다른 화면에 갔다 오면 선택을 풀고 선택 모드를 끝낸다', async () => {
+    mockLists();
+    const user = await renderManage(false, StackToastLayout);
+    await user.press(await screen.findByRole('button', { name: '더보기' }));
+    await user.press(screen.getByRole('menuitem', { name: '삭제' }));
+    await user.press(screen.getByText('빠른 결제'));
+    expect(screen.getByText('1개 선택')).toBeOnTheScreen();
+
+    await act(() => router.push('/register'));
+    await act(() => router.back());
+
+    expect(screen.queryByText('1개 선택')).not.toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: '구독 추가' })).toBeOnTheScreen();
+  });
+
   it('삭제에 실패하면 실패 안내를 보여 주고 선택 모드에 남는다', async () => {
     mockLists({ 'DELETE /api/v1/subscriptions': apiError(404) });
     const user = await renderManage();
@@ -220,7 +253,7 @@ describe('ManageScreen', () => {
     await user.press(screen.getByRole('button', { name: '선택한 구독 삭제' }));
     await user.press(screen.getByRole('button', { name: '삭제하기' }));
 
-    expect(await screen.findByText('구독을 삭제하지 못했어요')).toBeOnTheScreen();
+    expect(await screen.findByText('삭제하지 못했어요')).toBeOnTheScreen();
     expect(screen.getByText('1개 선택')).toBeOnTheScreen();
   });
 
