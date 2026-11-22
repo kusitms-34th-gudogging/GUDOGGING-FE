@@ -249,6 +249,8 @@ export const useCalendarPaymentDetail = (id: string, date: Date) => {
       }),
     select: (s): CalendarPaymentDetail => {
       const c = s.latestCheckup;
+      // 서버는 해지일 당일도 구독 중으로 주지만, 해지한 날을 눌렀을 때 구독 중으로 보이면 안 돼서 해지일부터 종료로 봄
+      const endedOnDate = s.canceledAt !== null && s.canceledAt <= baseDate;
       return {
         id: s.subscriptionId,
         name: s.serviceName,
@@ -260,7 +262,7 @@ export const useCalendarPaymentDetail = (id: string, date: Date) => {
         categoryLabel: CATEGORY_LABEL[s.category],
         paidAt: PAID_AT_OF[s.paymentMethod],
         startedAt: parseDate(s.startedAt),
-        nextDate: s.nextBillingDate ? parseDate(s.nextBillingDate) : undefined,
+        nextDate: s.nextBillingDate && !endedOnDate ? parseDate(s.nextBillingDate) : undefined,
         canceled: s.canceledAt !== null,
         lastCheckup: c
           ? {

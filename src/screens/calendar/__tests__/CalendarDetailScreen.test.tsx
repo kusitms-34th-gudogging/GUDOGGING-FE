@@ -137,6 +137,19 @@ it('구독 중이면 편집으로 구독 관리 상세와 같은 정보 편집 �
   expect(screen).toHaveSearchParams({ edit: 'netflix' });
 });
 
+it('해지일 당일을 누르면 서버가 구독 중으로 줘도 구독 종료로 보여준다', async () => {
+  // 고른 날짜 2026-11-17 = 해지일, 서버는 당일까지 ACTIVE와 그날 결제일을 줌
+  await renderDetail({
+    'GET /api/v1/subscriptions/netflix': detail({
+      canceledAt: '2026-11-17',
+      nextBillingDate: '2026-11-17',
+    }),
+  });
+
+  expect(screen.getByText('구독 종료')).toBeOnTheScreen();
+  expect(screen.queryByText('다음 결제일')).not.toBeOnTheScreen();
+});
+
 it('해지일 이전 날짜로 들어와 구독 중으로 보여도 이미 해지했으면 더보기에 삭제만 있다', async () => {
   const user = await renderDetail({
     'GET /api/v1/subscriptions/netflix': detail({ canceledAt: '2026-11-23' }),
