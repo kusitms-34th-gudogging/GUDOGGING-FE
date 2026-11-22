@@ -37,4 +37,5 @@ export const ServiceHeader = ({
   </View>
 );
 
-export const Divider = () => <View className="h-px bg-border-subtle" />;
+// Figma 구분선 0.6 (토큰 없음, border 최소 1)
+export const Divider = () => <View className="h-[0.6px] bg-border-subtle" />;

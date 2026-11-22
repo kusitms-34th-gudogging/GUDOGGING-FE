@@ -96,7 +96,7 @@ export const EndedSubscriptionDetailScreen = ({
               subText={`${dotDate(s.startedAt)} ~ ${dotDate(s.cancelledAt)}`}
             />
           </View>
-          <View className="gap-stack-md">
+          <View className="gap-screen-x">
             <View className="gap-stack-sm px-screen-x">
               <Text accessibilityRole="header" className="text-text-primary text-body1-semibold">
                 결제

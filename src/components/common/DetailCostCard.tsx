@@ -15,11 +15,14 @@ interface DetailCostCardProps {
   className?: string;
 }
 
-// Figma 안쪽 그림자 (inset 0 3 3, 8%). NativeWind shadow 클래스는 inset을 버려서 RN boxShadow로 (토큰 없음)
-// mono의 #8C8C8C는 팔레트에 없는 값이라 그대로
+// Figma corner smoothing 80% → iOS 연속 곡선 (켜고 끄기만). NativeWind 클래스가 없어 style로
+const SMOOTH_CORNER = { borderCurve: 'continuous' } as const;
+
+// Figma 안쪽 그림자. NativeWind shadow 클래스는 inset을 버려서 RN boxShadow로 (토큰 없음)
+// brand(C-03)는 inset 0 0 3 red/400 16%, mono(M-05)는 inset 0 0 3 #8C8C8C 16% (팔레트에 없는 값이라 그대로)
 const INNER_SHADOW = {
-  brand: { boxShadow: `0px 3px 3px 0px ${colors.red[400]}14 inset` },
-  mono: { boxShadow: '0px 3px 3px 0px #8C8C8C14 inset' },
+  brand: { ...SMOOTH_CORNER, boxShadow: `0px 0px 3px 0px ${colors.red[400]}29 inset` },
+  mono: { ...SMOOTH_CORNER, boxShadow: '0px 0px 3px 0px #8C8C8C29 inset' },
 };
 
 // 위쪽 원형 그라데이션 [offset, 색, 투명도]
@@ -49,7 +52,11 @@ export const DetailCostCard = ({
 
   return (
     <View
-      className={cn('h-[105px] justify-center overflow-hidden rounded-card px-screen-x', className)}
+      style={SMOOTH_CORNER}
+      className={cn(
+        'h-[105px] justify-center overflow-hidden rounded-sheet px-screen-x',
+        className,
+      )}
     >
       <View className="absolute inset-0">
         <Svg width="100%" height="100%" viewBox="0 0 335 105" preserveAspectRatio="none">
@@ -86,7 +93,7 @@ export const DetailCostCard = ({
       <View
         pointerEvents="none"
         style={INNER_SHADOW[tone]}
-        className="absolute inset-0 rounded-card"
+        className="absolute inset-0 rounded-sheet"
       />
       <View className="gap-s2">
         <View>
@@ -95,14 +102,7 @@ export const DetailCostCard = ({
             {amount}
           </Text>
         </View>
-        {/* mono는 어두운 오른쪽 아래와 겹쳐서 흰 글자 */}
-        <Text
-          numberOfLines={1}
-          className={cn(
-            'text-caption1-regular',
-            tone === 'brand' ? 'text-text-primary' : 'text-text-on-brand',
-          )}
-        >
+        <Text numberOfLines={1} className="text-text-primary text-caption1-regular">
           {subText}
         </Text>
       </View>

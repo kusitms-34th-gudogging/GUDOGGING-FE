@@ -132,7 +132,7 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
             subText={`연 환산 ${formatWon(p.yearlyAmount)}`}
           />
         </View>
-        <View className="gap-stack-md">
+        <View className="gap-screen-x">
           <View className="gap-stack-sm px-screen-x">
             <Text accessibilityRole="header" className="text-text-primary text-body1-semibold">
               결제
