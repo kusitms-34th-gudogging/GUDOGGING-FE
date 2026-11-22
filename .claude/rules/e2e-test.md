@@ -118,7 +118,7 @@ appId: com.subscribers.gudogging
 
 - **지금은 iOS만** (프로젝트 결정)
 - 준비 (한 번): Java 17 (`brew install openjdk@17` + PATH), Maestro CLI (`curl -Ls "https://get.maestro.mobile.dev" | bash`). 앱이 아니라 Mac에 설치
-- 빌드 (처음, 앱 코드가 바뀌었을 때): `EXPO_PUBLIC_API_URL=http://localhost:9090 npx expo run:ios --configuration Release --no-bundler`
+- 빌드 (처음, 앱 코드가 바뀌었을 때): `EXPO_PUBLIC_E2E=1 EXPO_PUBLIC_API_URL=http://localhost:9090 npx expo run:ios --configuration Release --no-bundler`
   - `ios/`가 없으면 prebuild가 돌며 `package.json` `scripts`를 바꿈 → 커밋하지 말고 되돌림 (`.claude/docs/deploy.md`)
 - 실행: `E2E=1 pnpm mock`을 띄워 두고 `sh scripts/e2e.sh` (플로우마다 초기화 후 `maestro test`, 실패해도 끝까지 돌고 마지막에 실패한 플로우를 모아 보여 줌. 하나만 돌릴 땐 `sh scripts/e2e.sh .maestro/{도메인}-{여정}.yml`)
   - 켜진 시뮬레이터가 하나여야 함 (여러 대면 Maestro가 아무거나 고름). E2E 도중엔 같은 시뮬레이터에서 Expo Go·개발 서버를 쓰지 않음
