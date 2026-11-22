@@ -136,7 +136,7 @@ export interface CheckupRecommendation {
   // 포함 내용 (예: 넷플릭스 + 유튜브 프리미엄)
   subtitle: string;
   // 제공사 유형 · 핵심 조건
-  tags: [string, string];
+  tags: string[];
   // FIXED '월 N원'(확정 절약) · MAX '최대 N원'(카드) · BENEFIT 큰 숫자 대신 tags[1](통신 요금제)
   priceType: 'FIXED' | 'MAX' | 'BENEFIT';
   // 월 절감액. BENEFIT이면 null

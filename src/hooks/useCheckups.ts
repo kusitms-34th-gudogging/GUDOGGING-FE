@@ -130,7 +130,8 @@ export const useCheckupResult = (checkupId: string) =>
                 id: b.name,
                 title: b.name,
                 subtitle: b.includes,
-                tags: [b.tags[0] ?? '', b.tags[1] ?? ''],
+                // 핵심 혜택이 빈 값으로 오기도 함 → 빈 태그는 그리지 않음
+                tags: b.tags.filter(Boolean),
                 priceType: b.priceType,
                 saving: b.monthlySaving,
                 rate: b.savingRate,

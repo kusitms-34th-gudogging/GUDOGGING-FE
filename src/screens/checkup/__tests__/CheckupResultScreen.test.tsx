@@ -98,6 +98,15 @@ describe('CheckupResultScreen', () => {
     expect(screen.queryByText(/추천 \d+개/)).not.toBeOnTheScreen();
   });
 
+  it('빈 태그는 그리지 않는다', async () => {
+    await renderResult({
+      'GET /api/v1/checkups/c1': result({ bundles: [{ ...bundle, tags: ['KT 구독', ''] }] }),
+    });
+
+    expect(screen.getByText('KT 구독')).toBeOnTheScreen();
+    expect(screen.queryByText('')).not.toBeOnTheScreen();
+  });
+
   it('통신 요금제(BENEFIT)는 금액 대신 핵심 혜택과 요금제 가격을 보여준다', async () => {
     await renderResult({
       'GET /api/v1/checkups/c1': result({
