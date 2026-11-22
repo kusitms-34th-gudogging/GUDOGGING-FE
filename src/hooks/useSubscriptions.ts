@@ -108,6 +108,8 @@ export const useSubscriptions = (status: SubscriptionStatus, sort?: Subscription
       subscriptions: data.subscriptions.map((s) => ({
         id: s.subscriptionId,
         name: s.serviceName,
+        // null이면 기본 이미지 (명세)
+        logoUrl: s.logoUrl ?? undefined,
         amount: s.amount,
         monthlyAmount: s.monthlyAmount,
         cycle: s.billingCycleValue,

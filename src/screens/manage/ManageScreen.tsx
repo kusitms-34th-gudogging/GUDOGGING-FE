@@ -14,14 +14,13 @@ import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
+import { serviceLogo } from '@/constants/services';
 import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
 import { useRowSnap } from '@/hooks/useRowSnap';
 import { type SubscriptionSort, useSubscriptions } from '@/hooks/useSubscriptions';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/cn';
 import { formatWon } from '@/utils/formatPayment';
-
-const LOGO = require('@/assets/images/logo_placeholder.png');
 
 type Tab = 'ACTIVE' | 'ENDED';
 
@@ -214,7 +213,7 @@ export const ManageScreen = () => {
                           title={s.name}
                           subtitle={s.subtitle}
                           showSubtitle
-                          logo={LOGO}
+                          logo={serviceLogo(s.logoUrl)}
                           showLogo
                           cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
                           showCost
@@ -229,7 +228,7 @@ export const ManageScreen = () => {
                         title={s.name}
                         subtitle={s.subtitle}
                         showSubtitle
-                        logo={LOGO}
+                        logo={serviceLogo(s.logoUrl)}
                         showLogo
                         cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
                         showCost
