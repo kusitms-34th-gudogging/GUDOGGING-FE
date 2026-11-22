@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { Cta } from '@/components/common/Cta';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
@@ -14,6 +15,7 @@ import {
   useRegisterServices,
   useRegisterStep,
 } from '@/hooks/useRegisterDraft';
+import { useToast } from '@/hooks/useToast';
 
 export const RegisterSelectedServiceScreen = () => {
   useRegisterStep('CONFIRM_SUBSCRIPTIONS');
@@ -30,8 +32,9 @@ export const RegisterSelectedServiceScreen = () => {
   );
   const allEntered = services.length > 0 && services.every((s) => payments[s.id]);
   const create = useCreateSubscriptions();
+  const { show } = useToast();
   // 직접 입력(custom-)은 사전 등록 서비스 id 없이 이름으로
-  // shortcut: 실패 안내(중복 등록 등)는 디자인에 없어 화면에 남음, 디자인·에러 코드 정해지면 안내 추가
+  // 실패하면(이미 구독 중 등) 하나도 저장되지 않음. 입력은 그대로 두고 안내 (설계서: 실패 시 입력 유지)
   const register = () =>
     create.mutate(
       {
@@ -44,6 +47,7 @@ export const RegisterSelectedServiceScreen = () => {
       },
       {
         onSuccess: () => router.push('/register/done'),
+        onError: () => show({ type: 'error', message: '구독 등록에 실패했어요' }),
       },
     );
 
@@ -86,6 +90,8 @@ export const RegisterSelectedServiceScreen = () => {
             onPress={() => router.dismissTo('/register/select')}
           />
         </FadeScrollView>
+        {/* 등록 실패 토스트는 CTA 위 8 (Figma A-07 에러처리와 통일) */}
+        <ToastOutlet className="bottom-0 pb-stack-sm" />
       </View>
       <View className="pb-safe px-screen-x">
         {/* 모든 서비스 결제 정보 입력이 완료되면 활성화. 등록 성공 후 완료 화면으로 */}

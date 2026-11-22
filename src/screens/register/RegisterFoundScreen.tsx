@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Cta } from '@/components/common/Cta';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
@@ -16,12 +17,14 @@ import {
   useRegisterDraft,
   useRegisterServices,
 } from '@/hooks/useRegisterDraft';
+import { useToast } from '@/hooks/useToast';
 
 export const RegisterFoundScreen = () => {
   const payments = useRegisterDraft((s) => s.payments);
   const found = useRegisterDraft((s) => s.found);
   const foundSource = useRegisterDraft((s) => s.foundSource);
   const create = useCreateSubscriptions();
+  const { show } = useToast();
   const foundChecked = useRegisterDraft((s) => s.foundChecked);
   const setFoundChecked = useRegisterDraft((s) => s.setFoundChecked);
   const checked = new Set(foundChecked);
@@ -124,10 +127,12 @@ export const RegisterFoundScreen = () => {
             </View>
           </View>
         </FadeScrollView>
+        {/* 등록 실패 토스트는 CTA 위 8 (Figma A-07 에러처리와 통일) */}
+        <ToastOutlet className="bottom-0 pb-stack-sm" />
       </View>
       <View className="pb-safe px-screen-x">
         {/* 등록 가능에서 체크한 구독이 있으면 활성화 (등록 가능은 결제 정보가 다 있음). 등록 성공 후 완료 화면으로
-            shortcut: 실패 안내(중복 등록 등)는 디자인에 없어 화면에 남음, 디자인·에러 코드 정해지면 안내 추가 */}
+            실패하면 입력은 그대로 두고 안내 */}
         <Cta
           testID="register-found-submit"
           label="선택한 구독 등록하기"
@@ -145,6 +150,7 @@ export const RegisterFoundScreen = () => {
               {
                 // 완료 화면은 등록 응답으로 그림
                 onSuccess: () => router.push('/register/done'),
+                onError: () => show({ type: 'error', message: '구독 등록에 실패했어요' }),
               },
             )
           }
