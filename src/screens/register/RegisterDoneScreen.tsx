@@ -9,6 +9,7 @@ import { ListItem } from '@/components/common/ListItem';
 import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
+import { serviceLogo } from '@/constants/services';
 import { getRegisteredServices, useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { useServices } from '@/hooks/useServices';
 import { formatPaymentSummary, formatWon } from '@/utils/formatPayment';
@@ -103,7 +104,7 @@ export const RegisterDoneScreen = ({ serviceIds }: RegisterDoneScreenProps) => {
                   title={s.name}
                   subtitle={payment && formatPaymentSummary(payment)}
                   showSubtitle
-                  logo={require('@/assets/images/logo_placeholder.png')}
+                  logo={serviceLogo(s.logoUrl)}
                   showLogo
                   cost={payment && formatWon(payment.amount)}
                   showCost

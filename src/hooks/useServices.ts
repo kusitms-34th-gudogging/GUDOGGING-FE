@@ -9,7 +9,7 @@ interface ServicesResponse {
     serviceId: string;
     serviceName: string;
     category: ApiCategory;
-    logoUrl: string;
+    logoUrl: string | null;
     defaultAmount: number | null;
   }[];
 }
@@ -36,5 +36,6 @@ export const useServices = (keyword = '') =>
         name: s.serviceName,
         category: CATEGORY_LABEL[s.category],
         defaultAmount: s.defaultAmount ?? undefined,
+        logoUrl: s.logoUrl ?? undefined,
       })),
   });

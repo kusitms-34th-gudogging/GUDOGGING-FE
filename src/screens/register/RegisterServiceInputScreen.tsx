@@ -15,7 +15,13 @@ import { TextField } from '@/components/common/TextField';
 import { TopBar } from '@/components/common/TopBar';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import type { SubscriptionDetail } from '@/constants/manage';
-import { type FoundSubscription, PAID_AT, type PaidAt, type Service } from '@/constants/services';
+import {
+  type FoundSubscription,
+  PAID_AT,
+  type PaidAt,
+  type Service,
+  serviceLogo,
+} from '@/constants/services';
 import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
 import { useReactivateSubscription } from '@/hooks/useReactivateSubscription';
 import { useRegisterDraft, useRegisterStep } from '@/hooks/useRegisterDraft';
@@ -176,7 +182,7 @@ const ServiceInputForm = ({
             {headerName && (
               <View className="flex-row items-center gap-inline-sm">
                 <Image
-                  source={require('@/assets/images/logo_placeholder.png')}
+                  source={serviceLogo(existing ? undefined : service?.logoUrl)}
                   className="size-logo-card rounded-full"
                 />
                 <Text className="text-text-primary text-body2-semibold">{headerName}</Text>

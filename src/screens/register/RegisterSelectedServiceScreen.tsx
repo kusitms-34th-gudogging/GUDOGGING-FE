@@ -66,6 +66,7 @@ export const RegisterSelectedServiceScreen = () => {
               key={s.id}
               testID={`register-payment-${s.id}`}
               name={s.name}
+              logoUrl={s.logoUrl}
               payment={payments[s.id]}
               emptySubtitle="결제 정보 입력 필요"
               onEdit={() => router.push({ pathname: '/register/input', params: { id: s.id } })}

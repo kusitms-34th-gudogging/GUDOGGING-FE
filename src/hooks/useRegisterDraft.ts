@@ -84,7 +84,7 @@ export const useRegisterServices = (serviceIds: string[]) => {
     ...services.filter((s) => serviceIds.includes(s.id)),
     ...Object.entries(payments)
       .filter(([id]) => id.startsWith('custom-') && !found.some((f) => f.id === id))
-      .map(([id, p]) => ({ id, name: p.name ?? '' })),
+      .map(([id, p]): Pick<Service, 'id' | 'name' | 'logoUrl'> => ({ id, name: p.name ?? '' })),
   ];
 };
 
@@ -104,10 +104,10 @@ export const getRegisteredServices = (
   payments: Record<string, PaymentInfo>,
   services: Service[],
 ) =>
-  ids.map((id) => ({
-    id,
-    name: payments[id]?.name ?? services.find((s) => s.id === id)?.name ?? '',
-  }));
+  ids.map((id) => {
+    const service = services.find((s) => s.id === id);
+    return { id, name: payments[id]?.name ?? service?.name ?? '', logoUrl: service?.logoUrl };
+  });
 
 // 직접 등록 화면이 보일 때 머문 화면으로 기록 (서버 임시저장 lastStep). step이 없으면 기록 안 함
 // persist의 set은 저장 Promise를 돌려줘서 그대로 반환하면 effect 정리 함수 자리에 Promise가 들어감 → 블록으로 감쌈

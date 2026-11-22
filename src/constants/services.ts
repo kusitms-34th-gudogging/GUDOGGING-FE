@@ -5,7 +5,12 @@ export interface Service {
   category: string;
   // 사전 등록 요금제 기본 금액 (구독 정보 입력의 결제 금액 기본값)
   defaultAmount?: number;
+  logoUrl?: string;
 }
+
+// 서비스 로고. 없으면 기본 이미지 (명세: logoUrl이 null이면 기본 이미지)
+export const serviceLogo = (logoUrl?: string) =>
+  logoUrl ? { uri: logoUrl } : require('@/assets/images/logo_placeholder.png');
 
 export const PAID_AT = [
   { value: 'web', label: '웹·직접 결제' },
