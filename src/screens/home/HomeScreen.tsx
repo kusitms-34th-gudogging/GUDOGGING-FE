@@ -70,25 +70,30 @@ export const HomeScreen = () => {
           <Text accessibilityRole="header" className="px-s2 text-text-primary text-body1-bold">
             내 구독 정보
           </Text>
+          {/* 카드를 틀로 감쌈: flex-1을 카드에 바로 주면 패딩이 큰 CostCard(20)가 ServiceCard(16)보다 넓어짐 */}
           <View className="flex-row gap-[15px]">
-            <CostCard
-              label={`${today.getMonth() + 1}월 결제 예정`}
-              amount={formatWon(summary.expectedAmount)}
-              yearAmount={`연 ${formatWon(summary.yearlyAmount)}`}
-              className="flex-1"
-            />
-            <ServiceCard
-              label={`${summary.subscriptionCount}개 구독 중이에요`}
-              // 구독이 있으면 개수만큼(최대 10) 둥둥. 서버 logos엔 로고 없는 구독(직접 입력 등)이 빠져 있어 그 자리는 기본 이미지
-              logos={Array.from(
-                { length: Math.min(Math.max(summary.subscriptionCount, summary.logos.length), 10) },
-                (_, i) => ({
-                  id: `${i}-${summary.logos[i] ?? ''}`,
-                  logo: serviceLogo(summary.logos[i]),
-                }),
-              )}
-              className="flex-1"
-            />
+            <View className="flex-1">
+              <CostCard
+                label={`${today.getMonth() + 1}월 결제 예정`}
+                amount={formatWon(summary.expectedAmount)}
+                yearAmount={`연 ${formatWon(summary.yearlyAmount)}`}
+              />
+            </View>
+            <View className="flex-1">
+              <ServiceCard
+                label={`${summary.subscriptionCount}개 구독 중이에요`}
+                // 구독이 있으면 개수만큼(최대 10) 둥둥. 서버 logos엔 로고 없는 구독(직접 입력 등)이 빠져 있어 그 자리는 기본 이미지
+                logos={Array.from(
+                  {
+                    length: Math.min(Math.max(summary.subscriptionCount, summary.logos.length), 10),
+                  },
+                  (_, i) => ({
+                    id: `${i}-${summary.logos[i] ?? ''}`,
+                    logo: serviceLogo(summary.logos[i]),
+                  }),
+                )}
+              />
+            </View>
           </View>
         </View>
         {isEmpty ? (

@@ -101,8 +101,11 @@ const LAYOUTS: [number, number][][] = [
 ];
 // 제자리에서 아주 조금 떠다님 (위아래 2px)
 const FLOAT_PX = 2;
-// Figma 카드 안쪽 그림자. NativeWind shadow 클래스는 inset을 버려서 RN boxShadow로 (토큰 없음)
-const CARD_INSET_SHADOW = { boxShadow: '0px 3px 3px 0px rgba(183, 183, 183, 0.08) inset' };
+// Figma 카드 안쪽 그림자 + corner smoothing 80%(iOS 연속 곡선, 켜고 끄기만). NativeWind 클래스가 없어 style로 (토큰 없음)
+const CARD_STYLE = {
+  borderCurve: 'continuous',
+  boxShadow: '0px 0px 2px 0px rgba(179, 179, 179, 0.16) inset',
+} as const;
 
 // 받은 순서(서버가 결제일 가까운 순으로 줌)대로 최대 10개, 앞일수록 크게. 반환 x·y는 로고 왼쪽 위
 export const placeLogos = (logos: ServiceCardLogo[]) => {
@@ -179,9 +182,9 @@ export const ServiceCard = ({ label, logos: items, onPress, className }: Service
       accessibilityLabel={label}
       disabled={!onPress}
       onPress={onPress}
-      style={CARD_INSET_SHADOW}
+      style={CARD_STYLE}
       className={cn(
-        'aspect-square items-center justify-end gap-stack-md overflow-hidden rounded-card bg-bg-subtle p-inset-md',
+        'aspect-square items-center justify-end gap-stack-md overflow-hidden rounded-[32px] bg-bg-subtle p-inset-md',
         className,
       )}
     >

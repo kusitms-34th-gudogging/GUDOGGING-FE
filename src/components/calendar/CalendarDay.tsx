@@ -100,7 +100,12 @@ export const CalendarDay = ({
       accessibilityState={{ selected: !!selected }}
       disabled={disabled}
       onPress={onPress}
-      className={cn('h-[72px] w-[47px] items-center gap-s2 px-s2', className)}
+      // Figma: 날짜 원과 내용 사이 로고는 0, 서비스명은 2
+      className={cn(
+        'h-[72px] w-[47px] items-center px-s2',
+        display === 'name' && 'gap-s2',
+        className,
+      )}
     >
       <View className={circleVariants({ state })}>
         <Text className={dateVariants({ state })}>{date}</Text>

@@ -31,7 +31,7 @@ export const TextButton = ({
     <Text
       numberOfLines={1}
       className={cn(
-        'shrink text-body2-semibold',
+        'shrink text-body3-semibold',
         disabled ? 'text-text-disabled' : 'text-text-secondary',
       )}
     >
