@@ -22,6 +22,7 @@ const detail = (over: object) => ({
   isSteady: true,
   canceledAt: null,
   totalPaidAmount: 94800,
+  yearlyAmount: 162000,
   latestCheckup: null,
   pastCheckupAverage: null,
   ...over,
@@ -88,7 +89,7 @@ describe('useSubscription', () => {
     expect(data.lastCheckup).toMatchObject({ period: '11월 결과', result: '유지 추천(92%)' });
   });
 
-  it('구독 종료면 해지일·총 지출과 마지막 점검의 해지 이유를 담는다', async () => {
+  it('구독 종료면 해지일·총 지출과 마지막 점검의 결정, 고른 해지 이유 문구와 직접 입력한 이유를 담는다', async () => {
     const data = await load(
       detail({
         status: 'ENDED',
@@ -99,6 +100,9 @@ describe('useSubscription', () => {
           checkedAt: '2026-11-01',
           stage: 'CANCEL_RECOMMENDED',
           score: 8,
+          decision: 'CANCEL',
+          // K-90에서 고른 선택지(영상·OTT 첫 번째) + 직접 입력
+          cancelReasons: ['RARELY_USED', 'CUSTOM'],
           cancelReasonText: '볼 게 없어요',
         },
       }),
@@ -111,7 +115,8 @@ describe('useSubscription', () => {
       lastCheckup: {
         checkedAt: new Date(2026, 10, 1),
         result: '해지 추천(8%)',
-        cancelReason: '볼 게 없어요',
+        decision: 'CANCEL',
+        cancelReason: '요즘 잘 안 봐요\n볼 게 없어요',
       },
     });
   });

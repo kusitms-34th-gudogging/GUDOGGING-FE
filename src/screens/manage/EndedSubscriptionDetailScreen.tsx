@@ -69,6 +69,7 @@ export const EndedSubscriptionDetailScreen = ({
         <View className="gap-stack-md px-screen-x">
           <ServiceHeader
             name={s.name}
+            logoUrl={s.logoUrl}
             status="구독 종료"
             category={s.category}
             badgeVariant="mono"
@@ -129,7 +130,8 @@ export const EndedSubscriptionDetailScreen = ({
                   </Text>
                   <Badge
                     variant="mono"
-                    label={`${monthDay(s.lastCheckup.checkedAt)} 점검 · 해지`}
+                    // 해지를 골랐을 때만 '· 해지' (유지를 골랐거나 안 골랐으면 점검일만)
+                    label={`${monthDay(s.lastCheckup.checkedAt)} 점검${s.lastCheckup.decision === 'CANCEL' ? ' · 해지' : ''}`}
                   />
                 </View>
                 <View className="gap-s2">

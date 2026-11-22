@@ -151,6 +151,7 @@ const FloatingLogo = ({ logo, size, x, y, index }: FloatingLogoProps) => {
 
   return (
     <Animated.View
+      testID="floating-logo"
       style={style}
       className="absolute overflow-hidden rounded-full border-default border-border-subtle"
     >

@@ -1,7 +1,9 @@
 import { keepPreviousData, type QueryClient, useQuery } from '@tanstack/react-query';
 
+import { CHECKUP_CATEGORIES, toCheckupCategory } from '@/constants/checkup';
 import type { SubscriptionDetail } from '@/constants/manage';
 import { calendarKeys } from '@/hooks/useCalendar';
+import { CANCEL_REASON_CODES } from '@/hooks/useDecideCheckup';
 import { homeKeys } from '@/hooks/useHome';
 import { request } from '@/lib/request';
 import {
@@ -16,6 +18,8 @@ import {
 } from '@/utils/apiCodes';
 import { formatDate, parseDate } from '@/utils/date';
 import type { HomeSubscription } from '@/utils/homeSummary';
+
+type CancelReasonCode = (typeof CANCEL_REASON_CODES)[number];
 
 export type SubscriptionStatus = 'ACTIVE' | 'ENDED';
 // 없으면 서버 기본(구독 중 결제일 순 · 구독 종료 해지일 순), 금액 높은 순은 두 탭 모두 (명세)
@@ -53,6 +57,7 @@ interface SubscriptionDetailResponse {
   subscriptionId: string;
   status: SubscriptionStatus;
   serviceName: string;
+  logoUrl: string | null;
   category: ApiCategory;
   amount: number;
   billingCycleValue: number;
@@ -62,6 +67,7 @@ interface SubscriptionDetailResponse {
   startedAt: string;
   paymentMethod: ApiPaymentMethod;
   isSteady: boolean;
+  yearlyAmount: number;
   canceledAt: string | null;
   totalPaidAmount: number;
   latestCheckup:
@@ -70,6 +76,8 @@ interface SubscriptionDetailResponse {
         stage: ApiStage;
         score: number;
         memo: string | null;
+        decision: 'KEEP' | 'CANCEL' | null;
+        cancelReasons: (CancelReasonCode | 'CUSTOM')[];
         cancelReasonText: string | null;
       })
     | null;
@@ -129,10 +137,27 @@ const periodLabel = (from: string, to: string) =>
     ? `${monthOf(to)}월 결과`
     : `${monthOf(from)}월~${monthOf(to)}월 결과`;
 
+// 해지 이유 코드 → K-90에서 본 카테고리별 선택지 문구, 직접 입력(CUSTOM)은 입력한 문장. 한 줄에 하나씩 (명세: 문구는 앱에서 카테고리별로)
+const cancelReasonLines = (
+  codes: (CancelReasonCode | 'CUSTOM')[],
+  text: string | null,
+  category: string,
+) => {
+  const labels = CHECKUP_CATEGORIES[toCheckupCategory(category)].cancelReasons;
+  const lines = [
+    ...codes.flatMap((code) =>
+      code === 'CUSTOM' ? [] : [labels[CANCEL_REASON_CODES.indexOf(code)]],
+    ),
+    ...(text ? [text] : []),
+  ];
+  return lines.length > 0 ? lines.join('\n') : undefined;
+};
+
 const toDetail = (s: SubscriptionDetailResponse): SubscriptionDetail => {
   const base = {
     id: s.subscriptionId,
     name: s.serviceName,
+    logoUrl: s.logoUrl ?? undefined,
     amount: s.amount,
     cycle: s.billingCycleValue,
     unit: CYCLE_UNIT[s.billingCycleUnit],
@@ -140,6 +165,7 @@ const toDetail = (s: SubscriptionDetailResponse): SubscriptionDetail => {
     category: CATEGORY_LABEL[s.category],
     paidAt: PAID_AT_OF[s.paymentMethod],
     startedAt: parseDate(s.startedAt),
+    yearlyAmount: s.yearlyAmount,
   };
   const answers = (c: CheckupAnswers) => ({
     usage: c.usageAnswer,
@@ -153,13 +179,13 @@ const toDetail = (s: SubscriptionDetailResponse): SubscriptionDetail => {
       status: 'ended',
       cancelledAt: parseDate(s.canceledAt!),
       totalSpent: s.totalPaidAmount,
-      // 해지 이유는 직접 입력한 문구만 (명세: 선택지 코드는 내려주지 않음)
       lastCheckup: c
         ? {
             checkedAt: parseDate(c.checkedAt),
             result: formatStage(c.stage, c.score),
             ...answers(c),
-            cancelReason: c.cancelReasonText ?? undefined,
+            decision: c.decision ?? undefined,
+            cancelReason: cancelReasonLines(c.cancelReasons, c.cancelReasonText, base.category),
           }
         : undefined,
     };
@@ -194,6 +220,8 @@ export interface CalendarPaymentDetail extends Pick<
   HomeSubscription,
   'id' | 'name' | 'amount' | 'cycle' | 'unit'
 > {
+  logoUrl?: string;
+  yearlyAmount: number;
   categoryLabel: string;
   paidAt: SubscriptionDetail['paidAt'];
   startedAt: Date;
@@ -222,6 +250,8 @@ export const useCalendarPaymentDetail = (id: string, date: Date) => {
       return {
         id: s.subscriptionId,
         name: s.serviceName,
+        logoUrl: s.logoUrl ?? undefined,
+        yearlyAmount: s.yearlyAmount,
         amount: s.amount,
         cycle: s.billingCycleValue,
         unit: CYCLE_UNIT[s.billingCycleUnit],

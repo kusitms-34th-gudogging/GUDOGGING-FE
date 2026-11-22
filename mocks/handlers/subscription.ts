@@ -228,6 +228,7 @@ export const subscriptionHandlers = [
         score: latest.score,
         ...answersOf(latest),
         memo: latest.memo,
+        cancelReasons: latest.cancelReasons,
         cancelReasonText: latest.cancelReasonText,
       },
       pastCheckups: recent.toReversed().map((c) => ({

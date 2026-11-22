@@ -19,7 +19,6 @@ import { useCancelSubscription } from '@/hooks/useCancelSubscription';
 import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
 import { useSetSteadySubscription } from '@/hooks/useSetSteadySubscription';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
-import { monthly } from '@/utils/homeSummary';
 import { fillName } from '@/utils/josa';
 
 const monthDay = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
@@ -89,6 +88,7 @@ export const SubscriptionDetailScreen = ({
         <View className="gap-stack-md px-screen-x">
           <ServiceHeader
             name={s.name}
+            logoUrl={s.logoUrl}
             status="구독 중"
             category={s.category}
             badgeVariant="tonal"
@@ -96,7 +96,7 @@ export const SubscriptionDetailScreen = ({
           <DetailCostCard
             label="결제 예정"
             amount={formatWon(s.amount)}
-            subText={`연 환산 ${formatWon(monthly(s) * 12)}`}
+            subText={`연 환산 ${formatWon(s.yearlyAmount)}`}
           />
         </View>
         <View className="gap-stack-md">
@@ -122,7 +122,7 @@ export const SubscriptionDetailScreen = ({
               {s.nextDate && (
                 <ListItem
                   title="다음 결제일"
-                  cost={monthDay(s.nextDate)}
+                  cost={fullDate(s.nextDate)}
                   showCost
                   costColor="text-text-secondary"
                   costFullWidth

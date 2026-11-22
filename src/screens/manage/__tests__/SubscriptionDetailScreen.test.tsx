@@ -17,6 +17,7 @@ const netflix: ActiveSubscriptionDetail = {
   category: '영상·OTT',
   paidAt: 'appstore',
   startedAt: new Date(2026, 6, 17),
+  yearlyAmount: 162000,
   steady: false,
 };
 
