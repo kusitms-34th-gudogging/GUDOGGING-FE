@@ -148,7 +148,13 @@ export const ManageScreen = () => {
             </View>
             {/* 탭을 바꿔 새 목록이 오기 전엔 이전 탭 데이터라 금액·목록을 숨기고 탭·개수만 둠 */}
             {!isPlaceholderData && (
-              <View className="flex-row items-center justify-between pl-s2">
+              // Figma M-02.2: 삭제 선택 중엔 삭제 버튼이 오른쪽 끝에서 6 안쪽 (체크박스 박스 오른쪽 끝 근처)
+              <View
+                className={cn(
+                  'flex-row items-center justify-between pl-s2',
+                  selecting && 'pr-[6px]',
+                )}
+              >
                 {selecting ? (
                   <>
                     <Text className="text-text-primary text-body2-semibold">
