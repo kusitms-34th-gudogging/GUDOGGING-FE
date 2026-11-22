@@ -17,7 +17,10 @@ export const createQueryWrapper = () => {
     },
   });
   const QueryWrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    // 토스트를 띄우는 화면이 많아 같이 감쌈
+    <QueryClientProvider client={client}>
+      <ToastProvider>{children}</ToastProvider>
+    </QueryClientProvider>
   );
   return QueryWrapper;
 };

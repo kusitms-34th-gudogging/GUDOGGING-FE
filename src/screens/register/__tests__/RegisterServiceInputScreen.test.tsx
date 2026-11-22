@@ -5,6 +5,7 @@ import { act, renderRouter, screen } from 'expo-router/testing-library';
 import { Keyboard, Pressable } from 'react-native';
 
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
 import { RegisterServiceInputScreen } from '@/screens/register/RegisterServiceInputScreen';
@@ -342,7 +343,7 @@ it('지난 구독 재등록은 기존 정보로 채우고, 고친 정보를 재�
   expect(useRegisterDraft.getState().payments).toEqual({});
 });
 
-it('구독 편집은 기존 정보로 채우고, 고친 정보를 수정 API로 보낸 뒤 상세로 돌아간다', async () => {
+it('구독 편집은 기존 정보로 채우고, 고친 정보를 수정 API로 보낸 뒤 상세로 돌아가 저장 토스트를 띄운다', async () => {
   jest.setSystemTime(new Date(2026, 10, 12, 10));
   mockApi({
     'GET /api/v1/services': { services: TEST_SERVICES },
@@ -371,7 +372,7 @@ it('구독 편집은 기존 정보로 채우고, 고친 정보를 수정 API로 
   });
   await renderRouter(
     {
-      'manage/detail': () => null,
+      'manage/detail': () => <ToastOutlet />,
       'register/input': () => <RegisterServiceInputScreen editId="watcha" />,
     },
     { initialUrl: '/manage/detail', wrapper: createQueryWrapper() },
@@ -393,6 +394,7 @@ it('구독 편집은 기존 정보로 채우고, 고친 정보를 수정 API로 
   await user.press(screen.getByRole('button', { name: '저장하기' }));
 
   expect(screen).toHavePathname('/manage/detail');
+  expect(await screen.findByText('구독 정보를 저장했어요')).toBeOnTheScreen();
   const patches = jest
     .mocked(globalThis.fetch)
     .mock.calls.filter(([, init]) => init?.method === 'PATCH')
