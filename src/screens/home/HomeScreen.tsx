@@ -99,7 +99,7 @@ export const HomeScreen = () => {
         {isEmpty ? (
           <HomeEmptyState onRegister={() => router.push('/register')} />
         ) : (
-          <View className="gap-stack-md">
+          <View className="gap-screen-x">
             <View className="gap-stack-md px-screen-x">
               <SectionHeader
                 title="구독 점검하기"
@@ -112,6 +112,8 @@ export const HomeScreen = () => {
                   title={'구독 점검 완료!\n이번 달 결제 일정을 확인해요'}
                   buttonLabel="캘린더 확인하기"
                   Asset={CalendarColorAsset}
+                  // Figma H-03.1: 오른쪽에서 4 안쪽
+                  assetRightClassName="right-[4px]"
                   onPress={() => router.navigate('/calendar')}
                 />
               ) : (
@@ -140,7 +142,8 @@ export const HomeScreen = () => {
                 </View>
               )}
             </View>
-            <View className="h-[2px] bg-bg-subtle" />
+            {/* 구분선 0.5는 토큰 없음 (border 최소 1) */}
+            <View className="h-[0.5px] bg-bg-muted" />
             <View className="gap-stack-md px-screen-x">
               {/* 잘 안 쓰는 구독이 없으면(점검 기록이 없거나 다 잘 쓰는 중) 점검 유도 카드 (H-03) */}
               {usage.items.length > 0 ? (
@@ -182,6 +185,8 @@ export const HomeScreen = () => {
                     title={'결제 전 30초 질문,\n잘 쓰는 구독을 가려 드려요'}
                     buttonLabel="점검하러 가기"
                     Asset={EditColorAsset}
+                    // Figma H-03: 오른쪽으로 2 넘침
+                    assetRightClassName="-right-[2px]"
                     buttonTestID="home-checkup"
                     onPress={() =>
                       usage.nudgeSubscriptionId &&
