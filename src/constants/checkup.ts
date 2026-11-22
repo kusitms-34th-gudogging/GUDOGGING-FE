@@ -109,11 +109,12 @@ export interface CheckupRecommendation {
   subtitle: string;
   // 제공사 유형 · 핵심 조건
   tags: [string, string];
-  // 월 절감액. upTo면 '최대 N원' (카드 할인 등 금액이 확정되지 않을 때)
-  saving: number;
-  upTo?: boolean;
-  // 지금 내는 월 금액 (절감 막대의 기준)
-  current: number;
-  // 금액 대신 보여 줄 조건. 없으면 '월 N원에 이용'
-  condition?: string;
+  // FIXED '월 N원'(확정 절약) · MAX '최대 N원'(카드) · BENEFIT 큰 숫자 대신 tags[1](통신 요금제)
+  priceType: 'FIXED' | 'MAX' | 'BENEFIT';
+  // 월 절감액. BENEFIT이면 null
+  saving: number | null;
+  // 절감 막대 % (0~100). BENEFIT이면 null
+  rate: number | null;
+  // 상품 월 가격 (FIXED '월 N원에 이용', BENEFIT '요금제 월 N원'). MAX면 null
+  price: number | null;
 }

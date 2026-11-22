@@ -32,14 +32,15 @@ interface CheckupResultResponse {
   // 구독 종료된 구독의 점검이면 null
   nextBillingDate: string | null;
   score: number;
+  // 금액·막대는 BENEFIT(통신 요금제)면 null, monthlyPrice는 MAX(카드)면 null
   bundles: {
     name: string;
-    includes: string[];
+    includes: string;
     tags: string[];
-    monthlyPrice: number;
-    monthlySaving: number;
-    condition: string | null;
-    priceType: 'FIXED' | 'MAX';
+    priceType: 'FIXED' | 'MAX' | 'BENEFIT' | 'EXCLUDED';
+    monthlySaving: number | null;
+    savingRate: number | null;
+    monthlyPrice: number | null;
   }[];
   categorySpending: {
     category: ApiCategory;
@@ -109,16 +110,22 @@ export const useCheckupResult = (checkupId: string) =>
         })),
         total: r.categorySpending.monthlyTotal,
       } satisfies CategorySpending,
-      recommendations: r.bundles.map((b): CheckupRecommendation => ({
-        id: b.name,
-        title: b.name,
-        subtitle: b.includes.join(' + '),
-        tags: [b.tags[0] ?? '', b.tags[1] ?? ''],
-        saving: b.monthlySaving,
-        upTo: b.priceType === 'MAX',
-        // 카드는 'current - saving'을 이용 금액으로 보여 줌 → 번들 가격 + 절약 금액
-        current: b.monthlyPrice + b.monthlySaving,
-        condition: b.condition ?? undefined,
-      })),
+      // EXCLUDED는 명세 설명에 없는 값이라 숨김
+      recommendations: r.bundles.flatMap((b): CheckupRecommendation[] =>
+        b.priceType === 'EXCLUDED'
+          ? []
+          : [
+              {
+                id: b.name,
+                title: b.name,
+                subtitle: b.includes,
+                tags: [b.tags[0] ?? '', b.tags[1] ?? ''],
+                priceType: b.priceType,
+                saving: b.monthlySaving,
+                rate: b.savingRate,
+                price: b.monthlyPrice,
+              },
+            ],
+      ),
     }),
   });

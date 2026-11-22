@@ -17,13 +17,12 @@ jest.mock('@shopify/react-native-skia', () => ({
 
 const bundle = {
   name: '통신사 OTT 번들',
-  includes: ['넷플릭스', '티빙'],
+  includes: '넷플릭스 + 티빙',
   tags: ['통신사', '약정 없음'],
-  monthlyPrice: 19900,
-  monthlySaving: 5100,
-  condition: null,
-  providerType: '통신사',
   priceType: 'FIXED',
+  monthlySaving: 5100,
+  savingRate: 20,
+  monthlyPrice: 19900,
 };
 const result = (over: object = {}) => ({
   checkupId: 'c1',
@@ -96,6 +95,26 @@ describe('CheckupResultScreen', () => {
     expect(screen.getByText('월 19,900원에 이용')).toBeOnTheScreen();
     // 추천 개수는 보여 주지 않음
     expect(screen.queryByText(/추천 \d+개/)).not.toBeOnTheScreen();
+  });
+
+  it('통신 요금제(BENEFIT)는 금액 대신 핵심 혜택과 요금제 가격을 보여준다', async () => {
+    await renderResult({
+      'GET /api/v1/checkups/c1': result({
+        bundles: [
+          {
+            ...bundle,
+            tags: ['통신사 · 요금제', '넷플릭스 무료'],
+            priceType: 'BENEFIT',
+            monthlySaving: null,
+            savingRate: null,
+            monthlyPrice: 69000,
+          },
+        ],
+      }),
+    });
+
+    expect(screen.getByText('요금제 월 69,000원')).toBeOnTheScreen();
+    expect(screen.getAllByText('넷플릭스 무료').length).toBeGreaterThan(0);
   });
 
   it('다음 결제일이 있으면 결제 전 확인 문구를 보여준다', async () => {
