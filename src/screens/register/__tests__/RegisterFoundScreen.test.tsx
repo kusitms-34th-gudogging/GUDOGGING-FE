@@ -8,6 +8,18 @@ import { RegisterFoundScreen } from '@/screens/register/RegisterFoundScreen';
 
 const CTA = { name: '선택한 구독 등록하기' };
 
+// 등록 요청에 담긴 구독 이름 (완료 화면은 이 요청의 응답으로 그림)
+const postedNames = () => {
+  const post = jest
+    .mocked(globalThis.fetch)
+    .mock.calls.find(
+      ([url, init]) => String(url).endsWith('/api/v1/subscriptions') && init?.method === 'POST',
+    );
+  return (
+    JSON.parse(String(post?.[1]?.body)) as { subscriptions: { serviceName: string }[] }
+  ).subscriptions.map((s) => s.serviceName);
+};
+
 const renderFound = async () => {
   await renderRouter(
     {
@@ -23,6 +35,8 @@ const renderFound = async () => {
 
 beforeEach(async () => {
   jest.useFakeTimers();
+  // 고정 데이터의 결제일(11월 12일·20일)이 지난 날짜로 보이지 않게 오늘을 고정
+  jest.setSystemTime(new Date(2026, 10, 10));
   useRegisterDraft.getState().reset();
   await AsyncStorage.clear();
   mockApi({
@@ -56,7 +70,8 @@ describe('RegisterFoundScreen', () => {
 
     await user.press(screen.getByRole('button', CTA));
 
-    expect(screen).toHaveSearchParams({ ids: 'found-youtube' });
+    await waitFor(() => expect(screen).toHavePathname('/register/done'));
+    expect(postedNames()).toEqual(['YouTube Premium']);
   });
 
   it('수정 화면에서 결제 정보를 저장한 항목은 확인 필요여도 등록할 수 있다', async () => {
@@ -74,20 +89,14 @@ describe('RegisterFoundScreen', () => {
     expect(screen.getByRole('button', CTA)).toBeEnabled();
   });
 
-  it('등록하면 체크한 항목만 완료 화면으로 넘긴다', async () => {
+  it('등록하면 체크한 항목만 등록한다', async () => {
     useRegisterDraft.getState().setFoundChecked(['found-youtube']);
     const user = await renderFound();
 
     await user.press(screen.getByRole('button', CTA));
 
     expect(screen).toHavePathname('/register/done');
-    expect(screen).toHaveSearchParams({ ids: 'found-youtube' });
-    // 완료 화면은 저장소의 결제 정보로 금액·요약을 그림
-    expect(useRegisterDraft.getState().payments['found-youtube']).toMatchObject({
-      amount: 17000,
-      nextDate: new Date(2026, 10, 12),
-      paidAt: 'appstore',
-    });
+    expect(postedNames()).toEqual(['YouTube Premium']);
   });
 
   it('구독 추가하기로 추가한 구독도 목록에 보이고 함께 등록한다', async () => {
@@ -106,7 +115,8 @@ describe('RegisterFoundScreen', () => {
 
     await user.press(screen.getByRole('button', CTA));
 
-    expect(screen).toHaveSearchParams({ ids: 'found-youtube,spotify' });
+    await waitFor(() => expect(screen).toHavePathname('/register/done'));
+    expect(postedNames()).toEqual(['YouTube Premium', 'Spotify']);
   });
 
   it('불러온 구독의 이름을 바꾸면 같은 서비스를 구독 추가하기로 따로 추가할 수 있다', async () => {

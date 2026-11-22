@@ -40,6 +40,8 @@ const renderInput = async () => {
 
 beforeEach(async () => {
   jest.useFakeTimers();
+  // 고정 데이터의 결제일(11월 12일·20일)이 지난 날짜로 보이지 않게 오늘을 고정
+  jest.setSystemTime(new Date(2026, 10, 10));
   useRegisterDraft.getState().reset();
   await AsyncStorage.clear();
   mockApi({ 'GET /api/v1/services': { services: TEST_SERVICES } });
@@ -70,17 +72,41 @@ describe('RegisterServiceInputScreen 이탈 팝업', () => {
     expect(screen).toHavePathname('/register/input');
   });
 
-  it('나가기를 누르면 등록 중이던 값을 지우고 구독 추가로 한 번에 돌아간다', async () => {
+  it('나가기를 누르면 입력값만 버리고 고른 서비스는 둔 채 이전 화면으로 간다', async () => {
     const user = await renderInput();
     await user.type(screen.getByLabelText('결제 금액'), '13500');
 
     await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
     await user.press(screen.getByRole('button', { name: '나가기' }));
 
-    expect(screen).toHavePathname('/register');
-    // 사이의 서비스 선택 화면이 팝업을 다시 띄우지 않음
+    expect(screen).toHavePathname('/register/select');
     expect(screen.queryByText('등록을 그만할까요?')).not.toBeOnTheScreen();
-    expect(useRegisterDraft.getState().selectedIds).toEqual([]);
+    expect(useRegisterDraft.getState().selectedIds).toEqual(['netflix']);
+    expect(useRegisterDraft.getState().payments).toEqual({});
+  });
+});
+
+describe('RegisterServiceInputScreen 저장한 결제 정보', () => {
+  it('저장해 둔 다음 결제일이 지났으면 비워 두고, 다시 고르기 전엔 저장할 수 없다', async () => {
+    useRegisterDraft.getState().setPayment('netflix', {
+      category: '영상·OTT',
+      amount: 13500,
+      cycle: 1,
+      unit: '개월',
+      nextDate: new Date(2026, 10, 9),
+      paidAt: 'web',
+    });
+    const user = await renderInput();
+
+    expect(screen.getByLabelText('결제 금액')).toHaveDisplayValue('13,500');
+    expect(screen.getByRole('button', { name: '다음 결제일' })).not.toHaveAccessibilityValue({
+      text: '2026.11.09',
+    });
+    expect(screen.getByRole('button', { name: '저장하기' })).toBeDisabled();
+
+    await user.press(screen.getByRole('button', { name: '다음 결제일' }));
+    await user.press(screen.getByTestId('register-date-confirm'));
+    expect(screen.getByRole('button', { name: '저장하기' })).toBeEnabled();
   });
 });
 

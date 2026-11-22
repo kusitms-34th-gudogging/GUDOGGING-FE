@@ -157,7 +157,7 @@ describe('useSyncSubscriptionDraft', () => {
     expect(draftCalls()).toEqual([]);
   });
 
-  it('다 비우면(나가기·등록 완료) 서버 임시저장도 지운다', async () => {
+  it('다 비우면(새로 등록하기·등록 완료) 서버 임시저장도 지운다', async () => {
     await startSync();
     await act(() => useRegisterDraft.getState().setSelectedIds(['netflix']));
     await waitFor(() => expect(draftCalls()).toHaveLength(1));

@@ -33,6 +33,8 @@ const renderSelected = async (routes: Record<string, unknown> = {}) => {
 
 beforeEach(async () => {
   jest.useFakeTimers();
+  // 고정 데이터의 결제일(11월 12일·20일)이 지난 날짜로 보이지 않게 오늘을 고정
+  jest.setSystemTime(new Date(2026, 10, 10));
   useRegisterDraft.getState().reset();
   await AsyncStorage.clear();
   useRegisterDraft.getState().setSelectedIds(['netflix', 'youtube']);
@@ -54,7 +56,20 @@ describe('RegisterSelectedServiceScreen', () => {
     expect(screen.getByRole('button', { name: '2개 구독 등록하기' })).toBeDisabled();
   });
 
-  it('모든 서비스의 결제 정보를 입력하면 일괄 등록하고, 고른 서비스 전부를 완료 화면으로 넘긴다', async () => {
+  it('불러온 결제 정보의 다음 결제일이 지났으면 입력이 필요한 것으로 보고 등록할 수 없다', async () => {
+    // 11월 12일에 임시저장해 두고 오늘(11월 13일) 불러옴
+    jest.setSystemTime(new Date(2026, 10, 13));
+    useRegisterDraft.getState().setPayment('netflix', PAYMENT);
+    useRegisterDraft
+      .getState()
+      .setPayment('youtube', { ...PAYMENT, nextDate: new Date(2026, 10, 13) });
+    await renderSelected();
+
+    expect(screen.getAllByText('결제 정보 입력 필요')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: '2개 구독 등록하기' })).toBeDisabled();
+  });
+
+  it('모든 서비스의 결제 정보를 입력하면 일괄 등록하고, 완료 화면으로 간다', async () => {
     useRegisterDraft.getState().setPayment('netflix', PAYMENT);
     useRegisterDraft.getState().setPayment('youtube', { ...PAYMENT, paidAt: 'appstore' });
     useRegisterDraft.getState().setPayment('custom-1', {
@@ -69,7 +84,6 @@ describe('RegisterSelectedServiceScreen', () => {
     await user.press(screen.getByRole('button', { name: '3개 구독 등록하기' }));
 
     await waitFor(() => expect(screen).toHavePathname('/register/done'));
-    expect(screen).toHaveSearchParams({ ids: 'netflix,youtube,custom-1' });
     const base = {
       amount: 13500,
       nextBillingDate: '2026-11-12',
