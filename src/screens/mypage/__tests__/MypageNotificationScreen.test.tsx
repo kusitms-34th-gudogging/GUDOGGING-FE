@@ -17,7 +17,7 @@ const renderSettings = async (
   });
   await screen.findByRole('switch');
 };
-const reminder = () => screen.getByRole('switch', { name: '꾸준히 쓰는 구독 알림' });
+const reminder = () => screen.getByRole('switch', { name: '구독 점검 알림' });
 const sentBody = () => {
   const call = jest.mocked(globalThis.fetch).mock.calls.find(([, i]) => i?.method === 'PATCH');
   return call && JSON.parse(String(call[1]?.body));

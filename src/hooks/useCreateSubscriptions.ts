@@ -3,7 +3,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { PaymentInfo } from '@/constants/services';
 import { invalidateSubscriptionData } from '@/hooks/useSubscriptions';
 import { request } from '@/lib/request';
-import { toCategoryCode, toCycleUnitCode, toPaymentMethodCode } from '@/utils/apiCodes';
+import {
+  type ApiCycleUnit,
+  type ApiPaymentMethod,
+  toCategoryCode,
+  toCycleUnitCode,
+  toPaymentMethodCode,
+} from '@/utils/apiCodes';
 import { formatDate } from '@/utils/date';
 
 export interface NewSubscription {
@@ -13,10 +19,29 @@ export interface NewSubscription {
   payment: PaymentInfo;
 }
 
+// 등록 응답. 방금 등록한 구독을 요청 순서대로 (등록 완료 A-05가 그림)
+export interface CreatedSubscriptions {
+  createdCount: number;
+  subscriptions: {
+    subscriptionId: string;
+    serviceName: string;
+    logoUrl: string | null;
+    amount: number;
+    billingCycleValue: number;
+    billingCycleUnit: ApiCycleUnit;
+    nextBillingDate: string;
+    paymentMethod: ApiPaymentMethod;
+  }[];
+}
+
+// 등록 완료 화면이 마지막 등록 결과를 useMutationState로 찾는 키
+export const createSubscriptionsKey = ['subscriptions', 'create'] as const;
+
 // 구독 일괄 등록 (A-04·A-09). 직접 입력·스크린샷·Gmail 공통
 export const useCreateSubscriptions = () => {
   const client = useQueryClient();
   return useMutation({
+    mutationKey: createSubscriptionsKey,
     mutationFn: ({
       source,
       subscriptions,
@@ -24,7 +49,7 @@ export const useCreateSubscriptions = () => {
       source: 'MANUAL' | 'SCREENSHOT' | 'GMAIL';
       subscriptions: NewSubscription[];
     }) =>
-      request<{ createdCount: number }>('/api/v1/subscriptions', {
+      request<CreatedSubscriptions>('/api/v1/subscriptions', {
         method: 'POST',
         body: {
           source,

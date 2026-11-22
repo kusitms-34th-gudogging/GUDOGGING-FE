@@ -12,6 +12,7 @@ import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
+import { serviceLogo } from '@/constants/services';
 import { getFoundServiceIds, useRegisterDraft, useRegisterStep } from '@/hooks/useRegisterDraft';
 import { useServices } from '@/hooks/useServices';
 
@@ -115,7 +116,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
                   title={s.name}
                   subtitle={s.category}
                   showSubtitle
-                  logo={require('@/assets/images/logo_placeholder.png')}
+                  logo={serviceLogo(s.logoUrl)}
                   showLogo
                   showCheckBox
                   checked={selectedIds.includes(s.id) || lockedIds.includes(s.id)}

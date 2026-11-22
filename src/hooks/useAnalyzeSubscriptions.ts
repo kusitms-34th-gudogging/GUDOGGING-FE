@@ -1,7 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
 import { File } from 'expo-file-system';
+import { router } from 'expo-router';
 
-import type { FoundSubscription } from '@/constants/services';
+import type { FoundSubscription, ReviewField } from '@/constants/services';
+import { requestGmailAuthCode } from '@/lib/account';
 import { request } from '@/lib/request';
 import {
   type ApiCategory,
@@ -17,6 +19,7 @@ import { parseDate } from '@/utils/date';
 interface Candidate {
   serviceId: string | null;
   serviceName: string;
+  logoUrl: string | null;
   category: ApiCategory;
   amount: number | null;
   billingCycleValue: number | null;
@@ -24,6 +27,7 @@ interface Candidate {
   nextBillingDate: string | null;
   paymentMethod: ApiPaymentMethod | null;
   needsReview: boolean;
+  reviewFields: ReviewField[];
 }
 
 // 불러온 구독 항목 id. 직접 입력처럼 다루는 항목(사전 등록 서비스 아님)은 custom- (useRegisterServices 기준)
@@ -31,6 +35,7 @@ const toFound = (c: Candidate, i: number): FoundSubscription => ({
   id: c.serviceId ? `found-${i}` : `custom-found-${i}`,
   serviceId: c.serviceId ?? undefined,
   name: c.serviceName,
+  logoUrl: c.logoUrl ?? undefined,
   payment: {
     category: CATEGORY_LABEL[c.category],
     amount: c.amount ?? undefined,
@@ -40,34 +45,54 @@ const toFound = (c: Candidate, i: number): FoundSubscription => ({
     paidAt: c.paymentMethod ? PAID_AT_OF[c.paymentMethod] : undefined,
   },
   needsReview: c.needsReview,
+  reviewFields: c.reviewFields,
 });
 
-const analyze = async (path: string, body?: FormData) => {
-  const { candidates } = await request<{ candidates: Candidate[] }>(path, { method: 'POST', body });
+// signal: 분석 중 화면을 떠나면 요청을 취소 (화면설계서 A-12 '뒤로가기 시 작업 중단')
+const analyze = async (path: string, signal: AbortSignal, body?: FormData) => {
+  const { candidates } = await request<{ candidates: Candidate[] }>(path, {
+    method: 'POST',
+    body,
+    signal,
+  });
   return candidates.map(toFound);
 };
 
 // 스크린샷 분석 (A-08): 고른 이미지(PNG·JPG, 1~5장)를 multipart로
 export const useAnalyzeScreenshots = () =>
   useMutation({
-    mutationFn: (uris: string[]) => {
+    mutationFn: ({ uris, signal }: { uris: string[]; signal: AbortSignal }) => {
       const form = new FormData();
       // SDK 58의 전역 fetch(expo/fetch)는 RN식 { uri, name, type }을 못 읽어서 expo-file-system File(Blob 구현)로 붙임
       // 파일 이름·MIME 타입은 파일에서 가져옴 (Expo 문서 FileSystem "Uploading files using expo/fetch")
       uris.forEach((uri) => form.append('images', new File(uri)));
-      return analyze('/api/v1/subscriptions/screenshots/analyses', form);
+      return analyze('/api/v1/subscriptions/screenshots/analyses', signal, form);
     },
   });
 
-// Gmail 연동 후 결제 메일 분석 (A-11 → A-12)
-// shortcut: Google 로그인(OAuth)이 아직 없어 임시 인증 코드로 연동, OAuth 붙이면 받은 authCode로 교체
+// Gmail 연동하기 (A-11): Google 계정 선택·권한 동의 후 결제 메일 분석(A-12)으로
+// 취소하면 그 화면에 그대로, 인증 코드를 못 받으면 분석 실패(A-12e)로 (화면설계서 5-1·5-2)
+// 빠르게 두 번 눌러 인증이 겹치면 SDK가 첫 인증을 실패로 끝내서, 진행 중이면 무시
+let gmailAuthPending = false;
+export const startGmailAnalysis = async () => {
+  if (gmailAuthPending) return;
+  gmailAuthPending = true;
+  try {
+    const authCode = await requestGmailAuthCode();
+    if (authCode)
+      router.push({ pathname: '/register/analyze', params: { source: 'gmail', authCode } });
+  } catch {
+    router.push({ pathname: '/register/failed', params: { source: 'gmail' } });
+  } finally {
+    gmailAuthPending = false;
+  }
+};
+
+// 받은 인증 코드로 Gmail 연동 → 결제 메일 분석 (A-12)
 export const useAnalyzeGmail = () =>
   useMutation({
-    mutationFn: async () => {
-      await request('/api/v1/gmail/connection', {
-        method: 'POST',
-        body: { authCode: 'pending-oauth' },
-      });
-      return analyze('/api/v1/gmail/analyses');
+    mutationFn: async ({ authCode, signal }: { authCode: string; signal: AbortSignal }) => {
+      await request('/api/v1/gmail/connection', { method: 'POST', body: { authCode }, signal });
+      return analyze('/api/v1/gmail/analyses', signal);
     },
   });

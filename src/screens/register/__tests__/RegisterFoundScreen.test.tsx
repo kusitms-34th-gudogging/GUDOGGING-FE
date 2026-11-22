@@ -1,16 +1,37 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { userEvent } from '@testing-library/react-native';
-import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { router } from 'expo-router';
+import { act, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { apiError, createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
+import {
+  apiError,
+  createQueryWrapper,
+  mockApi,
+  TEST_FOUND,
+  TEST_SERVICES,
+  ToastLayout,
+} from '@/lib/testing';
 import { RegisterFoundScreen } from '@/screens/register/RegisterFoundScreen';
 
 const CTA = { name: '선택한 구독 등록하기' };
 
+// 등록 요청에 담긴 구독 이름 (완료 화면은 이 요청의 응답으로 그림)
+const postedNames = () => {
+  const post = jest
+    .mocked(globalThis.fetch)
+    .mock.calls.find(
+      ([url, init]) => String(url).endsWith('/api/v1/subscriptions') && init?.method === 'POST',
+    );
+  return (
+    JSON.parse(String(post?.[1]?.body)) as { subscriptions: { serviceName: string }[] }
+  ).subscriptions.map((s) => s.serviceName);
+};
+
 const renderFound = async () => {
   await renderRouter(
     {
+      _layout: ToastLayout,
       'register/found': () => <RegisterFoundScreen />,
       'register/done': () => null,
     },
@@ -23,6 +44,8 @@ const renderFound = async () => {
 
 beforeEach(async () => {
   jest.useFakeTimers();
+  // 고정 데이터의 결제일(11월 12일·20일)이 지난 날짜로 보이지 않게 오늘을 고정
+  jest.setSystemTime(new Date(2026, 10, 10));
   useRegisterDraft.getState().reset();
   await AsyncStorage.clear();
   mockApi({
@@ -38,7 +61,35 @@ afterEach(() => {
 });
 
 describe('RegisterFoundScreen', () => {
+  it('뒤로 가면 분석 결과를 지우고 앞 화면으로 돌아간다', async () => {
+    await renderRouter(
+      {
+        _layout: ToastLayout,
+        'register/gmail': () => null,
+        'register/found': () => <RegisterFoundScreen />,
+      },
+      { initialUrl: '/register/gmail', wrapper: createQueryWrapper() },
+    );
+    await act(() => router.push('/register/found'));
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+    await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
+
+    expect(screen).toHavePathname('/register/gmail');
+    expect(useRegisterDraft.getState().found).toEqual([]);
+  });
+
   // 샘플: ChatGPT Plus는 금액을 못 읽어 확인 필요, YouTube Premium은 바로 등록 가능
+  it.each([
+    ['SCREENSHOT', '구독 정보 입력 필요'],
+    ['GMAIL', '결제 정보 입력 필요'],
+  ] as const)('%s로 불러온 확인 필요 항목엔 "%s"를 띄운다', async (source, subtitle) => {
+    useRegisterDraft.getState().setFound(source, TEST_FOUND);
+    await renderFound();
+
+    expect(screen.getAllByText(subtitle).length).toBeGreaterThan(0);
+  });
+
   it('등록 가능에서 체크한 구독이 없으면 등록할 수 없다', async () => {
     useRegisterDraft.getState().setFoundChecked(['found-youtube']);
     const user = await renderFound();
@@ -56,7 +107,8 @@ describe('RegisterFoundScreen', () => {
 
     await user.press(screen.getByRole('button', CTA));
 
-    expect(screen).toHaveSearchParams({ ids: 'found-youtube' });
+    await waitFor(() => expect(screen).toHavePathname('/register/done'));
+    expect(postedNames()).toEqual(['YouTube Premium']);
   });
 
   it('수정 화면에서 결제 정보를 저장한 항목은 확인 필요여도 등록할 수 있다', async () => {
@@ -74,20 +126,14 @@ describe('RegisterFoundScreen', () => {
     expect(screen.getByRole('button', CTA)).toBeEnabled();
   });
 
-  it('등록하면 체크한 항목만 완료 화면으로 넘긴다', async () => {
+  it('등록하면 체크한 항목만 등록한다', async () => {
     useRegisterDraft.getState().setFoundChecked(['found-youtube']);
     const user = await renderFound();
 
     await user.press(screen.getByRole('button', CTA));
 
     expect(screen).toHavePathname('/register/done');
-    expect(screen).toHaveSearchParams({ ids: 'found-youtube' });
-    // 완료 화면은 저장소의 결제 정보로 금액·요약을 그림
-    expect(useRegisterDraft.getState().payments['found-youtube']).toMatchObject({
-      amount: 17000,
-      nextDate: new Date(2026, 10, 12),
-      paidAt: 'appstore',
-    });
+    expect(postedNames()).toEqual(['YouTube Premium']);
   });
 
   it('구독 추가하기로 추가한 구독도 목록에 보이고 함께 등록한다', async () => {
@@ -106,7 +152,8 @@ describe('RegisterFoundScreen', () => {
 
     await user.press(screen.getByRole('button', CTA));
 
-    expect(screen).toHaveSearchParams({ ids: 'found-youtube,spotify' });
+    await waitFor(() => expect(screen).toHavePathname('/register/done'));
+    expect(postedNames()).toEqual(['YouTube Premium', 'Spotify']);
   });
 
   it('불러온 구독의 이름을 바꾸면 같은 서비스를 구독 추가하기로 따로 추가할 수 있다', async () => {
@@ -162,7 +209,7 @@ describe('RegisterFoundScreen', () => {
     );
   });
 
-  it('등록에 실패하면 불러온 구독 확인에 남는다', async () => {
+  it('등록에 실패하면 안내하고 불러온 구독 확인에 남는다', async () => {
     mockApi({
       'GET /api/v1/services': { services: TEST_SERVICES },
       'POST /api/v1/subscriptions': apiError(409),
@@ -174,5 +221,6 @@ describe('RegisterFoundScreen', () => {
 
     await waitFor(() => expect(screen.getByRole('button', CTA)).toBeEnabled());
     expect(screen).toHavePathname('/register/found');
+    expect(await screen.findByText('구독 등록에 실패했어요')).toBeOnTheScreen();
   });
 });

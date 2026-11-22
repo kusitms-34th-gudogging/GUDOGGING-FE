@@ -20,6 +20,8 @@ const detail = (over: object = {}) => ({
   isSteady: false,
   canceledAt: null,
   totalPaidAmount: 67500,
+  // 앱이 계산하지 않고 서버 값을 그대로 보여 줌 (월 13,500 × 12와 일부러 다르게)
+  yearlyAmount: 160000,
   latestCheckup: {
     checkedAt: '2026-10-03',
     stage: 'KEEP_RECOMMENDED',
@@ -63,7 +65,7 @@ it('결제 금액·연 환산과 결제 정보를 보여준다', async () => {
   await renderDetail();
 
   expect(screen.getByText('13,500원')).toBeOnTheScreen();
-  expect(screen.getByText('연 환산 162,000원')).toBeOnTheScreen();
+  expect(screen.getByText('연 환산 160,000원')).toBeOnTheScreen();
   expect(screen.getByText('매월')).toBeOnTheScreen();
   expect(screen.getByText('App Store')).toBeOnTheScreen();
   expect(screen.getByText('2026년 7월 17일')).toBeOnTheScreen();
@@ -73,7 +75,7 @@ it('고른 날짜를 기준일로 보내고, 서버가 준 다음 결제일을 �
   await renderDetail();
 
   expect(String(jest.mocked(globalThis.fetch).mock.calls[0][0])).toContain('baseDate=2026-11-17');
-  expect(screen.getByText('12월 17일')).toBeOnTheScreen();
+  expect(screen.getByText('2026년 12월 17일')).toBeOnTheScreen();
 });
 
 it('구독 종료라 다음 결제일이 null이면 다음 결제일 줄을 빼고 보여준다', async () => {

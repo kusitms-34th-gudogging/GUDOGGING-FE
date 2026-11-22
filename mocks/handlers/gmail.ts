@@ -12,7 +12,7 @@ const connection = () => ({
 export const gmailHandlers = [
   http.get('/api/v1/gmail/connection', () => ok('Gmail 연동 상태를 조회했습니다.', connection())),
   http.post('/api/v1/gmail/connection', () => {
-    // ponytail: 인증 코드 검증 없이 항상 연동 성공, 실패(FAILED) 흐름은 서버
+    // shortcut: 인증 코드 검증 없이 항상 연동 성공, 실패 흐름은 개발 서버로 확인
     db.gmailEmail = 'user@gmail.com';
     return ok('Gmail을 연동했습니다.', connection(), 201);
   }),
@@ -35,6 +35,7 @@ export const gmailHandlers = [
           nextBillingDate: '2026-12-01',
           paymentMethod: 'APP_STORE',
           needsReview: false,
+          reviewFields: [],
         },
       ],
     }),

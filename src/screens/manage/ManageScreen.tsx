@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
@@ -14,14 +14,13 @@ import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
+import { serviceLogo } from '@/constants/services';
 import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
 import { useRowSnap } from '@/hooks/useRowSnap';
 import { type SubscriptionSort, useSubscriptions } from '@/hooks/useSubscriptions';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/cn';
 import { formatWon } from '@/utils/formatPayment';
-
-const LOGO = require('@/assets/images/logo_placeholder.png');
 
 type Tab = 'ACTIVE' | 'ENDED';
 
@@ -52,6 +51,16 @@ export const ManageScreen = () => {
     setSelecting(false);
     setPicked([]);
   };
+  // 하단 탭 이동·화면 이탈 시 선택 해제 후 선택 모드 종료 (설계서 M-02.2, 별도 취소 버튼 없음)
+  useFocusEffect(
+    useCallback(
+      () => () => {
+        setSelecting(false);
+        setPicked([]);
+      },
+      [],
+    ),
+  );
   const toggle = (id: string) =>
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
   const deletePicked = () =>
@@ -60,8 +69,8 @@ export const ManageScreen = () => {
         show({ type: 'success', message: `구독 ${picked.length}개를 삭제했어요` });
         stopSelecting();
       },
-      // 임의: 삭제 실패 문구는 디자인에 없음
-      onError: () => show({ type: 'error', message: '구독을 삭제하지 못했어요' }),
+      // TST-001 E-6
+      onError: () => show({ type: 'error', message: '삭제하지 못했어요' }),
     });
 
   // 정렬 (M-02.4): 기본은 탭마다 결제일 순 · 해지일 순(서버 기본값), 금액 높은 순은 두 탭 모두
@@ -86,15 +95,10 @@ export const ManageScreen = () => {
         showAction1={!isEmpty}
         action1={{ icon: MoreIcon, accessibilityLabel: '더보기', onPress: () => setMenuOpen(true) }}
       />
-      {/* 삭제 선택 중 빠져나가는 동작은 디자인에 없어 같은 메뉴에서 '선택 취소'로 */}
       <MoreMenu
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
-        options={[
-          selecting
-            ? { label: '선택 취소', onSelect: stopSelecting }
-            : { label: '삭제', destructive: true, onSelect: () => setSelecting(true) },
-        ]}
+        options={[{ label: '삭제', destructive: true, onSelect: () => setSelecting(true) }]}
       />
       {/* 정렬 줄 바로 아래 오른쪽 (Figma M-02.4: 안전 영역 아래 166, 화면 오른쪽 20) */}
       <MoreMenu
@@ -214,7 +218,7 @@ export const ManageScreen = () => {
                           title={s.name}
                           subtitle={s.subtitle}
                           showSubtitle
-                          logo={LOGO}
+                          logo={serviceLogo(s.logoUrl)}
                           showLogo
                           cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
                           showCost
@@ -229,7 +233,7 @@ export const ManageScreen = () => {
                         title={s.name}
                         subtitle={s.subtitle}
                         showSubtitle
-                        logo={LOGO}
+                        logo={serviceLogo(s.logoUrl)}
                         showLogo
                         cost={formatWon(tab === 'ACTIVE' ? s.amount : s.monthlyAmount)}
                         showCost
@@ -253,10 +257,10 @@ export const ManageScreen = () => {
           <ToastOutlet className="bottom-0" />
         </View>
       </View>
-      {/* 탭바 위 18에 + 버튼. 구독이 없으면 + 버튼 자리만 비움 */}
+      {/* 탭바 위 18에 + 버튼. 구독이 없거나 삭제 선택 중이면 숨김 (설계서 M-02.2) */}
       <View pointerEvents="box-none" className="pb-safe absolute inset-x-0 bottom-0">
         <View pointerEvents="box-none" className="mb-[74px] items-end px-screen-x">
-          {isEmpty ? (
+          {isEmpty || selecting ? (
             <View className="size-s48" />
           ) : (
             <FloatingButton

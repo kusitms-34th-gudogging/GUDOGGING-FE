@@ -1,6 +1,9 @@
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Slot } from 'expo-router';
 import type { ReactNode } from 'react';
 
+import { ToastProvider } from '@/components/common/ToastProvider';
 import type { FoundSubscription } from '@/constants/services';
 
 // API 쓰는 화면 테스트 공통 (.claude/docs/testing/api-hooks.md)
@@ -15,7 +18,10 @@ export const createQueryWrapper = () => {
     },
   });
   const QueryWrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    // 토스트를 띄우는 화면이 많아 같이 감쌈
+    <QueryClientProvider client={client}>
+      <ToastProvider>{children}</ToastProvider>
+    </QueryClientProvider>
   );
   return QueryWrapper;
 };
@@ -60,7 +66,7 @@ export const TEST_SERVICES = [
 }));
 
 // 분석으로 불러온 구독 (draft의 found). 등록 화면 테스트 공통
-// ChatGPT Plus·Netflix는 사전 등록 서비스로 인식됐지만 확인 필요, 밀리의 서재는 직접 입력처럼 다루는 확인 필요, YouTube Premium은 바로 등록 가능
+// ChatGPT Plus(금액)·Netflix(결제일)는 사전 등록 서비스로 인식됐지만 확인 필요, 밀리의 서재(금액·결제일)는 직접 입력처럼 다루는 확인 필요, YouTube Premium은 바로 등록 가능
 export const TEST_FOUND: FoundSubscription[] = [
   {
     id: 'found-chatgpt',
@@ -75,12 +81,14 @@ export const TEST_FOUND: FoundSubscription[] = [
       paidAt: 'appstore',
     },
     needsReview: true,
+    reviewFields: ['AMOUNT'],
   },
   {
     id: 'custom-found-millie',
     name: '밀리의 서재',
     payment: { category: '교육·학습', amount: 9900, cycle: 1, unit: '개월', paidAt: 'web' },
     needsReview: true,
+    reviewFields: ['AMOUNT', 'NEXT_BILLING_DATE'],
   },
   {
     id: 'found-netflix',
@@ -88,6 +96,7 @@ export const TEST_FOUND: FoundSubscription[] = [
     name: 'Netflix',
     payment: { category: '영상·OTT', amount: 13500, cycle: 1, unit: '개월', paidAt: 'web' },
     needsReview: true,
+    reviewFields: ['NEXT_BILLING_DATE'],
   },
   {
     id: 'found-youtube',
@@ -103,3 +112,33 @@ export const TEST_FOUND: FoundSubscription[] = [
     },
   },
 ];
+
+// 토스트를 띄우는 화면의 renderRouter 루트 레이아웃 (앱에선 루트 _layout이 감쌈)
+export const ToastLayout = () => (
+  <ToastProvider>
+    <Slot />
+  </ToastProvider>
+);
+
+// Gmail 연동 Google 계정 선택 결과 (mock은 jest-setup.ts). null이면 사용자가 취소
+export const mockGmailAuthCode = (code: string | null) =>
+  jest.mocked(GoogleSignin.signIn).mockResolvedValue(
+    code === null
+      ? { type: 'cancelled', data: null }
+      : {
+          type: 'success',
+          data: {
+            idToken: null,
+            serverAuthCode: code,
+            scopes: [],
+            user: {
+              id: '1',
+              email: 'a@gmail.com',
+              name: null,
+              givenName: null,
+              familyName: null,
+              photo: null,
+            },
+          },
+        },
+  );

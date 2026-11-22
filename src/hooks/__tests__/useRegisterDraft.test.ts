@@ -3,14 +3,11 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import {
   getFoundServiceIds,
-  getRegisteredServices,
   hasRegisterDraft,
   useRegisterDraft,
   useRegisterServices,
 } from '@/hooks/useRegisterDraft';
 import { createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
-
-const CATALOG = [{ id: 'netflix', name: 'Netflix', category: '영상·OTT' }];
 
 beforeEach(async () => {
   useRegisterDraft.getState().reset();
@@ -55,26 +52,6 @@ describe('useRegisterDraft', () => {
 
     useRegisterDraft.getState().reset();
     expect(hasRegisterDraft(useRegisterDraft.getState())).toBe(false);
-  });
-
-  it('등록 완료 목록은 넘겨받은 항목만 보여주고, 직접 입력은 저장한 이름을 쓴다', () => {
-    const payment = {
-      category: '기타',
-      amount: 9900,
-      cycle: 1,
-      unit: '개월',
-      nextDate: new Date(2026, 10, 12),
-      paidAt: 'web' as const,
-    };
-    const payments = {
-      'custom-a': { ...payment, name: '밀리의 서재' },
-      'custom-b': { ...payment, name: '체크 해제한 구독' },
-    };
-
-    expect(getRegisteredServices(['netflix', 'custom-a'], payments, CATALOG)).toEqual([
-      { id: 'netflix', name: 'Netflix' },
-      { id: 'custom-a', name: '밀리의 서재' },
-    ]);
   });
 
   it('선택한 구독 목록에는 직접 입력한 구독만 들어가고, 불러온 구독을 수정한 값은 빠진다', async () => {

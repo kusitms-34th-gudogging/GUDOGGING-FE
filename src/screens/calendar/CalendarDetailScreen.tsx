@@ -17,7 +17,6 @@ import { PAID_AT } from '@/constants/services';
 import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
 import { useCalendarPaymentDetail } from '@/hooks/useSubscriptions';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
-import { monthly } from '@/utils/homeSummary';
 import { fillName } from '@/utils/josa';
 
 const monthDay = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
@@ -107,6 +106,7 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
           {/* 기준일(고른 날짜) 기준 상태. 다음 결제일이 없으면 구독 종료라 구독 종료 상세(M-05)처럼 회색 (C-03, 서버가 계산) */}
           <ServiceHeader
             name={p.name}
+            logoUrl={p.logoUrl}
             status={ended ? '구독 종료' : '구독 중'}
             category={p.categoryLabel}
             badgeVariant={ended ? 'mono' : 'tonal'}
@@ -115,7 +115,7 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
             tone={ended ? 'mono' : 'brand'}
             label="결제 예정"
             amount={formatWon(p.amount)}
-            subText={`연 환산 ${formatWon(monthly(p) * 12)}`}
+            subText={`연 환산 ${formatWon(p.yearlyAmount)}`}
           />
         </View>
         <View className="gap-stack-md">
@@ -125,7 +125,7 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
             </Text>
             <View>
               {/* 구독 종료면 다음 결제일이 없음 (명세 null) */}
-              {p.nextDate && <InfoRow title="다음 결제일" value={monthDay(p.nextDate)} />}
+              {p.nextDate && <InfoRow title="다음 결제일" value={fullDate(p.nextDate)} />}
               <InfoRow title="결제 주기" value={formatCycle(p.cycle, p.unit)} />
               <InfoRow
                 title="결제한 곳"

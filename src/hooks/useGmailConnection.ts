@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { request } from '@/lib/request';
 
 export interface GmailConnectionResponse {
-  status: 'NOT_CONNECTED' | 'CONNECTED' | 'FAILED';
+  status: 'NOT_CONNECTED' | 'CONNECTED';
   connected: boolean;
   email: string | null;
 }

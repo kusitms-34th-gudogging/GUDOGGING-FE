@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
+import { apiError, createQueryWrapper, mockApi, mockGmailAuthCode } from '@/lib/testing';
 import { MypageFailedScreen } from '@/screens/mypage/MypageFailedScreen';
 
 // 배경 블러는 Skia 네이티브 렌더링이라 그리지 않음 (장식이라 화면 동작과 무관)
@@ -35,7 +35,10 @@ const renderFailed = async (kind: 'gmail' | 'withdraw', routes: Record<string, u
 };
 const retry = () => userEvent.press(screen.getByRole('button', { name: '다시 시도하기' }));
 
-beforeEach(() => useRegisterDraft.setState({ selectedIds: ['netflix'] }));
+beforeEach(() => {
+  useRegisterDraft.setState({ selectedIds: ['netflix'] });
+  mockGmailAuthCode('google-auth-code');
+});
 afterEach(() => jest.restoreAllMocks());
 
 test('Gmail 다시 시도가 성공하면 Gmail 연동 화면으로 돌아간다', async () => {

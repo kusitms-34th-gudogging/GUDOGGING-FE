@@ -13,7 +13,8 @@ export const useSaveSubscriptionDraft = () => {
     mutationFn: (draft: {
       items: DraftItem[];
       lastStep: RegisterStep;
-      editingItemIndex: number | null;
+      // INPUT_SUBSCRIPTION일 때만 (toDraftStep)
+      editingItemIndex?: number | null;
     }) =>
       request<{ savedAt: string }>('/api/v1/subscriptions/drafts', { method: 'PUT', body: draft }),
     onSuccess: () => client.invalidateQueries({ queryKey: draftKeys.all }),
