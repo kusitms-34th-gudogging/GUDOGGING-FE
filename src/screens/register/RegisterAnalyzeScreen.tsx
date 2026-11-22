@@ -46,10 +46,15 @@ export const RegisterAnalyzeScreen = ({
       useRegisterDraft.getState().setFound(source === 'gmail' ? 'GMAIL' : 'SCREENSHOT', found);
       router.replace('/register/found');
     };
-    // 분석 응답과 최소 노출 시간(1.5초) 중 늦은 쪽에 이동. 분석 중에 나가면 결과를 버림
+    // 분석 응답과 최소 노출 시간(1.5초) 중 늦은 쪽에 이동
+    // 분석 중에 나가면 요청을 취소하고 결과를 버림. Gmail 연결은 그대로 둠 (화면설계서 A-12 '작업 중단')
+    const controller = new AbortController();
+    const { signal } = controller;
     const minVisible = new Promise((resolve) => setTimeout(resolve, MIN_VISIBLE_MS));
     const analysis =
-      source === 'gmail' ? gmail.mutateAsync(authCode) : screenshots.mutateAsync(images);
+      source === 'gmail'
+        ? gmail.mutateAsync({ authCode, signal })
+        : screenshots.mutateAsync({ uris: images, signal });
     Promise.all([analysis, minVisible])
       .then(([found]) => !left && done(found as FoundSubscription[]))
       // 읽기 실패·연동 실패도 인식 실패 안내로. 개발 중엔 원인을 Metro에 남김
@@ -60,6 +65,7 @@ export const RegisterAnalyzeScreen = ({
 
     return () => {
       left = true;
+      controller.abort();
     };
     // 화면에 들어올 때 한 번만 분석
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,7 +85,6 @@ export const RegisterAnalyzeScreen = ({
       <TopBar
         variant="detail"
         title={title}
-        // shortcut: 분석 중 뒤로가기면 Gmail 연동 해제 후 A-11 처음 상태로 (기획 답변), 마이페이지 Gmail 해제 연결 때 같은 훅으로
         onBack={() => router.back()}
         showAction1={false}
         showAction2={false}

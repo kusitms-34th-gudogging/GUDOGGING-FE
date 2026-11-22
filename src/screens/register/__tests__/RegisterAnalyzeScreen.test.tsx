@@ -163,3 +163,23 @@ it('Gmail은 A-11에서 받은 인증 코드로 연동한 뒤 결제 메일을 �
   expect(JSON.parse(String(calls()[0][1]?.body))).toEqual({ authCode: 'google-auth-code' });
   expect(useRegisterDraft.getState().foundSource).toBe('GMAIL');
 });
+
+it('분석 중에 뒤로 가면 Gmail 연결은 두고 분석 요청을 취소한다', async () => {
+  mockApi({
+    'POST /api/v1/gmail/connection': { status: 'CONNECTED', connected: true, email: 'a@gmail.com' },
+    'POST /api/v1/gmail/analyses': { candidates: [candidate()] },
+  });
+  await renderAnalyze('gmail');
+  await waitFor(() => expect(calls()).toHaveLength(2));
+
+  await act(() => router.back());
+
+  expect(screen).toHavePathname('/register/gmail');
+  const [connection, analysis] = calls().map(([, init]) => init?.signal);
+  expect(analysis?.aborted).toBe(true);
+  expect(calls().some(([, init]) => init?.method === 'DELETE')).toBe(false);
+  expect(connection).toBe(analysis);
+  await act(() => jest.advanceTimersByTime(1500));
+  expect(screen).toHavePathname('/register/gmail');
+  expect(useRegisterDraft.getState().found).toEqual([]);
+});
