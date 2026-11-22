@@ -93,6 +93,34 @@ const BY_LABEL: Record<string, CheckupCategory> = {
 export const toCheckupCategory = (label?: string): CheckupCategory =>
   (label && BY_LABEL[label]) || 'etc';
 
+// 활용도 구간 (서버 계산): 80 이상 / 60~79 / 40~59 / 40 미만
+export type CheckupStage =
+  'KEEP_RECOMMENDED' | 'KEEP_CONSIDER' | 'CANCEL_CONSIDER' | 'CANCEL_RECOMMENDED';
+export type CheckupFactor = 'USAGE' | 'SATISFACTION' | 'PLAN';
+
+// K-80 1줄 추천 문구 (활용도 구간별)
+export const STAGE_TITLE: Record<CheckupStage, string> = {
+  KEEP_RECOMMENDED: '유지를 추천해요.',
+  KEEP_CONSIDER: '유지를 고려해 보세요.',
+  CANCEL_CONSIDER: '해지를 고려해 보세요.',
+  CANCEL_RECOMMENDED: '해지를 추천해요.',
+};
+
+// K-80 2줄 보조 문구: 결과에 가장 큰 영향을 준 응답(서버 mainFactor). 유지 쪽은 활용도 60% 이상
+// 계획 1점 보정이면 서버가 PLAN·해지 쪽으로 줘서 항상 '다음 달에는 쓸 계획이 없어요.'
+export const FACTOR_REASON: Record<'keep' | 'cancel', Record<CheckupFactor, string>> = {
+  keep: {
+    USAGE: '최근 한 달 동안 자주 이용했어요.',
+    SATISFACTION: '구독료만큼 만족스럽게 쓰고 있어요.',
+    PLAN: '다음 달에도 계속 쓸 계획이에요.',
+  },
+  cancel: {
+    USAGE: '최근 한 달 동안 거의 이용하지 않았어요.',
+    SATISFACTION: '구독료에 비해 만족도가 낮아요.',
+    PLAN: '다음 달에는 쓸 계획이 없어요.',
+  },
+};
+
 export interface CheckupSubscription {
   id: string;
   name: string;

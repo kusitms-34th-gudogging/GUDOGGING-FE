@@ -1,9 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type {
-  CheckupQuestion,
-  CheckupRecommendation,
-  CheckupSubscription,
+import {
+  type CheckupFactor,
+  type CheckupQuestion,
+  type CheckupRecommendation,
+  type CheckupStage,
+  type CheckupSubscription,
+  FACTOR_REASON,
+  STAGE_TITLE,
 } from '@/constants/checkup';
 import { request } from '@/lib/request';
 import { type ApiCategory, CATEGORY_LABEL } from '@/utils/apiCodes';
@@ -32,6 +36,8 @@ interface CheckupResultResponse {
   // 구독 종료된 구독의 점검이면 null
   nextBillingDate: string | null;
   score: number;
+  stage: CheckupStage;
+  mainFactor: CheckupFactor;
   // 금액·막대는 BENEFIT(통신 요금제)면 null, monthlyPrice는 MAX(카드)면 null
   bundles: {
     name: string;
@@ -100,8 +106,10 @@ export const useCheckupResult = (checkupId: string) =>
         // 결과 응답엔 로고가 따로 없어 같은 카테고리 지출 맨 위(점검한 구독)의 로고를 씀
         logoUrl: r.categorySpending.items[0]?.logoUrl ?? undefined,
         category: CATEGORY_LABEL[r.categorySpending.category],
-        nextDate: r.nextBillingDate ? parseDate(r.nextBillingDate) : undefined,
       },
+      // 추천 문구는 서버가 준 stage·mainFactor로 앱이 고름 (명세)
+      title: `${r.serviceName} ${STAGE_TITLE[r.stage]}`,
+      reason: FACTOR_REASON[r.stage.startsWith('KEEP') ? 'keep' : 'cancel'][r.mainFactor],
       usage: r.score,
       spending: {
         // 점검 중인 구독이 맨 위로 옴 (명세)
