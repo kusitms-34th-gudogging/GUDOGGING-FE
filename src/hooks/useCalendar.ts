@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import type { CalendarDaySubscription } from '@/components/calendar/CalendarDay';
-import type { PaidAt } from '@/constants/services';
+import { type PaidAt, serviceLogo } from '@/constants/services';
 import { request } from '@/lib/request';
 import { type ApiCycleUnit, type ApiPaymentMethod, CYCLE_UNIT, PAID_AT_OF } from '@/utils/apiCodes';
 import type { HomeSubscription } from '@/utils/homeSummary';
@@ -29,9 +29,6 @@ export interface CalendarItem
   paidAt: PaidAt;
 }
 
-// shortcut: 목서버 로고 URL이 실제 이미지가 아니라 placeholder, 실제 로고 URL이 오면 { uri: logoUrl }로
-const LOGO = require('@/assets/images/logo_placeholder.png');
-
 export const calendarKeys = {
   all: ['calendar'] as const,
   month: (year: number, month: number) => [...calendarKeys.all, { year, month }] as const,
@@ -54,7 +51,8 @@ export const useCalendar = (year: number, month: number) =>
             name: p.serviceName,
             // shortcut: 명세 캘린더 응답에 카테고리가 없어 기타, 서비스명 표시(display='name') 색은 카테고리 오면 반영
             category: 'etc',
-            logo: LOGO,
+            // 직접 입력한 구독은 로고가 없어 기본 이미지 (명세)
+            logo: serviceLogo(p.logoUrl ?? undefined),
             amount: p.amount,
             cycle: p.billingCycleValue,
             unit: CYCLE_UNIT[p.billingCycleUnit],

@@ -55,8 +55,8 @@ describe('useSyncSubscriptionDraft', () => {
     expect(draftCalls().at(-1)).toEqual({
       method: 'PUT',
       body: {
+        // INPUT_SUBSCRIPTION이 아니면 editingItemIndex는 보내지 않음 (명세)
         lastStep: 'SELECT_SERVICES',
-        editingItemIndex: null,
         // 결제 정보 입력 전엔 카테고리까지 6개 모두 null (명세)
         items: [
           {
@@ -145,12 +145,8 @@ describe('useSyncSubscriptionDraft', () => {
       useRegisterDraft.getState().setLastStep('INPUT_SUBSCRIPTION', 'found-youtube');
     });
 
-    await waitFor(() =>
-      expect(draftCalls().at(-1)?.body).toMatchObject({
-        lastStep: 'CONFIRM_SUBSCRIPTIONS',
-        editingItemIndex: null,
-      }),
-    );
+    await waitFor(() => expect(draftCalls().at(-1)?.body.lastStep).toBe('CONFIRM_SUBSCRIPTIONS'));
+    expect(draftCalls().at(-1)?.body).not.toHaveProperty('editingItemIndex');
   });
 
   it('직접 등록 내용과 상관없는 변경(분석 결과 체크)엔 보내지 않는다', async () => {
@@ -161,7 +157,7 @@ describe('useSyncSubscriptionDraft', () => {
     expect(draftCalls()).toEqual([]);
   });
 
-  it('다 비우면(나가기·등록 완료) 서버 임시저장도 지운다', async () => {
+  it('다 비우면(새로 등록하기·등록 완료) 서버 임시저장도 지운다', async () => {
     await startSync();
     await act(() => useRegisterDraft.getState().setSelectedIds(['netflix']));
     await waitFor(() => expect(draftCalls()).toHaveLength(1));

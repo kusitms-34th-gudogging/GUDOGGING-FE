@@ -15,13 +15,22 @@ import { TextField } from '@/components/common/TextField';
 import { TopBar } from '@/components/common/TopBar';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import type { SubscriptionDetail } from '@/constants/manage';
-import { type FoundSubscription, PAID_AT, type PaidAt, type Service } from '@/constants/services';
+import {
+  type FoundSubscription,
+  PAID_AT,
+  type PaidAt,
+  type ReviewField,
+  type Service,
+  serviceLogo,
+} from '@/constants/services';
 import { useLeaveConfirm } from '@/hooks/useLeaveConfirm';
 import { useReactivateSubscription } from '@/hooks/useReactivateSubscription';
 import { useRegisterDraft, useRegisterStep } from '@/hooks/useRegisterDraft';
 import { useServices } from '@/hooks/useServices';
 import { useSubscription } from '@/hooks/useSubscriptions';
+import { useToast } from '@/hooks/useToast';
 import { useUpdateSubscription } from '@/hooks/useUpdateSubscription';
+import { startOfToday } from '@/utils/date';
 
 const CATEGORIES = [
   '영상·OTT',
@@ -32,6 +41,14 @@ const CATEGORIES = [
   '생산성·AI',
   '기타',
 ];
+// 분석이 정확히 못 읽은 필드 문구. 금액은 GUI 문구, 나머지는 설계서 A-15 '[필드 타이틀]을 정확히 읽지 못했어요. 실제 [필드 타이틀]을 확인해 주세요.'
+const REVIEW_HELPER: Record<ReviewField, string> = {
+  SERVICE: '서비스명을 정확히 읽지 못했어요. 실제 서비스명을 확인해 주세요.',
+  AMOUNT: '금액을 정확히 읽지 못했어요. 실제 결제 금액을 확인해 주세요.',
+  BILLING_CYCLE: '결제 주기를 정확히 읽지 못했어요. 실제 결제 주기를 확인해 주세요.',
+  NEXT_BILLING_DATE: '다음 결제일을 정확히 읽지 못했어요. 실제 다음 결제일을 확인해 주세요.',
+};
+
 const CYCLE_UNITS = [
   { unit: '일', example: 'ex) 20일마다 결제돼요' },
   { unit: '주', example: 'ex) 2주마다 결제돼요' },
@@ -41,7 +58,6 @@ const CYCLE_UNITS = [
 
 const formatDate = (d: Date) =>
   `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-const startOfToday = () => new Date(new Date().setHours(0, 0, 0, 0));
 
 interface RegisterServiceInputScreenProps {
   // 없으면 직접 입력으로 새 구독 추가 (A-02 직접 입력하기)
@@ -104,6 +120,7 @@ const ServiceInputForm = ({
   const init = saved ?? found?.payment ?? existing;
   const [name, setName] = useState(saved?.name ?? existing?.name ?? '');
   const reactivateSubscription = useReactivateSubscription(reactivate?.id ?? '');
+  const { show } = useToast();
   const updateSubscription = useUpdateSubscription(edit?.id ?? '');
   const [category, setCategory] = useState<string | undefined>(
     init?.category ?? (found ? undefined : (service?.category ?? '기타')),
@@ -117,14 +134,20 @@ const ServiceInputForm = ({
   const [cycle, setCycle] = useState(String(init?.cycle ?? 1));
   const [unit, setUnit] = useState(init?.unit ?? '개월');
   // 재등록은 다음 결제일을 새로 정해야 해서 비워 두고 고르게 함
+  // 임시저장·분석에서 온 날짜가 이미 지났어도 비워 둠 (설계서: 과거 날짜 불가, 서버도 오늘 이후만 등록)
+  const initDate = saved?.nextDate ?? found?.payment.nextDate ?? edit?.nextDate;
   const [nextDate, setNextDate] = useState<Date | undefined>(
-    reactivate
+    reactivate || (initDate && initDate < startOfToday())
       ? undefined
-      : (saved?.nextDate ?? found?.payment.nextDate ?? edit?.nextDate ?? startOfToday()),
+      : (initDate ?? startOfToday()),
   );
   const [paidAt, setPaidAt] = useState<PaidAt>(init?.paidAt ?? 'web');
-  // 확인 필요(결제 정보 입력 필요)로 들어오면 금액 에러를 켜 두고, 금액을 고치면 끔 (Figma A-15)
-  const [amountChecked, setAmountChecked] = useState(!!saved || !found?.needsReview);
+  // 분석이 정확히 못 읽은 필드는 에러 문구를 켜 두고, 그 값을 고치면 끔 (설계서 A-15). 한 번 저장했으면 끔
+  const [unchecked, setUnchecked] = useState<ReadonlySet<ReviewField>>(
+    () => new Set(saved ? [] : (found?.reviewFields ?? [])),
+  );
+  const check = (field: ReviewField) =>
+    setUnchecked((prev) => new Set([...prev].filter((f) => f !== field)));
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [unitSheet, setUnitSheet] = useState(false);
   const [draftUnit, setDraftUnit] = useState<string>();
@@ -176,7 +199,7 @@ const ServiceInputForm = ({
             {headerName && (
               <View className="flex-row items-center gap-inline-sm">
                 <Image
-                  source={require('@/assets/images/logo_placeholder.png')}
+                  source={serviceLogo(existing ? undefined : service?.logoUrl)}
                   className="size-logo-card rounded-full"
                 />
                 <Text className="text-text-primary text-body2-semibold">{headerName}</Text>
@@ -191,7 +214,13 @@ const ServiceInputForm = ({
                   placeholder={found?.name ?? '서비스명을 입력해 주세요'}
                   maxLength={30}
                   value={name}
-                  onChangeText={setName}
+                  onChangeText={(t) => {
+                    setName(t);
+                    check('SERVICE');
+                  }}
+                  error={unchecked.has('SERVICE')}
+                  helper={REVIEW_HELPER.SERVICE}
+                  showHelper={unchecked.has('SERVICE')}
                   onFocus={closeMenu}
                 />
               )}
@@ -219,36 +248,51 @@ const ServiceInputForm = ({
                 value={amount.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                 onChangeText={(t) => {
                   setAmount(t.replace(/\D/g, ''));
-                  setAmountChecked(true);
+                  check('AMOUNT');
                 }}
-                error={!amountChecked}
-                helper="금액을 정확히 읽지 못했어요. 실제 결제 금액을 확인해 주세요."
-                showHelper={!amountChecked}
+                error={unchecked.has('AMOUNT')}
+                helper={REVIEW_HELPER.AMOUNT}
+                showHelper={unchecked.has('AMOUNT')}
                 onFocus={closeMenu}
               />
-              <View className="flex-row items-end gap-inset-xs">
-                <TextField
-                  label="결제 주기"
-                  keyboardType="number-pad"
-                  maxLength={2}
-                  value={cycle}
-                  onChangeText={(t) => setCycle(t.replace(/\D/g, ''))}
-                  error={cycle !== '' && (cycleNum < 1 || cycleNum > 31)}
-                  onFocus={closeMenu}
-                  className="flex-1"
-                />
-                <Dropdown
-                  label="결제 주기 단위"
-                  showLabel={false}
-                  placeholder="단위"
-                  value={unit}
-                  onPress={() => {
-                    closeMenuAndKeyboard();
-                    setDraftUnit(undefined);
-                    setUnitSheet(true);
-                  }}
-                  className="w-[127px]"
-                />
+              <View className="gap-stack-sm">
+                <View className="flex-row items-end gap-inset-xs">
+                  <TextField
+                    label="결제 주기"
+                    keyboardType="number-pad"
+                    maxLength={2}
+                    value={cycle}
+                    onChangeText={(t) => {
+                      setCycle(t.replace(/\D/g, ''));
+                      check('BILLING_CYCLE');
+                    }}
+                    error={
+                      unchecked.has('BILLING_CYCLE') ||
+                      (cycle !== '' && (cycleNum < 1 || cycleNum > 31))
+                    }
+                    onFocus={closeMenu}
+                    className="flex-1"
+                  />
+                  <Dropdown
+                    label="결제 주기 단위"
+                    showLabel={false}
+                    placeholder="단위"
+                    value={unit}
+                    onPress={() => {
+                      closeMenuAndKeyboard();
+                      setDraftUnit(undefined);
+                      setUnitSheet(true);
+                    }}
+                    error={unchecked.has('BILLING_CYCLE')}
+                    className="w-[127px]"
+                  />
+                </View>
+                {/* 숫자·단위 두 칸에 걸친 문구라 줄 아래에 따로 (칸 안에 두면 두 칸 높이가 어긋남). 간격은 TextField 문구와 같은 8 */}
+                {unchecked.has('BILLING_CYCLE') && (
+                  <Text className="text-text-error text-caption1-regular">
+                    {REVIEW_HELPER.BILLING_CYCLE}
+                  </Text>
+                )}
               </View>
               <Dropdown
                 testID="register-input-date"
@@ -256,6 +300,8 @@ const ServiceInputForm = ({
                 placeholder="다음 결제일을 선택해 주세요"
                 value={nextDate && formatDate(nextDate)}
                 showIcon={false}
+                error={unchecked.has('NEXT_BILLING_DATE')}
+                helper={REVIEW_HELPER.NEXT_BILLING_DATE}
                 onPress={() => {
                   closeMenuAndKeyboard();
                   setDraftDate(nextDate ?? startOfToday());
@@ -309,7 +355,12 @@ const ServiceInputForm = ({
               };
               return reactivate
                 ? reactivateSubscription.mutate(input, back)
-                : updateSubscription.mutate(input, back);
+                : updateSubscription.mutate(input, {
+                    onSuccess: () => {
+                      back.onSuccess();
+                      show({ type: 'success', message: '구독 정보를 저장했어요' });
+                    },
+                  });
             }
             const id = serviceId ?? `custom-${Date.now()}`;
             setPayment(id, {
@@ -339,7 +390,11 @@ const ServiceInputForm = ({
         title="결제 주기 단위를 선택해 주세요"
         confirmLabel="확인"
         confirmDisabled={!draftUnit}
-        onConfirm={() => draftUnit && setUnit(draftUnit)}
+        onConfirm={() => {
+          if (!draftUnit) return;
+          setUnit(draftUnit);
+          check('BILLING_CYCLE');
+        }}
       >
         <View className="gap-[6px]">
           {CYCLE_UNITS.map((c) => (
@@ -363,7 +418,10 @@ const ServiceInputForm = ({
         confirmLabel="확인"
         // 과거 결제일은 허용하지 않음 (명세)
         confirmDisabled={draftDate < startOfToday()}
-        onConfirm={() => setNextDate(draftDate)}
+        onConfirm={() => {
+          setNextDate(draftDate);
+          check('NEXT_BILLING_DATE');
+        }}
         confirmTestID="register-date-confirm"
       >
         <Dial value={draftDate} onValueChange={setDraftDate} />

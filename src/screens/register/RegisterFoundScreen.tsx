@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Cta } from '@/components/common/Cta';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
@@ -12,18 +13,18 @@ import type { PaymentInfo } from '@/constants/services';
 import { useCreateSubscriptions } from '@/hooks/useCreateSubscriptions';
 import {
   getFoundServiceIds,
+  readyPayment,
   useRegisterDraft,
   useRegisterServices,
 } from '@/hooks/useRegisterDraft';
-import { useServices } from '@/hooks/useServices';
+import { useToast } from '@/hooks/useToast';
 
 export const RegisterFoundScreen = () => {
   const payments = useRegisterDraft((s) => s.payments);
   const found = useRegisterDraft((s) => s.found);
   const foundSource = useRegisterDraft((s) => s.foundSource);
   const create = useCreateSubscriptions();
-  const catalog = useServices().data ?? [];
-  const setPayment = useRegisterDraft((s) => s.setPayment);
+  const { show } = useToast();
   const foundChecked = useRegisterDraft((s) => s.foundChecked);
   const setFoundChecked = useRegisterDraft((s) => s.setFoundChecked);
   const checked = new Set(foundChecked);
@@ -40,7 +41,11 @@ export const RegisterFoundScreen = () => {
         id: f.id,
         serviceId: name === f.name ? f.serviceId : undefined,
         name,
-        payment: payments[f.id] ?? (f.needsReview ? undefined : (f.payment as PaymentInfo)),
+        // 이름을 바꿨으면 다른 서비스로 보므로 로고도 기본 이미지
+        logoUrl: name === f.name ? f.logoUrl : undefined,
+        payment: readyPayment(
+          payments[f.id] ?? (f.needsReview ? undefined : (f.payment as PaymentInfo)),
+        ),
       };
     }),
     ...added.map((s) => ({
@@ -48,7 +53,8 @@ export const RegisterFoundScreen = () => {
       // 직접 입력(custom-)은 사전 등록 서비스가 아님
       serviceId: s.id.startsWith('custom-') ? undefined : s.id,
       name: s.name,
-      payment: payments[s.id],
+      logoUrl: s.logoUrl,
+      payment: readyPayment(payments[s.id]),
     })),
   ];
   const needCheck = items.filter((f) => !f.payment);
@@ -67,7 +73,11 @@ export const RegisterFoundScreen = () => {
       <TopBar
         variant="detail"
         title="불러온 구독 확인"
-        onBack={() => router.back()}
+        // 뒤로가기는 분석 결과·수정 정보를 지우고 앞 화면으로 (화면설계서 A-13 1)
+        onBack={() => {
+          useRegisterDraft.getState().reset();
+          router.back();
+        }}
         showAction1={false}
         showAction2={false}
       />
@@ -90,7 +100,11 @@ export const RegisterFoundScreen = () => {
                     <PaymentListItem
                       key={f.id}
                       name={f.name}
-                      emptySubtitle="결제 정보 입력 필요"
+                      logoUrl={f.logoUrl}
+                      // 스크린샷은 서비스명도 확인 대상이라 '구독 정보', Gmail은 '결제 정보' (설계서 A-09·A-13)
+                      emptySubtitle={
+                        foundSource === 'GMAIL' ? '결제 정보 입력 필요' : '구독 정보 입력 필요'
+                      }
                       onEdit={() => edit(f.id)}
                       showChevron
                     />
@@ -109,6 +123,7 @@ export const RegisterFoundScreen = () => {
                 <PaymentListItem
                   key={f.id}
                   name={f.name}
+                  logoUrl={f.logoUrl}
                   payment={f.payment}
                   emptySubtitle=""
                   onEdit={() => edit(f.id)}
@@ -124,10 +139,12 @@ export const RegisterFoundScreen = () => {
             </View>
           </View>
         </FadeScrollView>
+        {/* 등록 실패 토스트는 CTA 위 8 (Figma A-07 에러처리와 통일) */}
+        <ToastOutlet className="bottom-0 pb-stack-sm" />
       </View>
       <View className="pb-safe px-screen-x">
         {/* 등록 가능에서 체크한 구독이 있으면 활성화 (등록 가능은 결제 정보가 다 있음). 등록 성공 후 완료 화면으로
-            shortcut: 실패 안내(중복 등록 등)는 디자인에 없어 화면에 남음, 디자인·에러 코드 정해지면 안내 추가 */}
+            실패하면 입력은 그대로 두고 안내 */}
         <Cta
           testID="register-found-submit"
           label="선택한 구독 등록하기"
@@ -143,23 +160,9 @@ export const RegisterFoundScreen = () => {
                 })),
               },
               {
-                onSuccess: () => {
-                  // 완료 화면은 draft의 결제 정보를 읽고, 체크한 항목만 받음
-                  // 사전 등록 서비스가 아닌 항목(불러온 구독·직접 입력)은 완료 화면이 저장한 이름을 쓰므로 찾은 이름을 같이 저장
-                  selected.forEach(
-                    (f) =>
-                      f.payment &&
-                      !payments[f.id] &&
-                      setPayment(f.id, {
-                        ...f.payment,
-                        name: catalog.some((s) => s.id === f.id) ? undefined : f.name,
-                      }),
-                  );
-                  router.push({
-                    pathname: '/register/done',
-                    params: { ids: selected.map((f) => f.id).join(',') },
-                  });
-                },
+                // 완료 화면은 등록 응답으로 그림
+                onSuccess: () => router.push('/register/done'),
+                onError: () => show({ type: 'error', message: '구독 등록에 실패했어요' }),
               },
             )
           }

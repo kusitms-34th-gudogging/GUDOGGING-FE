@@ -16,6 +16,7 @@ const watcha: EndedSubscriptionDetail = {
   category: '영상·OTT',
   paidAt: 'web',
   startedAt: new Date(2026, 3, 16),
+  yearlyAmount: 94800,
   cancelledAt: new Date(2026, 9, 16),
   totalSpent: 47600,
   lastCheckup: {
@@ -24,15 +25,16 @@ const watcha: EndedSubscriptionDetail = {
     usage: '한 달 동안 안 봤어요',
     satisfaction: '볼 게 별로 없어요',
     plan: '다음 달엔 안 봐요',
+    decision: 'CANCEL',
   },
 };
 
-const renderDetail = async () => {
+const renderDetail = async (subscription = watcha) => {
   mockApi({ 'DELETE /api/v1/subscriptions': { deletedCount: 1 } });
   await renderRouter(
     {
       index: () => null,
-      'manage/detail/[id]': () => <EndedSubscriptionDetailScreen subscription={watcha} />,
+      'manage/detail/[id]': () => <EndedSubscriptionDetailScreen subscription={subscription} />,
       'register/input': () => null,
     },
     { initialUrl: '/', wrapper: createQueryWrapper() },
@@ -54,6 +56,12 @@ describe('EndedSubscriptionDetailScreen', () => {
 
     expect(screen.getByText('2026.04.16 ~ 2026.10.16')).toBeOnTheScreen();
     expect(screen.getByText('10월 3일 점검 · 해지')).toBeOnTheScreen();
+  });
+
+  it('마지막 점검에서 해지를 고르지 않았으면 배지에 점검일만 보여 준다', async () => {
+    await renderDetail({ ...watcha, lastCheckup: { ...watcha.lastCheckup!, decision: undefined } });
+
+    expect(screen.getByText('10월 3일 점검')).toBeOnTheScreen();
   });
 
   it('더보기에는 편집 없이 삭제만 있고, 삭제하면 이 구독을 지우고 목록으로 돌아간다', async () => {

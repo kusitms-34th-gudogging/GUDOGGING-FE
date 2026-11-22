@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 
 import { ChevronRightIcon } from '@/assets/icons';
 import { ListItem } from '@/components/common/ListItem';
-import type { PaymentInfo } from '@/constants/services';
+import { type PaymentInfo, serviceLogo } from '@/constants/services';
 import { formatPaymentSummary, formatWon } from '@/utils/formatPayment';
 
 type PaymentListItemProps = Pick<
@@ -10,6 +10,8 @@ type PaymentListItemProps = Pick<
   'showCheckBox' | 'checked' | 'onCheckedChange'
 > & {
   name: string;
+  // 사전 등록 서비스 로고. 없으면 기본 이미지
+  logoUrl?: string;
   payment?: PaymentInfo;
   emptySubtitle: string;
   onEdit: () => void;
@@ -20,6 +22,7 @@ type PaymentListItemProps = Pick<
 
 export const PaymentListItem = ({
   name,
+  logoUrl,
   payment,
   emptySubtitle,
   onEdit,
@@ -31,7 +34,7 @@ export const PaymentListItem = ({
     title={name}
     subtitle={payment ? formatPaymentSummary(payment) : emptySubtitle}
     showSubtitle
-    logo={require('@/assets/images/logo_placeholder.png')}
+    logo={serviceLogo(logoUrl)}
     showLogo
     cost={payment ? formatWon(payment.amount) : '입력하기'}
     showCost={!!payment || !showChevron}

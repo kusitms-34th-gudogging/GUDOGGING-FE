@@ -3,7 +3,7 @@ import { router, Slot } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
 import { ToastProvider } from '@/components/common/ToastProvider';
-import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
+import { apiError, createQueryWrapper, mockApi, mockGmailAuthCode } from '@/lib/testing';
 import { MypageGmailScreen } from '@/screens/mypage/MypageGmailScreen';
 
 const CONNECTION = 'GET /api/v1/gmail/connection';
@@ -42,6 +42,7 @@ const sentBody = (method: string) => {
   return call && JSON.parse(String(call[1]?.body));
 };
 
+beforeEach(() => mockGmailAuthCode('google-auth-code'));
 afterEach(() => jest.restoreAllMocks());
 
 test('연결하기를 누르면 인증 코드로 연동하고 연결된 Gmail 주소와 해제 버튼이 보인다', async () => {
@@ -53,7 +54,7 @@ test('연결하기를 누르면 인증 코드로 연동하고 연결된 Gmail �
 
   await userEvent.press(screen.getByRole('button', { name: 'Gmail 연결하기' }));
 
-  expect(sentBody('POST')).toEqual({ authCode: 'mock-auth-code' });
+  expect(sentBody('POST')).toEqual({ authCode: 'google-auth-code' });
   expect(await screen.findByText('suum.mail@gmail.com')).toBeOnTheScreen();
   expect(screen.getByRole('button', { name: 'Gmail 연결 해제하기' })).toBeOnTheScreen();
 });
@@ -84,11 +85,8 @@ test('Google 계정 선택을 취소하면 연동하지 않고 마이페이지�
   expect(sentBody('POST')).toBeUndefined();
 });
 
-test.each([
-  ['요청이 실패하면', apiError(500)],
-  ['서버가 연동 실패로 답하면', { status: 'FAILED', connected: false, email: null }],
-])('%s 연동 실패 화면으로 이동한다', async (_, response) => {
-  await renderFromMypage({ [CONNECTION]: NOT_CONNECTED, [CONNECT]: response });
+test('연동 요청이 실패하면 연동 실패 화면으로 이동한다', async () => {
+  await renderFromMypage({ [CONNECTION]: NOT_CONNECTED, [CONNECT]: apiError(400) });
 
   await userEvent.press(screen.getByRole('button', { name: 'Gmail 연결하기' }));
 

@@ -7,6 +7,7 @@ import { GuideStep } from '@/components/common/GuideStep';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
+import { startGmailAnalysis } from '@/hooks/useAnalyzeSubscriptions';
 
 const GUIDES = [
   'Gmail 연결은 선택 사항이에요.',
@@ -40,12 +41,7 @@ export const RegisterGmailGuideScreen = () => (
       </View>
     </View>
     <View className="pb-safe px-screen-x">
-      {/* shortcut: Gmail OAuth 없이 바로 메일 확인 중으로, 연동 작업 시 OAuth 성공 후 이동 */}
-      <Cta
-        label="Gmail 연동하기"
-        onPress={() => router.push({ pathname: '/register/analyze', params: { source: 'gmail' } })}
-        className="mb-[14px]"
-      />
+      <Cta label="Gmail 연동하기" onPress={startGmailAnalysis} className="mb-[14px]" />
     </View>
   </View>
 );

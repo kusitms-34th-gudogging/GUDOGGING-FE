@@ -98,18 +98,16 @@ const draftEntries = (
 ];
 
 // 머문 화면 → 명세 lastStep·editingItemIndex. 입력 중인 항목이 임시저장에 없으면 그 목록 화면(A-04)으로
+// editingItemIndex는 INPUT_SUBSCRIPTION일 때만 보냄. 다른 단계에 있으면 서버가 40001 (명세)
 export const toDraftStep = (
   lastStep: RegisterStep | undefined,
   editingId: string | undefined,
   ids: string[],
-) => {
-  if (lastStep !== 'INPUT_SUBSCRIPTION')
-    return { lastStep: lastStep ?? 'SELECT_SERVICES', editingItemIndex: null };
+): { lastStep: RegisterStep; editingItemIndex?: number | null } => {
+  if (lastStep !== 'INPUT_SUBSCRIPTION') return { lastStep: lastStep ?? 'SELECT_SERVICES' };
   if (editingId === undefined) return { lastStep, editingItemIndex: null };
   const index = ids.indexOf(editingId);
-  return index >= 0
-    ? { lastStep, editingItemIndex: index }
-    : { lastStep: 'CONFIRM_SUBSCRIPTIONS' as const, editingItemIndex: null };
+  return index >= 0 ? { lastStep, editingItemIndex: index } : { lastStep: 'CONFIRM_SUBSCRIPTIONS' };
 };
 
 // 서버 임시저장 → 기기 저장소. 결제 정보를 다 채운 항목만 결제 정보로 (A-03은 일부만 저장하지 않음)
@@ -140,7 +138,7 @@ export const fromDraft = ({ items, lastStep, editingItemIndex }: SubscriptionDra
 };
 
 // 직접 등록 중 고른 서비스·입력한 결제 정보·머문 화면이 바뀔 때마다 서버에 임시저장 (명세: 입력값이 바뀔 때마다 앱이 보냄)
-// 다 비면(나가기·새로 등록하기·등록 완료) 서버 임시저장도 삭제. 등록 구간(register/_layout)에서만 동작
+// 다 비면(새로 등록하기·등록 완료) 서버 임시저장도 삭제. 등록 구간(register/_layout)에서만 동작
 export const useSyncSubscriptionDraft = () => {
   const services = useServices().data;
   const save = useSaveSubscriptionDraft();

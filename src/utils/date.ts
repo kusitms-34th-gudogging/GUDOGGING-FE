@@ -10,6 +10,8 @@ export const formatDate = (date: Date) =>
     .map((n) => String(n).padStart(2, '0'))
     .join('-');
 
+export const startOfToday = () => new Date(new Date().setHours(0, 0, 0, 0));
+
 export const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
 
 // 캘린더 달을 이어진 번호(page)로 다뤄서 스와이프 위치를 page × 화면 폭으로 계산

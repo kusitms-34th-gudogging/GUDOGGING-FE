@@ -2,9 +2,12 @@ import type { PaidAt } from '@/constants/services';
 import type { HomeSubscription } from '@/utils/homeSummary';
 
 interface SubscriptionDetailBase extends HomeSubscription {
+  logoUrl?: string;
   category: string;
   paidAt: PaidAt;
   startedAt: Date;
+  // 연 환산 금액 (서버 계산)
+  yearlyAmount: number;
 }
 
 // 구독 중 (M-03)
@@ -32,6 +35,9 @@ export interface EndedSubscriptionDetail extends SubscriptionDetailBase {
     usage: string;
     satisfaction: string;
     plan: string;
+    // 유지/해지를 골랐으면 그 결정 (안 골랐으면 없음)
+    decision?: 'KEEP' | 'CANCEL';
+    // 고른 해지 이유 문구와 직접 입력한 이유를 한 줄씩
     cancelReason?: string;
   };
 }

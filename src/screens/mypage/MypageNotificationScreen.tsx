@@ -45,16 +45,12 @@ export const MypageNotificationScreen = ({
       ) : (
         <View className="flex-row items-center justify-between gap-inline-sm px-screen-x pt-stack-md">
           <View className="shrink">
-            <Text className="text-text-primary text-body2-bold">꾸준히 쓰는 구독</Text>
+            <Text className="text-text-primary text-body2-bold">구독 점검 알림</Text>
             <Text className="text-text-secondary text-caption2-regular">
               결제 3일 전에 점검 알림을 보내드려요.
             </Text>
           </View>
-          <Toggle
-            value={enabled}
-            onValueChange={toggle}
-            accessibilityLabel="꾸준히 쓰는 구독 알림"
-          />
+          <Toggle value={enabled} onValueChange={toggle} accessibilityLabel="구독 점검 알림" />
         </View>
       )}
     </View>

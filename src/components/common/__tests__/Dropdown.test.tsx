@@ -16,6 +16,15 @@ describe('Dropdown', () => {
     expect(screen.getByText('선택해주세요')).toBeOnTheScreen();
   });
 
+  it.each([
+    [true, true],
+    [false, false],
+  ])('error가 %s면 안내 문구를 보여 줄지: %s', async (error, shown) => {
+    await render(<Dropdown {...baseProps} error={error} helper="결제 주기를 확인해 주세요." />);
+
+    expect(!!screen.queryByText('결제 주기를 확인해 주세요.')).toBe(shown);
+  });
+
   it('누르면 onPress가 호출된다', async () => {
     const onPress = jest.fn();
     await render(<Dropdown {...baseProps} onPress={onPress} />);

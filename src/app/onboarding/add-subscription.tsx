@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Linking } from 'react-native';
 
+import { startGmailAnalysis } from '@/hooks/useAnalyzeSubscriptions';
 import { AddSubscriptionScreen } from '@/screens/onboarding/AddSubscriptionScreen';
 
 // 첫 구독 등록 안내. Apple 로그인은 App Store 구독 관리로, 열 수 없어도 그대로 둔다
@@ -18,11 +19,7 @@ export default function AddSubscriptionRoute() {
       provider={isGoogle ? 'google' : 'apple'}
       onSkip={() => router.replace('/')}
       // Google은 바로 Gmail 연동 + 결제 메일 분석(A-12) → 불러온 구독 확인
-      onConfirm={
-        isGoogle
-          ? () => router.push({ pathname: '/register/analyze', params: { source: 'gmail' } })
-          : openAppStoreSubscriptions
-      }
+      onConfirm={isGoogle ? startGmailAnalysis : openAppStoreSubscriptions}
       // Apple은 캡처하고 돌아와 스크린샷 고르기(A-07) → 분석 → 불러온 구독 확인
       onAddScreenshots={isGoogle ? undefined : () => router.push('/register/images')}
     />

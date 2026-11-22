@@ -5,7 +5,12 @@ export interface Service {
   category: string;
   // 사전 등록 요금제 기본 금액 (구독 정보 입력의 결제 금액 기본값)
   defaultAmount?: number;
+  logoUrl?: string;
 }
+
+// 서비스 로고. 없으면 기본 이미지 (명세: logoUrl이 null이면 기본 이미지)
+export const serviceLogo = (logoUrl?: string) =>
+  logoUrl ? { uri: logoUrl } : require('@/assets/images/logo_placeholder.png');
 
 export const PAID_AT = [
   { value: 'web', label: '웹·직접 결제' },
@@ -21,10 +26,17 @@ export interface FoundSubscription {
   // 사전 등록 서비스로 인식됐으면 그 서비스 id
   serviceId?: string;
   name: string;
+  // 사전 등록 서비스 로고. 없으면 기본 이미지
+  logoUrl?: string;
   payment: Partial<PaymentInfo>;
-  // 읽지 못했거나 불확실한 값이 있어 확인 필요 (금액 에러를 켠 채로 수정 화면이 열림)
+  // 읽지 못했거나 불확실한 값이 있어 확인 필요
   needsReview?: boolean;
+  // 확인이 필요한 필드. 수정 화면(A-15)이 이 필드들에 에러 문구를 켠 채로 열림
+  reviewFields?: ReviewField[];
 }
+
+// 분석이 정확히 읽지 못한 필드 (명세 reviewFields)
+export type ReviewField = 'SERVICE' | 'AMOUNT' | 'BILLING_CYCLE' | 'NEXT_BILLING_DATE';
 
 export interface PaymentInfo {
   name?: string;

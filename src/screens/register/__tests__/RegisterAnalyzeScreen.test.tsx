@@ -24,6 +24,7 @@ const candidate = (over: object = {}) => ({
   nextBillingDate: '2026-11-18',
   paymentMethod: 'APP_STORE',
   needsReview: false,
+  reviewFields: [],
   ...over,
 });
 
@@ -35,7 +36,11 @@ const renderAnalyze = async (source: 'screenshot' | 'gmail' = 'screenshot') => {
       'register/gmail': () => null,
       'register/images': () => null,
       'register/analyze': () => (
-        <RegisterAnalyzeScreen source={source} images={['file:///a.png', 'file:///b.jpg']} />
+        <RegisterAnalyzeScreen
+          source={source}
+          images={['file:///a.png', 'file:///b.jpg']}
+          authCode="google-auth-code"
+        />
       ),
       'register/failed': () => null,
       'register/found': () => null,
@@ -64,8 +69,15 @@ it('스크린샷을 올려 분석하고, 결과를 저장해 불러온 구독 �
   mockApi({
     [SCREENSHOT]: {
       candidates: [
-        candidate(),
-        candidate({ serviceId: null, serviceName: '헬스장', amount: null, needsReview: true }),
+        candidate({ logoUrl: 'https://cdn.gudogging.com/logos/youtube.png' }),
+        candidate({
+          serviceId: 'chatgpt',
+          serviceName: 'ChatGPT Plus',
+          category: 'PRODUCTIVITY_AI',
+          amount: null,
+          needsReview: true,
+          reviewFields: ['AMOUNT'],
+        }),
       ],
     },
   });
@@ -89,6 +101,7 @@ it('스크린샷을 올려 분석하고, 결과를 저장해 불러온 구독 �
       id: 'found-0',
       serviceId: 'youtube',
       name: 'YouTube Premium',
+      logoUrl: 'https://cdn.gudogging.com/logos/youtube.png',
       payment: {
         category: '영상·OTT',
         amount: 14900,
@@ -98,25 +111,27 @@ it('스크린샷을 올려 분석하고, 결과를 저장해 불러온 구독 �
         paidAt: 'appstore',
       },
       needsReview: false,
+      reviewFields: [],
     },
-    // 사전 등록 서비스가 아니면 직접 입력처럼 다룸(custom-), 읽지 못한 값은 비워 둠
+    // 읽지 못한 값은 비워 두고, 확인할 필드는 수정 화면(A-15)으로 넘김
     {
-      id: 'custom-found-1',
-      serviceId: undefined,
-      name: '헬스장',
+      id: 'found-1',
+      serviceId: 'chatgpt',
+      name: 'ChatGPT Plus',
       payment: expect.objectContaining({ amount: undefined }),
       needsReview: true,
+      reviewFields: ['AMOUNT'],
     },
   ]);
   // 등록 가능 항목은 처음부터 전부 체크 (기획 답변)
-  expect(foundChecked).toEqual(['found-0', 'custom-found-1']);
+  expect(foundChecked).toEqual(['found-0', 'found-1']);
 });
 
 it.each([
   ['찾은 구독이 없으면', { candidates: [] }],
   ['분석에 실패하면', apiError(400)],
 ])(
-  '%s 실패 화면으로 가고, 그 아래가 안내(A-06)라 스와이프로 돌아가도 A-06이다',
+  '%s 실패 화면으로 가고, 그 아래가 스크린샷 확인(A-07)이라 스와이프로 돌아가도 A-07이다',
   async (_, response) => {
     mockApi({ [SCREENSHOT]: response });
     await renderAnalyze();
@@ -127,11 +142,11 @@ it.each([
 
     // 스와이프 뒤로가기 = 스택에서 한 칸 뒤로
     await act(() => router.back());
-    expect(screen).toHavePathname('/register/screenshot');
+    expect(screen).toHavePathname('/register/images');
   },
 );
 
-it('Gmail은 연동한 뒤 결제 메일을 분석하고, 출처를 Gmail로 저장한다', async () => {
+it('Gmail은 A-11에서 받은 인증 코드로 연동한 뒤 결제 메일을 분석하고, 출처를 Gmail로 저장한다', async () => {
   mockApi({
     'POST /api/v1/gmail/connection': { status: 'CONNECTED', connected: true, email: 'a@gmail.com' },
     'POST /api/v1/gmail/analyses': { candidates: [candidate()] },
@@ -145,5 +160,26 @@ it('Gmail은 연동한 뒤 결제 메일을 분석하고, 출처를 Gmail로 저
     '/api/v1/gmail/connection',
     '/api/v1/gmail/analyses',
   ]);
+  expect(JSON.parse(String(calls()[0][1]?.body))).toEqual({ authCode: 'google-auth-code' });
   expect(useRegisterDraft.getState().foundSource).toBe('GMAIL');
+});
+
+it('분석 중에 뒤로 가면 Gmail 연결은 두고 분석 요청을 취소한다', async () => {
+  mockApi({
+    'POST /api/v1/gmail/connection': { status: 'CONNECTED', connected: true, email: 'a@gmail.com' },
+    'POST /api/v1/gmail/analyses': { candidates: [candidate()] },
+  });
+  await renderAnalyze('gmail');
+  await waitFor(() => expect(calls()).toHaveLength(2));
+
+  await act(() => router.back());
+
+  expect(screen).toHavePathname('/register/gmail');
+  const [connection, analysis] = calls().map(([, init]) => init?.signal);
+  expect(analysis?.aborted).toBe(true);
+  expect(calls().some(([, init]) => init?.method === 'DELETE')).toBe(false);
+  expect(connection).toBe(analysis);
+  await act(() => jest.advanceTimersByTime(1500));
+  expect(screen).toHavePathname('/register/gmail');
+  expect(useRegisterDraft.getState().found).toEqual([]);
 });

@@ -6,6 +6,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { FoundSubscription, PaymentInfo, Service } from '@/constants/services';
 import { useServices } from '@/hooks/useServices';
+import { startOfToday } from '@/utils/date';
 
 type FoundSource = 'SCREENSHOT' | 'GMAIL';
 // 직접 등록 중 마지막으로 머문 화면 (서버 임시저장 lastStep, 불러오기로 그 화면에 복원)
@@ -84,7 +85,7 @@ export const useRegisterServices = (serviceIds: string[]) => {
     ...services.filter((s) => serviceIds.includes(s.id)),
     ...Object.entries(payments)
       .filter(([id]) => id.startsWith('custom-') && !found.some((f) => f.id === id))
-      .map(([id, p]) => ({ id, name: p.name ?? '' })),
+      .map(([id, p]): Pick<Service, 'id' | 'name' | 'logoUrl'> => ({ id, name: p.name ?? '' })),
   ];
 };
 
@@ -98,16 +99,9 @@ export const getFoundServiceIds = (
     f.serviceId && (payments[f.id]?.name ?? f.name) === f.name ? [f.serviceId] : [],
   );
 
-// 등록 완료(A-05): 넘겨받은 항목만. 저장한 이름(직접 입력·불러온 구독에서 바꾼 이름)이 있으면 그 이름, 없으면 사전 등록 서비스 이름
-export const getRegisteredServices = (
-  ids: string[],
-  payments: Record<string, PaymentInfo>,
-  services: Service[],
-) =>
-  ids.map((id) => ({
-    id,
-    name: payments[id]?.name ?? services.find((s) => s.id === id)?.name ?? '',
-  }));
+// 등록할 수 있는 결제 정보. 다음 결제일이 지났으면(임시저장에서 불러온 날짜 등) 다시 입력해야 해서 없는 것으로 봄
+export const readyPayment = (payment?: PaymentInfo) =>
+  payment && payment.nextDate >= startOfToday() ? payment : undefined;
 
 // 직접 등록 화면이 보일 때 머문 화면으로 기록 (서버 임시저장 lastStep). step이 없으면 기록 안 함
 // persist의 set은 저장 Promise를 돌려줘서 그대로 반환하면 effect 정리 함수 자리에 Promise가 들어감 → 블록으로 감쌈

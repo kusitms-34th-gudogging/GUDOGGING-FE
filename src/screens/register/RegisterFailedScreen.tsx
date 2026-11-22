@@ -12,7 +12,7 @@ import { TopBar } from '@/components/common/TopBar';
 const COPY = {
   screenshot: {
     header: '스크린샷으로 등록',
-    guide: '/register/screenshot',
+    guide: '/register/images',
     title: '구독 정보를 찾지 못했어요.',
     description: '구독 목록이 잘 보이지 않거나\n지원하지 않는 화면일 수 있어요.',
   },
@@ -41,7 +41,7 @@ export const RegisterFailedScreen = ({ source }: RegisterFailedScreenProps) => {
       <TopBar
         variant="detail"
         title={header}
-        // 안내 화면(A-06·A-11)으로. 분석 화면이 사이 화면을 걷어 내서 스와이프도 같은 곳으로 감
+        // 스크린샷 확인(A-07)·Gmail 안내(A-11)로. 분석 화면이 사이 화면을 걷어 내서 스와이프도 같은 곳으로 감
         onBack={() => router.dismissTo(guide)}
         showAction1={false}
         showAction2={false}

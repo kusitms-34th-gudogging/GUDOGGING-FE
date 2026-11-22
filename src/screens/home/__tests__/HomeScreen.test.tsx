@@ -153,6 +153,16 @@ describe('HomeScreen', () => {
     expect(screen).toHavePathname('/checkup/soon');
   });
 
+  it('구독이 있으면 로고 URL이 없는 구독까지 구독 개수만큼 로고를 띄운다', async () => {
+    await renderHome(
+      home({ summary: { ...subscribed, subscriptionCount: 3, logos: ['https://a.png'] } }),
+    );
+    // 로고 묶음은 스크린 리더에서 숨긴 장식이라 숨긴 요소까지 찾음
+    expect(
+      await screen.findAllByTestId('floating-logo', { includeHiddenElements: true }),
+    ).toHaveLength(3);
+  });
+
   it('점검 기록이 있어도 잘 안 쓰는 구독이 없으면 점검 유도 카드를 보여 준다', async () => {
     await renderHome(
       home({ summary: subscribed, usage: { ...home().usage, hasCheckup: true, items: [] } }),
@@ -162,11 +172,11 @@ describe('HomeScreen', () => {
     expect(screen.queryByText(/원 결제$/)).not.toBeOnTheScreen();
   });
 
-  it('잘 안 쓰는 구독이 없어도 제목 화살표를 누르면 구독 관리로 간다', async () => {
-    const user = await renderHome(home({ summary: subscribed }));
+  it('잘 안 쓰는 구독이 없으면 제목은 화살표 없이 눌리지도 않는다', async () => {
+    await renderHome(home({ summary: subscribed }));
 
-    await user.press(await screen.findByRole('button', { name: '잘 안 쓰는 구독' }));
-    expect(screen).toHavePathname('/manage');
+    expect(await screen.findByRole('header', { name: '잘 안 쓰는 구독' })).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: '잘 안 쓰는 구독' })).not.toBeOnTheScreen();
   });
 
   it('점검 기록이 있으면 잘 안 쓰는 구독과 월 합계를 보여 준다', async () => {
