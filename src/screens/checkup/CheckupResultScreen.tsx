@@ -58,12 +58,7 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
               <Image source={serviceLogo(subscription.logoUrl)} className="size-full" />
             </View>
             <View className="flex-1">
-              <Text
-                lineBreakStrategyIOS="hangul-word"
-                className="text-text-primary text-body1-bold"
-              >
-                {title}
-              </Text>
+              <Text className="text-text-primary text-body1-bold">{title}</Text>
               <Text className="text-text-primary text-caption1-regular">{reason}</Text>
             </View>
           </View>
