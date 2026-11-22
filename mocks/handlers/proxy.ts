@@ -8,6 +8,7 @@ const PROXY_PATHS = [
   '/api/v1/auth/apple',
   '/api/v1/auth/google',
   '/api/v1/auth/reissue',
+  '/api/v1/home',
   '/api/v1/services',
   '/api/v1/subscriptions/drafts',
   '/api/v1/subscriptions/screenshots/analyses',

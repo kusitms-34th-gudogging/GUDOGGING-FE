@@ -14,13 +14,11 @@ import { HomeEmptyState } from '@/components/home/HomeEmptyState';
 import { SectionHeader } from '@/components/home/SectionHeader';
 import { ServiceCard } from '@/components/home/ServiceCard';
 import { StateCard } from '@/components/home/StateCard';
+import { serviceLogo } from '@/constants/services';
 import { useHome } from '@/hooks/useHome';
 import { cn } from '@/utils/cn';
 import { parseDate } from '@/utils/date';
 import { formatWon } from '@/utils/formatPayment';
-
-// shortcut: 목서버 로고 URL이 실제 이미지가 아니라 placeholder, 실제 로고 URL이 오면 { uri: logoUrl }로
-const LOGO = require('@/assets/images/logo_placeholder.png');
 
 const dateLabel = (date: string) => {
   const d = parseDate(date);
@@ -79,7 +77,7 @@ export const HomeScreen = () => {
             />
             <ServiceCard
               label={`${summary.subscriptionCount}개 구독 중이에요`}
-              logos={summary.logos.map((url, i) => ({ id: `${i}-${url}`, logo: LOGO }))}
+              logos={summary.logos.map((url, i) => ({ id: `${i}-${url}`, logo: serviceLogo(url) }))}
               className="flex-1"
             />
           </View>
@@ -110,7 +108,7 @@ export const HomeScreen = () => {
                       title={s.serviceName}
                       subtitle={`${dateLabel(s.nextBillingDate)} · D-${s.dDay}`}
                       showSubtitle
-                      logo={LOGO}
+                      logo={serviceLogo(s.logoUrl ?? undefined)}
                       showLogo
                       cost={formatWon(s.amount)}
                       showCost
@@ -149,7 +147,7 @@ export const HomeScreen = () => {
                         // 화면설계서 구간: 40% 미만 해지 추천, 40–59% 해지 고려 (API 명세의 'n% 유지 추천'보다 우선)
                         subtitle={`${s.scorePercent}% ${s.scorePercent < 40 ? '해지 추천' : '해지 고려'}`}
                         showSubtitle
-                        logo={LOGO}
+                        logo={serviceLogo(s.logoUrl ?? undefined)}
                         showLogo
                         cost={formatWon(s.amount)}
                         showCost
@@ -164,11 +162,8 @@ export const HomeScreen = () => {
                 </>
               ) : (
                 <>
-                  <SectionHeader
-                    title="잘 안 쓰는 구독"
-                    showChevron
-                    onPress={() => router.navigate('/manage')}
-                  />
+                  {/* 보여 줄 구독이 없어 제목만 (Figma H-03, 화살표 없음) */}
+                  <SectionHeader title="잘 안 쓰는 구독" />
                   <StateCard
                     title={'결제 전 30초 질문,\n잘 쓰는 구독을 가려 드려요'}
                     buttonLabel="점검하러 가기"
