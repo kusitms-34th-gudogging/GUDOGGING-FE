@@ -1,5 +1,5 @@
 import { motion } from '@tokens';
-import { useIsFocused } from 'expo-router';
+import { useIsFocused, usePathname } from 'expo-router';
 import {
   createContext,
   type ReactNode,
@@ -23,11 +23,15 @@ const VISIBLE_MS = 2000;
 interface ShowOptions {
   // 화면을 떠나면서 띄울 때. 떠나는 화면엔 안 그리고 다음에 포커스되는 화면에서 띄움
   nextScreen?: boolean;
+  // 띄운 화면 경로. useToast가 채움
+  pathname?: string;
 }
+
+type ShownToast = ToastProps & { id: number; pathname?: string };
 
 interface ToastContextValue {
   show: (toast: ToastProps, options?: ShowOptions) => void;
-  toast: (ToastProps & { id: number }) | null;
+  toast: ShownToast | null;
   // 다음 화면용으로 맡겨 둔 토스트를 꺼냄 (ToastOutlet이 포커스될 때)
   takePending: () => ToastProps | null;
 }
@@ -39,7 +43,7 @@ interface ToastProviderProps {
 }
 
 export const ToastProvider = ({ children }: ToastProviderProps) => {
-  const [toast, setToast] = useState<(ToastProps & { id: number }) | null>(null);
+  const [toast, setToast] = useState<ShownToast | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   // expo-router는 뒤로 가기·이동을 다음 렌더 뒤에 처리해서, 바로 띄우면 떠나는 화면에 먼저 보임
   const pending = useRef<{ toast: ToastProps; at: number } | null>(null);
@@ -51,7 +55,7 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
     }
     pending.current = null;
     clearTimeout(timer.current);
-    setToast({ ...next, id: Date.now() });
+    setToast({ ...next, id: Date.now(), pathname: options?.pathname });
     AccessibilityInfo.announceForAccessibility(next.message);
     timer.current = setTimeout(() => setToast(null), VISIBLE_MS);
   }, []);
@@ -80,13 +84,14 @@ interface ToastOutletProps {
 export const ToastOutlet = ({ className }: ToastOutletProps) => {
   const { toast, show, takePending } = useContext(ToastContext) ?? {};
   const focused = useIsFocused();
+  const pathname = usePathname();
 
   // 이 화면이 포커스되는 순간(돌아오거나 처음 열릴 때) 이전 화면이 맡긴 토스트를 띄움.
   // show·takePending은 바뀌지 않아서 포커스가 바뀔 때만 돎
   useEffect(() => {
     const next = focused && takePending?.();
-    if (next) show?.(next);
-  }, [focused, show, takePending]);
+    if (next) show?.(next, { pathname });
+  }, [focused, pathname, show, takePending]);
 
   return (
     <View
@@ -95,7 +100,8 @@ export const ToastOutlet = ({ className }: ToastOutletProps) => {
         className,
       )}
     >
-      {toast && focused && (
+      {/* 띄운 화면의 토스트만. 떠 있는 동안 뒤로 가거나 다른 화면에 가면 그 화면엔 또 뜨지 않게 */}
+      {toast && focused && (!toast.pathname || toast.pathname === pathname) && (
         <Animated.View
           key={toast.id}
           entering={FadeIn.duration(motion.transition).easing(

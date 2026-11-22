@@ -141,4 +141,29 @@ describe('ToastProvider', () => {
     expect(screen).toHavePathname('/');
     expect(screen.getAllByText('삭제했어요', { includeHiddenElements: true })).toHaveLength(1);
   });
+
+  it('토스트가 떠 있는 동안 뒤로 가면 이전 화면엔 다시 뜨지 않는다', async () => {
+    await renderRouter(
+      {
+        _layout: () => <Stack />,
+        index: () => <ToastOutlet />,
+        notification: () => (
+          <>
+            <ShowButtons />
+            <ToastOutlet />
+          </>
+        ),
+      },
+      { initialUrl: '/', wrapper: ToastProvider },
+    );
+    await act(() => router.push('/notification'));
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await user.press(screen.getByRole('button', { name: '첫 토스트' }));
+    expect(screen.getByText('저장했어요')).toBeOnTheScreen();
+
+    await act(() => router.back());
+
+    expect(screen).toHavePathname('/');
+    expect(screen.queryByText('저장했어요', { includeHiddenElements: true })).toBeNull();
+  });
 });
