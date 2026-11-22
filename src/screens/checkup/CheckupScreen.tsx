@@ -84,7 +84,12 @@ const CheckupQuestions = ({
   const isMemo = step === MEMO_STEP;
   // 문항 문구·보조 문구는 서버가 서비스명·조사·금액·날짜를 채운 완성 문장 (명세)
   const question = isMemo
-    ? { title: `${name}에 대해\n남기고 싶은 말이 있나요?`, hint: '다음 점검 때 다시 보여드려요' }
+    ? // 강제 줄바꿈 없이 이어 쓰고 단어 단위로 줄바꿈 (hangul-word)
+      // 이름이 ')'로 끝나면 '에' 앞에서 줄이 바뀜 → WORD JOINER(U+2060, 폭 0)로 붙임
+      {
+        title: `${name}\u2060에 대해 남기고 싶은 말이 있나요?`,
+        hint: '다음 점검 때 다시 보여드려요',
+      }
     : questions[step];
 
   const goTo = (next: number) => {
