@@ -69,8 +69,7 @@ E2E는 적게, 제품 핵심 가치를 지나는 **사용자 여정** 단위로 
 
 ## 로그인
 
-- 지금은 Apple·Google SDK가 없어 버튼 탭만으로 로그인됨 (`src/hooks/useLogin.ts`)
-- SDK를 붙이면 네이티브 로그인 창은 조작 불가 → E2E 빌드에서만 켜지는 JS 우회 경로를 추가 (네이티브 변경 없이)
+- 네이티브 로그인 창(Apple·Google)은 Maestro로 조작 불가 → 셸에서 `EXPO_PUBLIC_E2E=1`을 주고 Release 빌드하면 창 없이 임시 토큰으로 목서버에 로그인 (`src/hooks/useLogin.ts`)
 
 ## 기다리기 ([Wait commands](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/wait-commands))
 
