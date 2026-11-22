@@ -148,11 +148,7 @@ const CheckupQuestions = ({
         </View>
         <View className="gap-inset-lg">
           <View className="max-w-[308px] gap-[6px]">
-            <Text
-              accessibilityRole="header"
-              lineBreakStrategyIOS="hangul-word"
-              className="text-text-primary text-head2-bold"
-            >
+            <Text accessibilityRole="header" className="text-text-primary text-head2-bold">
               {question.title}
             </Text>
             <Text className="text-text-primary text-body2-regular">{question.hint}</Text>

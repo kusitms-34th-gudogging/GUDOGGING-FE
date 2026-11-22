@@ -101,11 +101,7 @@ export const CheckupCancelScreen = ({ id, checkupId }: CheckupCancelScreenProps)
         </View>
         <View className="shrink gap-inset-lg">
           <View className="max-w-[308px] gap-[6px]">
-            <Text
-              accessibilityRole="header"
-              lineBreakStrategyIOS="hangul-word"
-              className="text-text-primary text-head2-bold"
-            >
+            <Text accessibilityRole="header" className="text-text-primary text-head2-bold">
               {fillName('{name}을 해지하려는 이유를 알려주세요', name)}
             </Text>
             <Text className="text-text-primary text-body2-regular">여러 개 고를 수 있어요</Text>
