@@ -23,7 +23,7 @@ paths:
 - 4xx(`ApiError` status < 500)는 재시도 안 함, 그 외 최대 2회
 - 앱 복귀 시 refetch: `useAppStateFocus`에서 `AppState` 변경 → `focusManager.setFocused(status === 'active')` (`Platform.OS !== 'web'`일 때만)
 - 화면 복귀 시 refetch가 필요하면 그 화면에서 `useFocusEffect`(`expo-router`에서 export됨, 확인함)로 `refetch`. 마운트 때도 호출되므로 첫 호출은 건너뜀
-- 오프라인 감지(`onlineManager`)는 오프라인 UX가 기획에 생기면 추가. 그때 Expo 모듈 `expo-network` 사용
+- 오프라인 감지: `queryClient.ts`에서 `onlineManager.setEventListener` ↔ Expo 모듈 `expo-network` (TanStack React Native 문서 예시). 끊기면 요청이 멈추고 다시 연결되면 다시 불러옴. 끊김 안내 토스트(TST-001 E-2)는 `ToastProvider`가 `onlineManager`를 구독해 띄움
 - 테스트에서는 이 인스턴스 말고 테스트용 `QueryClient` 새로 만듦
 
 ## 이럴 때 더 읽기

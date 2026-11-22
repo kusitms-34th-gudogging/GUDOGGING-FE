@@ -1,3 +1,4 @@
+import { onlineManager } from '@tanstack/react-query';
 import { act, screen, userEvent } from '@testing-library/react-native';
 import { router, Stack } from 'expo-router';
 import { renderRouter } from 'expo-router/testing-library';
@@ -165,5 +166,14 @@ describe('ToastProvider', () => {
 
     expect(screen).toHavePathname('/');
     expect(screen.queryByText('저장했어요', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('인터넷이 끊기면 지금 화면에 연결 확인 토스트를 띄운다', async () => {
+    await renderProvider();
+
+    await act(() => onlineManager.setOnline(false));
+
+    expect(screen.getByText('인터넷 연결을 확인해 주세요')).toBeOnTheScreen();
+    await act(() => onlineManager.setOnline(true));
   });
 });
