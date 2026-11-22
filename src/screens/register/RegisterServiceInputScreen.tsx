@@ -28,6 +28,7 @@ import { useReactivateSubscription } from '@/hooks/useReactivateSubscription';
 import { useRegisterDraft, useRegisterStep } from '@/hooks/useRegisterDraft';
 import { useServices } from '@/hooks/useServices';
 import { useSubscription } from '@/hooks/useSubscriptions';
+import { useToast } from '@/hooks/useToast';
 import { useUpdateSubscription } from '@/hooks/useUpdateSubscription';
 import { startOfToday } from '@/utils/date';
 
@@ -119,6 +120,7 @@ const ServiceInputForm = ({
   const init = saved ?? found?.payment ?? existing;
   const [name, setName] = useState(saved?.name ?? existing?.name ?? '');
   const reactivateSubscription = useReactivateSubscription(reactivate?.id ?? '');
+  const { show } = useToast();
   const updateSubscription = useUpdateSubscription(edit?.id ?? '');
   const [category, setCategory] = useState<string | undefined>(
     init?.category ?? (found ? undefined : (service?.category ?? '기타')),
@@ -353,7 +355,12 @@ const ServiceInputForm = ({
               };
               return reactivate
                 ? reactivateSubscription.mutate(input, back)
-                : updateSubscription.mutate(input, back);
+                : updateSubscription.mutate(input, {
+                    onSuccess: () => {
+                      back.onSuccess();
+                      show({ type: 'success', message: '구독 정보를 저장했어요' });
+                    },
+                  });
             }
             const id = serviceId ?? `custom-${Date.now()}`;
             setPayment(id, {
