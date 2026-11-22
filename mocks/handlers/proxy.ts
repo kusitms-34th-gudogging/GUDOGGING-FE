@@ -15,6 +15,7 @@ const PROXY_PATHS = [
   '/api/v1/subscriptions/screenshots/analyses',
   // 구독 상세 조회(GET)·수정(PATCH). /drafts도 이 모양에 맞지만 위에서 이미 넘김
   '/api/v1/subscriptions/:subscriptionId',
+  '/api/v1/subscriptions/:subscriptionId/steady',
   '/api/v1/subscriptions',
 ];
 
