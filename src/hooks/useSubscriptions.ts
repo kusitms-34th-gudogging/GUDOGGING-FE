@@ -227,6 +227,8 @@ export interface CalendarPaymentDetail extends Pick<
   startedAt: Date;
   // 구독 종료면 없음
   nextDate?: Date;
+  // 선택한 날짜와 상관없이 이미 해지했는지
+  canceled: boolean;
   lastCheckup?: {
     checkedAt: Date;
     result: string;
@@ -259,6 +261,7 @@ export const useCalendarPaymentDetail = (id: string, date: Date) => {
         paidAt: PAID_AT_OF[s.paymentMethod],
         startedAt: parseDate(s.startedAt),
         nextDate: s.nextBillingDate ? parseDate(s.nextBillingDate) : undefined,
+        canceled: s.canceledAt !== null,
         lastCheckup: c
           ? {
               checkedAt: parseDate(c.checkedAt),

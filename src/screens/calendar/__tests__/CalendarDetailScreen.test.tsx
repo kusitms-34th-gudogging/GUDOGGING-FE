@@ -137,6 +137,18 @@ it('구독 중이면 편집으로 구독 관리 상세와 같은 정보 편집 �
   expect(screen).toHaveSearchParams({ edit: 'netflix' });
 });
 
+it('해지일 이전 날짜로 들어와 구독 중으로 보여도 이미 해지했으면 더보기에 삭제만 있다', async () => {
+  const user = await renderDetail({
+    'GET /api/v1/subscriptions/netflix': detail({ canceledAt: '2026-11-23' }),
+  });
+
+  await user.press(screen.getByRole('button', { name: '더보기' }));
+
+  expect(screen.getByText('구독 중')).toBeOnTheScreen();
+  expect(screen.queryByRole('menuitem', { name: '편집' })).not.toBeOnTheScreen();
+  expect(screen.getByRole('menuitem', { name: '삭제' })).toBeOnTheScreen();
+});
+
 it('구독 종료(다음 결제일 null)면 더보기에 삭제만 있다', async () => {
   const user = await renderDetail({
     'GET /api/v1/subscriptions/netflix': detail({

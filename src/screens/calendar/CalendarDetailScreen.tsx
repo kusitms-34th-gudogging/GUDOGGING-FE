@@ -64,12 +64,13 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
         showAction2={false}
         action1={{ icon: MoreIcon, accessibilityLabel: '더보기', onPress: () => setMenuOpen(true) }}
       />
-      {/* 구독 중이면 편집·삭제, 구독 종료면 삭제만 (편집 API는 구독 중만 받음). 편집은 구독 관리 상세와 같은 화면 */}
+      {/* 구독 중이면 편집·삭제, 구독 종료면 삭제만 (편집 API는 구독 중만 받음). 편집은 구독 관리 상세와 같은 화면
+          해지일 이전 날짜로 들어와도 이미 해지했으면 편집 없음 (상태 칩은 선택한 날짜 기준이라 따로 봄) */}
       <MoreMenu
         visible={menuOpen}
         onClose={close}
         options={[
-          ...(!ended
+          ...(!ended && !p.canceled
             ? [
                 {
                   label: '편집',
