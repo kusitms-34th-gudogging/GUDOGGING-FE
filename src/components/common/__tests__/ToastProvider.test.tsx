@@ -176,4 +176,12 @@ describe('ToastProvider', () => {
     expect(screen.getByText('인터넷 연결을 확인해 주세요')).toBeOnTheScreen();
     await act(() => onlineManager.setOnline(true));
   });
+
+  it('이미 오프라인일 때 시작해도 연결 확인 토스트를 띄운다', async () => {
+    onlineManager.setOnline(false);
+    await renderProvider();
+
+    expect(screen.getByText('인터넷 연결을 확인해 주세요')).toBeOnTheScreen();
+    await act(() => onlineManager.setOnline(true));
+  });
 });

@@ -71,13 +71,15 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
   useEffect(() => () => clearTimeout(timer.current), []);
 
   // 인터넷이 끊기면 지금 화면에 안내 (TST-001 E-2 공통). 화면 경로 없이 띄워서 어느 화면이든 그 화면 Outlet에 뜸
-  useEffect(
-    () =>
-      onlineManager.subscribe((online) => {
-        if (!online) show({ type: 'error', message: '인터넷 연결을 확인해 주세요' });
-      }),
-    [show],
-  );
+  useEffect(() => {
+    const warn = () => show({ type: 'error', message: '인터넷 연결을 확인해 주세요' });
+    const unsubscribe = onlineManager.subscribe((online) => {
+      if (!online) warn();
+    });
+    // 구독은 지금 상태를 다시 알려 주지 않음 → 구독 전에 이미 오프라인이었으면 여기서 안내
+    if (!onlineManager.isOnline()) warn();
+    return unsubscribe;
+  }, [show]);
 
   const value = useMemo(() => ({ show, toast, takePending }), [show, toast, takePending]);
 

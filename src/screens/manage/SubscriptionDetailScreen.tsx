@@ -239,12 +239,12 @@ export const SubscriptionDetailScreen = ({
         description={'해지 완료를 누르면 점검 알림이\n더 이상 오지 않아요.'}
         cancelLabel="취소"
         confirmLabel="해지 완료"
+        // 재조회로 구독 종료 화면으로 바뀌면 이 화면이 사라져 mutate 콜백이 안 불림 → mutateAsync로
         onConfirm={() =>
-          cancelSubscription.mutate(s.id, {
-            onSuccess: () =>
-              show({ type: 'success', message: fillName('{name}을 해지했어요', s.name) }),
-            onError: () => show({ type: 'error', message: '저장하지 못했어요' }),
-          })
+          cancelSubscription.mutateAsync(s.id).then(
+            () => show({ type: 'success', message: fillName('{name}을 해지했어요', s.name) }),
+            () => show({ type: 'error', message: '저장하지 못했어요' }),
+          )
         }
       />
     </View>
