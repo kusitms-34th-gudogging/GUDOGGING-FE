@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { File } from 'expo-file-system';
 
-import type { FoundSubscription } from '@/constants/services';
+import type { FoundSubscription, ReviewField } from '@/constants/services';
 import { request } from '@/lib/request';
 import {
   type ApiCategory,
@@ -24,6 +24,8 @@ interface Candidate {
   nextBillingDate: string | null;
   paymentMethod: ApiPaymentMethod | null;
   needsReview: boolean;
+  // shortcut: Gmail 분석 명세엔 아직 없어 선택, Gmail도 생기면 필수로
+  reviewFields?: ReviewField[];
 }
 
 // 불러온 구독 항목 id. 직접 입력처럼 다루는 항목(사전 등록 서비스 아님)은 custom- (useRegisterServices 기준)
@@ -40,6 +42,7 @@ const toFound = (c: Candidate, i: number): FoundSubscription => ({
     paidAt: c.paymentMethod ? PAID_AT_OF[c.paymentMethod] : undefined,
   },
   needsReview: c.needsReview,
+  reviewFields: c.reviewFields ?? [],
 });
 
 const analyze = async (path: string, body?: FormData) => {

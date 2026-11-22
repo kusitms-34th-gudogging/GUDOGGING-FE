@@ -27,9 +27,14 @@ export interface FoundSubscription {
   serviceId?: string;
   name: string;
   payment: Partial<PaymentInfo>;
-  // 읽지 못했거나 불확실한 값이 있어 확인 필요 (금액 에러를 켠 채로 수정 화면이 열림)
+  // 읽지 못했거나 불확실한 값이 있어 확인 필요
   needsReview?: boolean;
+  // 확인이 필요한 필드. 수정 화면(A-15)이 이 필드들에 에러 문구를 켠 채로 열림
+  reviewFields?: ReviewField[];
 }
+
+// 분석이 정확히 읽지 못한 필드 (명세 reviewFields)
+export type ReviewField = 'SERVICE' | 'AMOUNT' | 'BILLING_CYCLE' | 'NEXT_BILLING_DATE';
 
 export interface PaymentInfo {
   name?: string;

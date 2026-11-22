@@ -91,6 +91,7 @@ export const subscriptionHandlers = [
   http.post('/api/v1/subscriptions/screenshots/analyses', async ({ request }) => {
     // 업로드 본문을 다 읽고 응답 (안 읽으면 큰 이미지 전송 중에 연결이 끊겨 앱에 "network connection was lost")
     await request.formData();
+    // 노션 명세 mock data. serviceId·주기·결제 수단은 항상 있고, 못 읽은 금액·다음 결제일만 null
     return ok('스크린샷을 분석했습니다.', {
       candidates: [
         {
@@ -101,9 +102,10 @@ export const subscriptionHandlers = [
           amount: 14900,
           billingCycleValue: 1,
           billingCycleUnit: 'MONTH',
-          nextBillingDate: '2026-11-18',
+          nextBillingDate: '2026-12-18',
           paymentMethod: 'APP_STORE',
           needsReview: false,
+          reviewFields: [],
         },
         {
           serviceId: '5e1c9a07-5a4d-4e7b-9c21-000000000003',
@@ -113,21 +115,10 @@ export const subscriptionHandlers = [
           amount: null,
           billingCycleValue: 1,
           billingCycleUnit: 'MONTH',
-          nextBillingDate: '2026-11-12',
+          nextBillingDate: '2026-12-12',
           paymentMethod: 'APP_STORE',
           needsReview: true,
-        },
-        {
-          serviceId: null,
-          serviceName: '기타 구독 후보',
-          logoUrl: null,
-          category: 'ETC',
-          amount: null,
-          billingCycleValue: null,
-          billingCycleUnit: null,
-          nextBillingDate: null,
-          paymentMethod: null,
-          needsReview: true,
+          reviewFields: ['AMOUNT'],
         },
       ],
     });

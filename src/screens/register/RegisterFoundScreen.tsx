@@ -93,7 +93,10 @@ export const RegisterFoundScreen = () => {
                     <PaymentListItem
                       key={f.id}
                       name={f.name}
-                      emptySubtitle="결제 정보 입력 필요"
+                      // 스크린샷은 서비스명도 확인 대상이라 '구독 정보', Gmail은 '결제 정보' (설계서 A-09·A-13)
+                      emptySubtitle={
+                        foundSource === 'GMAIL' ? '결제 정보 입력 필요' : '구독 정보 입력 필요'
+                      }
                       onEdit={() => edit(f.id)}
                       showChevron
                     />

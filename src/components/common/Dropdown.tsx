@@ -19,6 +19,10 @@ interface DropdownProps {
   onPress: () => void;
   options?: string[];
   onSelect?: (option: string) => void;
+  /** 빨간 테두리. helper가 있으면 아래에 빨간 문구
+   * shortcut: Figma Dropdown에 에러 variant가 없어 TextField 에러와 같은 모양으로 둠, 디자인 나오면 맞춤 */
+  error?: boolean;
+  helper?: string;
   className?: string;
   /** 옵션은 `{testID}-option-{순서}` */
   testID?: string;
@@ -35,6 +39,8 @@ export const Dropdown = ({
   onPress,
   options,
   onSelect,
+  error = false,
+  helper,
   className,
   testID,
 }: DropdownProps) => (
@@ -51,11 +57,13 @@ export const Dropdown = ({
         accessibilityLabel={label}
         accessibilityValue={{ text: value ?? placeholder }}
         accessibilityState={{ expanded: open }}
+        accessibilityHint={error ? helper : undefined}
         onPress={onPress}
         className={cn(
           // 테두리를 항상 1px로 두고(기본은 투명) 패딩(16)에서 빼서, 열릴 때 글자가 밀리지 않게 함 (TextField와 동일)
           'h-input flex-row items-center gap-inline-sm rounded-input border bg-bg-subtle px-[15px]',
-          open ? 'border-border-focus' : 'border-transparent',
+          error && 'border-border-error bg-surface-default',
+          !error && (open ? 'border-border-focus' : 'border-transparent'),
         )}
       >
         <Text
@@ -93,5 +101,10 @@ export const Dropdown = ({
         </View>
       )}
     </View>
+    {error && helper && (
+      <Text numberOfLines={2} className="text-text-error text-caption1-regular">
+        {helper}
+      </Text>
+    )}
   </View>
 );
