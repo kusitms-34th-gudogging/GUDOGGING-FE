@@ -87,7 +87,11 @@ export const RegisterFoundScreen = () => {
           title={'찾은 구독 정보를\n확인해 주세요.'}
           description="구독이 아닌 항목은 제외할 수 있어요."
         />
-        <FadeScrollView className="max-h-[402px] shrink" contentContainerClassName="gap-stack-md">
+        {/* 구분선이 화면 끝까지 가게 스크롤 영역은 화면 폭, 좌우 여백은 내용에. 섹션과 구분선 사이 24 (Figma A-09) */}
+        <FadeScrollView
+          className="-mx-screen-x max-h-[402px] shrink"
+          contentContainerClassName="gap-inset-lg px-screen-x"
+        >
           {needCheck.length > 0 && (
             <>
               <View className="gap-stack-md">
@@ -111,14 +115,15 @@ export const RegisterFoundScreen = () => {
                   ))}
                 </View>
               </View>
-              <View className="h-px bg-border-default" />
+              {/* 구분선 0.5는 토큰 없음 (border 최소 1) */}
+              <View className="-mx-screen-x h-[0.5px] bg-bg-muted" />
             </>
           )}
           <View className="gap-stack-md">
             <Text className="text-text-primary text-body3-semibold">
               등록 가능 <Text className="text-body3-bold">{ready.length}</Text>
             </Text>
-            <View className="gap-stack-xs">
+            <View className="gap-stack-sm">
               {ready.map((f) => (
                 <PaymentListItem
                   key={f.id}
