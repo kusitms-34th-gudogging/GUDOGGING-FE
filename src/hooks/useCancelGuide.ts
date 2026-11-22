@@ -9,16 +9,13 @@ interface CancelGuideResponse {
   steps: string[];
   cancelUrl: string | null;
   caution: string | null;
-  guideMessage: string | null;
 }
 
 // 해지 안내(X-01·X-03·X-04·X-05). 문구의 {name}은 화면이 서비스명으로 채움 (fillName)
 export interface CancelGuide {
   name: string;
   payment: string;
-  // 해지 단계. 없으면 message(기본 안내)
   steps: string[];
-  message: string;
   notice?: string;
   // 없으면 '해지했어요' 버튼 (X-05)
   url?: string;
@@ -40,6 +37,20 @@ const ctaOf = (paymentMethod: ApiPaymentMethod, url: string | null) =>
         ? '해지 페이지로 이동'
         : '해지했어요';
 
+// 웹·직접 결제는 서비스별 해지 경로 문구 대신 모든 서비스 공통 3단계 (화면설계서 X-04·X-05)
+const WEB_STEPS = [
+  '아래 버튼을 눌러 해지 페이지로 이동해요',
+  '해지를 완료해요',
+  "돌아와서 '해지 완료'를 눌러요",
+];
+const NO_URL_STEPS = [
+  '{name} 앱이나 웹에서 해지 메뉴로 이동해요',
+  '해지를 완료해요',
+  "돌아와서 '해지했어요'를 눌러요",
+];
+const stepsOf = ({ paymentMethod, steps, cancelUrl }: CancelGuideResponse) =>
+  paymentMethod !== 'WEB_DIRECT' ? steps : cancelUrl ? WEB_STEPS : NO_URL_STEPS;
+
 export const cancelGuideKeys = {
   detail: (subscriptionId: string) => ['cancelGuide', subscriptionId] as const,
 };
@@ -54,8 +65,7 @@ export const useCancelGuide = (subscriptionId: string) =>
     select: (g): CancelGuide => ({
       name: g.serviceName,
       payment: PAYMENT[g.paymentMethod],
-      steps: g.steps,
-      message: g.guideMessage ?? '',
+      steps: stepsOf(g),
       notice: g.caution ?? undefined,
       url: g.cancelUrl ?? undefined,
       cta: ctaOf(g.paymentMethod, g.cancelUrl),

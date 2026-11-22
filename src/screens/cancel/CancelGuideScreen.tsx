@@ -12,6 +12,7 @@ import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { useCancelGuide } from '@/hooks/useCancelGuide';
 import { useCancelSubscription } from '@/hooks/useCancelSubscription';
+import { useToast } from '@/hooks/useToast';
 import { fillName } from '@/utils/josa';
 
 const STEP_ICONS = [Step1Icon, Step2Icon, Step3Icon];
@@ -24,6 +25,7 @@ interface CancelGuideScreenProps {
 export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) => {
   const { data: guide, isError, refetch } = useCancelGuide(subscriptionId);
   const cancelSubscription = useCancelSubscription();
+  const { show } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   // 스토어·해지 페이지로 나갔다가 앱으로 돌아오면 모달 자동 노출
   const [awaitingReturn, setAwaitingReturn] = useState(false);
@@ -59,7 +61,10 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
   // shortcut: 실패 안내는 디자인에 없어 모달만 닫힘, 디자인 나오면 안내 추가
   const onComplete = () =>
     cancelSubscription.mutate(subscriptionId, {
-      onSuccess: () => router.dismissTo(`/manage/detail/${subscriptionId}`),
+      onSuccess: () => {
+        router.dismissTo(`/manage/detail/${subscriptionId}`);
+        show({ type: 'success', message: fillName('{name}을 해지했어요', name) });
+      },
     });
 
   return (
@@ -77,25 +82,16 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
           description={`${name} · ${guide.payment}`}
         />
         <View className="gap-stack-lg">
-          {guide.steps.length > 0 ? (
-            <View className="gap-stack-md">
-              {guide.steps.map((step, i) => (
-                <GuideStep
-                  key={step}
-                  icon={STEP_ICONS[i]}
-                  iconClassName="text-icon-primary"
-                  label={fillName(step, name)}
-                />
-              ))}
-            </View>
-          ) : (
-            <Text
-              lineBreakStrategyIOS="hangul-word"
-              className="text-text-primary text-body2-semibold"
-            >
-              {fillName(guide.message, name)}
-            </Text>
-          )}
+          <View className="gap-stack-md">
+            {guide.steps.map((step, i) => (
+              <GuideStep
+                key={step}
+                icon={STEP_ICONS[i]}
+                iconClassName="text-icon-primary"
+                label={fillName(step, name)}
+              />
+            ))}
+          </View>
           {guide.notice && (
             <View className="flex-row items-start gap-inline-sm">
               <View className="py-[2px]">

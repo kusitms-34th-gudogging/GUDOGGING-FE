@@ -54,7 +54,6 @@ afterEach(() => {
 it.each([
   ['APP_STORE', 'https://apps.apple.com', 'App Store 결제', 'App Store 구독 관리 열기'],
   ['GOOGLE_PLAY', 'https://play.google.com', 'Google Play 결제', 'Google Play 정기 결제 열기'],
-  ['WEB_DIRECT', 'https://melon.com', '웹·직접 결제', '해지 페이지로 이동'],
 ])('%s 결제는 결제 경로와 해지 단계, 맞는 버튼을 보여준다', async (method, url, payment, cta) => {
   await renderGuide(guide({ paymentMethod: method, steps: STORE_STEPS, cancelUrl: url }));
 
@@ -64,10 +63,20 @@ it.each([
   expect(screen.getByRole('button', { name: cta })).toBeOnTheScreen();
 });
 
-it('해지 경로가 없으면 기본 안내와 해지했어요 버튼을 보여준다', async () => {
+it('웹·직접 결제는 서비스별 문구 대신 공통 3단계와 해지 페이지 버튼을 보여준다', async () => {
+  await renderGuide(guide({ steps: STORE_STEPS, cancelUrl: 'https://melon.com' }));
+
+  expect(screen.getByText('멜론 · 웹·직접 결제')).toBeOnTheScreen();
+  expect(screen.getByText('아래 버튼을 눌러 해지 페이지로 이동해요')).toBeOnTheScreen();
+  expect(screen.queryByText('목록에서 멜론을 선택해요')).not.toBeOnTheScreen();
+  expect(screen.getByRole('button', { name: '해지 페이지로 이동' })).toBeOnTheScreen();
+});
+
+it('해지 링크가 없으면 앱·웹 해지 안내와 해지했어요 버튼을 보여준다', async () => {
   await renderGuide(guide());
 
-  expect(screen.getByText('멜론 앱이나 웹사이트에서 해지할 수 있어요.')).toBeOnTheScreen();
+  expect(screen.getByText('멜론 앱이나 웹에서 해지 메뉴로 이동해요')).toBeOnTheScreen();
+  expect(screen.getByText("돌아와서 '해지했어요'를 눌러요")).toBeOnTheScreen();
   expect(screen.getByRole('button', { name: '해지했어요' })).toBeOnTheScreen();
 });
 
@@ -117,6 +126,7 @@ it('해지 완료하면 해지 완료 처리 후 해지를 시작한 구독 상�
   await user.press(screen.getByRole('button', { name: '해지 완료' }));
 
   await waitFor(() => expect(screen).toHavePathname('/manage/detail/melon'));
+  expect(await screen.findByText('멜론을 해지했어요')).toBeOnTheScreen();
   const patch = jest.mocked(globalThis.fetch).mock.calls.find(([, i]) => i?.method === 'PATCH');
   expect(String(patch?.[0])).toBe('https://api.test/api/v1/subscriptions/melon/cancel');
 });
