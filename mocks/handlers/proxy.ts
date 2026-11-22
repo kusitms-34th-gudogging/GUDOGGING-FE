@@ -2,8 +2,12 @@ import { http } from 'msw';
 
 // 서버에 나온 API만 개발 서버로 넘기고 나머지는 목 응답. `pnpm mock:dev`일 때만 등록 (handlers.ts)
 // API가 나오면 경로를 여기 추가하고, 다 나오면 앱 EXPO_PUBLIC_API_URL을 개발 서버로 바꾸고 mocks/ 삭제
-// 로그아웃(/auth/logout)은 아직 개발 서버에 없어 목 응답
-const PROXY_PATHS = ['/api/v1/auth/apple', '/api/v1/auth/google', '/api/v1/auth/reissue'];
+const PROXY_PATHS = [
+  '/api/v1/auth/apple',
+  '/api/v1/auth/google',
+  '/api/v1/auth/reissue',
+  '/api/v1/auth/logout',
+];
 
 const upstream = process.env.DEV_API_URL;
 
