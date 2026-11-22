@@ -62,7 +62,7 @@ export const TEST_SERVICES = [
 }));
 
 // 분석으로 불러온 구독 (draft의 found). 등록 화면 테스트 공통
-// ChatGPT Plus·Netflix는 사전 등록 서비스로 인식됐지만 확인 필요, 밀리의 서재는 직접 입력처럼 다루는 확인 필요, YouTube Premium은 바로 등록 가능
+// ChatGPT Plus(금액)·Netflix(결제일)는 사전 등록 서비스로 인식됐지만 확인 필요, 밀리의 서재(금액·결제일)는 직접 입력처럼 다루는 확인 필요, YouTube Premium은 바로 등록 가능
 export const TEST_FOUND: FoundSubscription[] = [
   {
     id: 'found-chatgpt',
@@ -77,12 +77,14 @@ export const TEST_FOUND: FoundSubscription[] = [
       paidAt: 'appstore',
     },
     needsReview: true,
+    reviewFields: ['AMOUNT'],
   },
   {
     id: 'custom-found-millie',
     name: '밀리의 서재',
     payment: { category: '교육·학습', amount: 9900, cycle: 1, unit: '개월', paidAt: 'web' },
     needsReview: true,
+    reviewFields: ['AMOUNT', 'NEXT_BILLING_DATE'],
   },
   {
     id: 'found-netflix',
@@ -90,6 +92,7 @@ export const TEST_FOUND: FoundSubscription[] = [
     name: 'Netflix',
     payment: { category: '영상·OTT', amount: 13500, cycle: 1, unit: '개월', paidAt: 'web' },
     needsReview: true,
+    reviewFields: ['NEXT_BILLING_DATE'],
   },
   {
     id: 'found-youtube',

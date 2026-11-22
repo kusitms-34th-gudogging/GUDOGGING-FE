@@ -187,6 +187,21 @@ describe('RegisterServiceInputScreen 불러온 구독 수정', () => {
     expect(screen.queryByText(helper)).not.toBeOnTheScreen();
   });
 
+  // Netflix: 분석이 결제일만 정확히 못 읽음 (reviewFields NEXT_BILLING_DATE)
+  it('정확히 못 읽은 필드에만 에러 문구를 띄우고, 그 값을 다시 고르면 사라진다', async () => {
+    const user = await renderFoundEdit(TEST_FOUND.find((f) => f.id === 'found-netflix'));
+    const dateHelper = '다음 결제일을 정확히 읽지 못했어요. 실제 다음 결제일을 확인해 주세요.';
+
+    expect(screen.getByText(dateHelper)).toBeOnTheScreen();
+    expect(screen.queryByText(/금액을 정확히 읽지 못했어요/)).not.toBeOnTheScreen();
+    expect(screen.queryByText(/결제 주기를 정확히 읽지 못했어요/)).not.toBeOnTheScreen();
+
+    await user.press(screen.getByRole('button', { name: '다음 결제일' }));
+    await user.press(screen.getByTestId('register-date-confirm'));
+
+    expect(screen.queryByText(dateHelper)).not.toBeOnTheScreen();
+  });
+
   it('금액 에러가 떠 있어도 금액이 있으면 수정 완료를 누를 수 있다', async () => {
     await renderFoundEdit(TEST_FOUND.find((f) => f.id === 'custom-found-millie'));
 

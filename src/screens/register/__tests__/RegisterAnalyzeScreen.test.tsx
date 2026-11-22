@@ -24,6 +24,7 @@ const candidate = (over: object = {}) => ({
   nextBillingDate: '2026-11-18',
   paymentMethod: 'APP_STORE',
   needsReview: false,
+  reviewFields: [],
   ...over,
 });
 
@@ -65,7 +66,14 @@ it('스크린샷을 올려 분석하고, 결과를 저장해 불러온 구독 �
     [SCREENSHOT]: {
       candidates: [
         candidate(),
-        candidate({ serviceId: null, serviceName: '헬스장', amount: null, needsReview: true }),
+        candidate({
+          serviceId: 'chatgpt',
+          serviceName: 'ChatGPT Plus',
+          category: 'PRODUCTIVITY_AI',
+          amount: null,
+          needsReview: true,
+          reviewFields: ['AMOUNT'],
+        }),
       ],
     },
   });
@@ -98,18 +106,20 @@ it('스크린샷을 올려 분석하고, 결과를 저장해 불러온 구독 �
         paidAt: 'appstore',
       },
       needsReview: false,
+      reviewFields: [],
     },
-    // 사전 등록 서비스가 아니면 직접 입력처럼 다룸(custom-), 읽지 못한 값은 비워 둠
+    // 읽지 못한 값은 비워 두고, 확인할 필드는 수정 화면(A-15)으로 넘김
     {
-      id: 'custom-found-1',
-      serviceId: undefined,
-      name: '헬스장',
+      id: 'found-1',
+      serviceId: 'chatgpt',
+      name: 'ChatGPT Plus',
       payment: expect.objectContaining({ amount: undefined }),
       needsReview: true,
+      reviewFields: ['AMOUNT'],
     },
   ]);
   // 등록 가능 항목은 처음부터 전부 체크 (기획 답변)
-  expect(foundChecked).toEqual(['found-0', 'custom-found-1']);
+  expect(foundChecked).toEqual(['found-0', 'found-1']);
 });
 
 it.each([

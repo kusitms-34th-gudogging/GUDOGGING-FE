@@ -61,6 +61,16 @@ afterEach(() => {
 
 describe('RegisterFoundScreen', () => {
   // 샘플: ChatGPT Plus는 금액을 못 읽어 확인 필요, YouTube Premium은 바로 등록 가능
+  it.each([
+    ['SCREENSHOT', '구독 정보 입력 필요'],
+    ['GMAIL', '결제 정보 입력 필요'],
+  ] as const)('%s로 불러온 확인 필요 항목엔 "%s"를 띄운다', async (source, subtitle) => {
+    useRegisterDraft.getState().setFound(source, TEST_FOUND);
+    await renderFound();
+
+    expect(screen.getAllByText(subtitle).length).toBeGreaterThan(0);
+  });
+
   it('등록 가능에서 체크한 구독이 없으면 등록할 수 없다', async () => {
     useRegisterDraft.getState().setFoundChecked(['found-youtube']);
     const user = await renderFound();
