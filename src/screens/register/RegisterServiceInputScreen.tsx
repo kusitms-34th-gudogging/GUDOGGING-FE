@@ -28,6 +28,7 @@ import { useRegisterDraft, useRegisterStep } from '@/hooks/useRegisterDraft';
 import { useServices } from '@/hooks/useServices';
 import { useSubscription } from '@/hooks/useSubscriptions';
 import { useUpdateSubscription } from '@/hooks/useUpdateSubscription';
+import { startOfToday } from '@/utils/date';
 
 const CATEGORIES = [
   '영상·OTT',
@@ -47,7 +48,6 @@ const CYCLE_UNITS = [
 
 const formatDate = (d: Date) =>
   `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-const startOfToday = () => new Date(new Date().setHours(0, 0, 0, 0));
 
 interface RegisterServiceInputScreenProps {
   // 없으면 직접 입력으로 새 구독 추가 (A-02 직접 입력하기)
@@ -123,10 +123,12 @@ const ServiceInputForm = ({
   const [cycle, setCycle] = useState(String(init?.cycle ?? 1));
   const [unit, setUnit] = useState(init?.unit ?? '개월');
   // 재등록은 다음 결제일을 새로 정해야 해서 비워 두고 고르게 함
+  // 임시저장·분석에서 온 날짜가 이미 지났어도 비워 둠 (설계서: 과거 날짜 불가, 서버도 오늘 이후만 등록)
+  const initDate = saved?.nextDate ?? found?.payment.nextDate ?? edit?.nextDate;
   const [nextDate, setNextDate] = useState<Date | undefined>(
-    reactivate
+    reactivate || (initDate && initDate < startOfToday())
       ? undefined
-      : (saved?.nextDate ?? found?.payment.nextDate ?? edit?.nextDate ?? startOfToday()),
+      : (initDate ?? startOfToday()),
   );
   const [paidAt, setPaidAt] = useState<PaidAt>(init?.paidAt ?? 'web');
   // 확인 필요(결제 정보 입력 필요)로 들어오면 금액 에러를 켜 두고, 금액을 고치면 끔 (Figma A-15)

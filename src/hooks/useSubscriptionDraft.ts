@@ -138,7 +138,7 @@ export const fromDraft = ({ items, lastStep, editingItemIndex }: SubscriptionDra
 };
 
 // 직접 등록 중 고른 서비스·입력한 결제 정보·머문 화면이 바뀔 때마다 서버에 임시저장 (명세: 입력값이 바뀔 때마다 앱이 보냄)
-// 다 비면(나가기·새로 등록하기·등록 완료) 서버 임시저장도 삭제. 등록 구간(register/_layout)에서만 동작
+// 다 비면(새로 등록하기·등록 완료) 서버 임시저장도 삭제. 등록 구간(register/_layout)에서만 동작
 export const useSyncSubscriptionDraft = () => {
   const services = useServices().data;
   const save = useSaveSubscriptionDraft();

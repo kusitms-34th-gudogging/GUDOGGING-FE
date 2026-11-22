@@ -1,5 +1,11 @@
+import { useMutationState } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
-import { type NativeStackNavigationProp, router, useNavigation } from 'expo-router';
+import {
+  type NativeStackNavigationProp,
+  router,
+  useNavigation,
+  useRootNavigationState,
+} from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, View } from 'react-native';
@@ -10,28 +16,48 @@ import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { serviceLogo } from '@/constants/services';
-import { getRegisteredServices, useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { useServices } from '@/hooks/useServices';
+import { type CreatedSubscriptions, createSubscriptionsKey } from '@/hooks/useCreateSubscriptions';
+import { useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { CYCLE_UNIT, PAID_AT_OF } from '@/utils/apiCodes';
+import { parseDate } from '@/utils/date';
 import { formatPaymentSummary, formatWon } from '@/utils/formatPayment';
-
-interface RegisterDoneScreenProps {
-  serviceIds: string[];
-}
 
 const HAPTIC_MS = 880;
 
-export const RegisterDoneScreen = ({ serviceIds }: RegisterDoneScreenProps) => {
-  // 들어온 시점의 값으로 그리고, 등록이 끝났으니 저장소는 바로 비움 (나간 뒤 불러오기 팝업이 뜨지 않게)
-  // 서비스 목록은 서비스 선택에서 이미 불러와 캐시에 있음
-  const catalog = useServices().data ?? [];
-  const [{ payments, services }] = useState(() => {
-    const { payments } = useRegisterDraft.getState();
-    return { payments, services: getRegisteredServices(serviceIds, payments, catalog) };
-  });
+interface NavState {
+  index?: number;
+  routes: { name: string; state?: NavState }[];
+}
+
+// 탭 내비게이터 상태. 루트 아래 몇 겹에 있을지 몰라 깊이 상관없이 찾음
+const findTabs = (state?: NavState): NavState | undefined => {
+  for (const route of state?.routes ?? []) {
+    if (route.name === '(tabs)') return route.state;
+    const found = findTabs(route.state);
+    if (found) return found;
+  }
+};
+
+export const RegisterDoneScreen = () => {
+  // 서버가 저장한 마지막 등록 결과로 그림 (설계서: 최종 저장된 구독 개수·정보)
+  const created = useMutationState({
+    filters: { mutationKey: createSubscriptionsKey, status: 'success' },
+    select: (m) => m.state.data as CreatedSubscriptions,
+  }).at(-1);
+  const subscriptions = created?.subscriptions ?? [];
+  // 등록이 끝났으니 저장소는 바로 비움 (나간 뒤 불러오기 팝업이 뜨지 않게)
   useEffect(() => {
     useRegisterDraft.getState().reset();
   }, []);
-  const finish = () => router.dismissTo('/');
+  // 구독 관리 탭(M-01·M-02)에서 들어왔으면 거기로, 그 외(홈·온보딩)는 홈 H-02로 (설계서)
+  // 들어온 시점의 탭으로 판단 (이후 렌더에선 탭 상태가 다시 그려지며 바뀔 수 있음)
+  const tabs = findTabs(useRootNavigationState());
+  const [fromManage] = useState(() => tabs?.routes[tabs.index ?? 0]?.name === 'manage');
+  // 등록 화면을 모두 닫고(탭으로 돌아가면 홈 탭이 됨) 구독 관리였으면 그 탭으로
+  const finish = () => {
+    router.dismissTo('/');
+    if (fromManage) router.navigate('/manage');
+  };
   const navigation = useNavigation<NativeStackNavigationProp<Record<string, undefined>>>();
   const lottieRef = useRef<LottieView>(null);
   const [lastFrame, setLastFrame] = useState<number>();
@@ -92,25 +118,30 @@ export const RegisterDoneScreen = ({ serviceIds }: RegisterDoneScreenProps) => {
         </View>
         <View className="shrink gap-stack-md">
           <Text className="px-s2 text-text-primary text-body3-semibold">
-            등록된 구독 <Text className="text-text-brand text-body3-bold">{services.length}</Text>
+            등록된 구독{' '}
+            <Text className="text-text-brand text-body3-bold">{subscriptions.length}</Text>
           </Text>
           <FadeScrollView className="max-h-[434px] shrink" contentContainerClassName="gap-stack-sm">
-            {services.map((s) => {
-              const payment = payments[s.id];
-              // shortcut: 항목을 눌러도 이동 없음 (화면설계서 '상세 화면 이동 여부 확인 필요'), 구독 상세 화면이 생기면 onPress로 연결
-              return (
-                <ListItem
-                  key={s.id}
-                  title={s.name}
-                  subtitle={payment && formatPaymentSummary(payment)}
-                  showSubtitle
-                  logo={serviceLogo(s.logoUrl)}
-                  showLogo
-                  cost={payment && formatWon(payment.amount)}
-                  showCost
-                />
-              );
-            })}
+            {/* 항목 터치 불가 (설계서) */}
+            {subscriptions.map((s) => (
+              <ListItem
+                key={s.subscriptionId}
+                title={s.serviceName}
+                subtitle={formatPaymentSummary({
+                  category: '',
+                  amount: s.amount,
+                  cycle: s.billingCycleValue,
+                  unit: CYCLE_UNIT[s.billingCycleUnit],
+                  nextDate: parseDate(s.nextBillingDate),
+                  paidAt: PAID_AT_OF[s.paymentMethod],
+                })}
+                showSubtitle
+                logo={serviceLogo(s.logoUrl ?? undefined)}
+                showLogo
+                cost={formatWon(s.amount)}
+                showCost
+              />
+            ))}
           </FadeScrollView>
         </View>
       </View>

@@ -8,19 +8,27 @@ import { AddServiceRow } from '@/components/register/AddServiceRow';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import { PaymentListItem } from '@/components/register/PaymentListItem';
 import { useCreateSubscriptions } from '@/hooks/useCreateSubscriptions';
-import { useRegisterDraft, useRegisterServices, useRegisterStep } from '@/hooks/useRegisterDraft';
+import {
+  readyPayment,
+  useRegisterDraft,
+  useRegisterServices,
+  useRegisterStep,
+} from '@/hooks/useRegisterDraft';
 
 export const RegisterSelectedServiceScreen = () => {
   useRegisterStep('CONFIRM_SUBSCRIPTIONS');
   // A-02에서 고른 목록은 저장소가 원본 (구독 추가하기로 바꿔도 바로 반영)
   const serviceIds = useRegisterDraft((s) => s.selectedIds);
-  const payments = useRegisterDraft((s) => s.payments);
+  // 다음 결제일이 지난 결제 정보는 미입력으로 (결제 정보 입력 필요)
+  const stored = useRegisterDraft((s) => s.payments);
+  const payments = Object.fromEntries(
+    Object.entries(stored).flatMap(([id, p]) => (readyPayment(p) ? [[id, p]] : [])),
+  );
   // 결제 정보가 없는 구독부터 (Figma 주석)
   const services = useRegisterServices(serviceIds).sort(
     (a, b) => Number(!!payments[a.id]) - Number(!!payments[b.id]),
   );
   const allEntered = services.length > 0 && services.every((s) => payments[s.id]);
-  const ids = services.map((s) => s.id);
   const create = useCreateSubscriptions();
   // 직접 입력(custom-)은 사전 등록 서비스 id 없이 이름으로
   // shortcut: 실패 안내(중복 등록 등)는 디자인에 없어 화면에 남음, 디자인·에러 코드 정해지면 안내 추가
@@ -35,8 +43,7 @@ export const RegisterSelectedServiceScreen = () => {
         })),
       },
       {
-        onSuccess: () =>
-          router.push({ pathname: '/register/done', params: { ids: ids.join(',') } }),
+        onSuccess: () => router.push('/register/done'),
       },
     );
 

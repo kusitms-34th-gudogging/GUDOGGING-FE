@@ -12,18 +12,16 @@ import type { PaymentInfo } from '@/constants/services';
 import { useCreateSubscriptions } from '@/hooks/useCreateSubscriptions';
 import {
   getFoundServiceIds,
+  readyPayment,
   useRegisterDraft,
   useRegisterServices,
 } from '@/hooks/useRegisterDraft';
-import { useServices } from '@/hooks/useServices';
 
 export const RegisterFoundScreen = () => {
   const payments = useRegisterDraft((s) => s.payments);
   const found = useRegisterDraft((s) => s.found);
   const foundSource = useRegisterDraft((s) => s.foundSource);
   const create = useCreateSubscriptions();
-  const catalog = useServices().data ?? [];
-  const setPayment = useRegisterDraft((s) => s.setPayment);
   const foundChecked = useRegisterDraft((s) => s.foundChecked);
   const setFoundChecked = useRegisterDraft((s) => s.setFoundChecked);
   const checked = new Set(foundChecked);
@@ -40,7 +38,9 @@ export const RegisterFoundScreen = () => {
         id: f.id,
         serviceId: name === f.name ? f.serviceId : undefined,
         name,
-        payment: payments[f.id] ?? (f.needsReview ? undefined : (f.payment as PaymentInfo)),
+        payment: readyPayment(
+          payments[f.id] ?? (f.needsReview ? undefined : (f.payment as PaymentInfo)),
+        ),
       };
     }),
     ...added.map((s) => ({
@@ -48,7 +48,7 @@ export const RegisterFoundScreen = () => {
       // 직접 입력(custom-)은 사전 등록 서비스가 아님
       serviceId: s.id.startsWith('custom-') ? undefined : s.id,
       name: s.name,
-      payment: payments[s.id],
+      payment: readyPayment(payments[s.id]),
     })),
   ];
   const needCheck = items.filter((f) => !f.payment);
@@ -143,23 +143,8 @@ export const RegisterFoundScreen = () => {
                 })),
               },
               {
-                onSuccess: () => {
-                  // 완료 화면은 draft의 결제 정보를 읽고, 체크한 항목만 받음
-                  // 사전 등록 서비스가 아닌 항목(불러온 구독·직접 입력)은 완료 화면이 저장한 이름을 쓰므로 찾은 이름을 같이 저장
-                  selected.forEach(
-                    (f) =>
-                      f.payment &&
-                      !payments[f.id] &&
-                      setPayment(f.id, {
-                        ...f.payment,
-                        name: catalog.some((s) => s.id === f.id) ? undefined : f.name,
-                      }),
-                  );
-                  router.push({
-                    pathname: '/register/done',
-                    params: { ids: selected.map((f) => f.id).join(',') },
-                  });
-                },
+                // 완료 화면은 등록 응답으로 그림
+                onSuccess: () => router.push('/register/done'),
               },
             )
           }
