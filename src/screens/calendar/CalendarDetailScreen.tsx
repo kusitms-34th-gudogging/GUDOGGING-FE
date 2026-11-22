@@ -12,10 +12,12 @@ import { MoreMenu } from '@/components/common/MoreMenu';
 import { QueryState } from '@/components/common/QueryState';
 import { Text } from '@/components/common/Text';
 import { TextArea } from '@/components/common/TextArea';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { PAID_AT } from '@/constants/services';
 import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
 import { useCalendarPaymentDetail } from '@/hooks/useSubscriptions';
+import { useToast } from '@/hooks/useToast';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
 import { fillName } from '@/utils/josa';
 
@@ -38,6 +40,7 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
   // 삭제 후 다시 불러오면 404지만 TanStack은 이전 data를 남겨서 닫히는 동안 빈 화면이 안 됨
   const { data: p, isError, refetch } = useCalendarPaymentDetail(id, date);
   const deleteSubscriptions = useDeleteSubscriptions();
+  const { show } = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const close = () => setMenuOpen(false);
@@ -50,10 +53,19 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
     );
   }
 
-  // 삭제하기: 구독과 점검 기록을 지우고 캘린더로 돌아감 (C-04). 완료 토스트 없음 (화면설계서)
-  // shortcut: 실패 안내는 디자인에 없어 모달만 닫힘, 디자인 나오면 안내 추가
+  // 삭제하기: 구독과 점검 기록을 지우고 캘린더로 돌아감 (C-04, TST-001 S-2·E-6)
   const ended = !p.nextDate;
-  const onDelete = () => deleteSubscriptions.mutate([p.id], { onSuccess: () => router.back() });
+  const onDelete = () =>
+    deleteSubscriptions.mutate([p.id], {
+      onSuccess: () => {
+        router.back();
+        show(
+          { type: 'success', message: fillName('{name}을 삭제했어요', p.name) },
+          { nextScreen: true },
+        );
+      },
+      onError: () => show({ type: 'error', message: '삭제하지 못했어요' }),
+    });
 
   return (
     <View className="pt-safe pb-safe flex-1 bg-bg-default">
@@ -174,6 +186,12 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
           )}
         </View>
       </ScrollView>
+      {/* 삭제 실패 토스트. 하단 버튼이 없어 다른 화면과 같은 높이(하단 안전 영역 위 68)에 둠 (TST-001) */}
+      <View pointerEvents="box-none" className="pb-safe absolute inset-x-0 bottom-0">
+        <View pointerEvents="box-none" className="mb-[68px]">
+          <ToastOutlet className="bottom-0" />
+        </View>
+      </View>
     </View>
   );
 };

@@ -42,6 +42,7 @@ export const MypageGmailScreen = ({
 
   const disconnect = () =>
     disconnectGmail.mutate(undefined, {
+      onSuccess: () => show({ type: 'success', message: 'Gmail 연결을 해제했어요' }),
       // 연결 상태 유지 (화면설계서 E-03b). shortcut: 안내 문구·방식 미정, 정해지면 교체
       onError: () =>
         show({ type: 'error', message: '연결을 해제하지 못했어요. 다시 시도해 주세요.' }),

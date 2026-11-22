@@ -4,6 +4,7 @@ import { ScrollView, View } from 'react-native';
 import { BellColorAsset } from '@/assets/graphics';
 import { QueryState } from '@/components/common/QueryState';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { NotificationItem } from '@/components/home/NotificationItem';
 import type { AppNotification } from '@/constants/notification';
@@ -89,6 +90,12 @@ export const HomeNotificationScreen = () => {
           ))}
         </ScrollView>
       )}
+      {/* 알림에서 들어간 상세에서 삭제(S-2) 후 돌아오면 토스트. 하단 버튼이 없어 하단 안전 영역 위 68 (TST-001) */}
+      <View pointerEvents="box-none" className="pb-safe absolute inset-x-0 bottom-0 z-10">
+        <View pointerEvents="box-none" className="mb-[68px]">
+          <ToastOutlet className="bottom-0" />
+        </View>
+      </View>
     </View>
   );
 };

@@ -19,6 +19,7 @@ import { PAID_AT } from '@/constants/services';
 import { useCancelSubscription } from '@/hooks/useCancelSubscription';
 import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
 import { useSetSteadySubscription } from '@/hooks/useSetSteadySubscription';
+import { useToast } from '@/hooks/useToast';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
 import { fillName } from '@/utils/josa';
 
@@ -39,6 +40,7 @@ export const SubscriptionDetailScreen = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const deleteSubscriptions = useDeleteSubscriptions();
+  const { show } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(confirmCancel);
   // 토글은 바로 바뀌고 저장 실패하면 되돌림
   // shortcut: 실패 안내(토스트)는 디자인에 없어 되돌리기만, 디자인 나오면 안내 추가
@@ -74,7 +76,7 @@ export const SubscriptionDetailScreen = ({
           },
         ]}
       />
-      {/* 삭제 확인 (C-04와 같은 문구). 삭제 완료 토스트 없음 */}
+      {/* 삭제 확인 (C-04와 같은 문구) */}
       <Modal
         visible={deleteOpen}
         onClose={() => setDeleteOpen(false)}
@@ -83,7 +85,18 @@ export const SubscriptionDetailScreen = ({
         description="삭제하면 모든 정보가 사라져요."
         cancelLabel="취소"
         confirmLabel="삭제하기"
-        onConfirm={() => deleteSubscriptions.mutate([s.id], { onSuccess: () => router.back() })}
+        onConfirm={() =>
+          deleteSubscriptions.mutate([s.id], {
+            onSuccess: () => {
+              router.back();
+              show(
+                { type: 'success', message: fillName('{name}을 삭제했어요', s.name) },
+                { nextScreen: true },
+              );
+            },
+            onError: () => show({ type: 'error', message: '삭제하지 못했어요' }),
+          })
+        }
       />
       <View className="flex-1">
         <ScrollView bounces={false} contentContainerClassName="gap-s20 pb-stack-md pt-stack-md">
@@ -201,8 +214,8 @@ export const SubscriptionDetailScreen = ({
             )}
           </View>
         </ScrollView>
-        {/* 편집 저장(S-3) 토스트는 하단 버튼 위 */}
-        <ToastOutlet className="bottom-0 pb-stack-sm" />
+        {/* 편집 저장(S-3) 토스트는 하단 버튼 위. 아래 버튼 영역의 위 패딩(stack-md)만큼 내려서 버튼 위 8 (CTA 화면과 같음) */}
+        <ToastOutlet className="-bottom-stack-md pb-stack-sm" />
       </View>
       <View className="flex-row gap-inline-sm px-screen-x pb-[14px] pt-stack-md">
         <Button
@@ -226,7 +239,13 @@ export const SubscriptionDetailScreen = ({
         description={'해지 완료를 누르면 점검 알림이\n더 이상 오지 않아요.'}
         cancelLabel="취소"
         confirmLabel="해지 완료"
-        onConfirm={() => cancelSubscription.mutate(s.id)}
+        onConfirm={() =>
+          cancelSubscription.mutate(s.id, {
+            onSuccess: () =>
+              show({ type: 'success', message: fillName('{name}을 해지했어요', s.name) }),
+            onError: () => show({ type: 'error', message: '저장하지 못했어요' }),
+          })
+        }
       />
     </View>
   );

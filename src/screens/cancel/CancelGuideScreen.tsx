@@ -9,6 +9,7 @@ import { Modal } from '@/components/common/Modal';
 import { QueryState } from '@/components/common/QueryState';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useCancelGuide } from '@/hooks/useCancelGuide';
 import { useCancelSubscription } from '@/hooks/useCancelSubscription';
@@ -54,17 +55,20 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
     if (!guide.url) return setConfirmOpen(true);
     Linking.openURL(guide.url)
       .then(() => setAwaitingReturn(true))
-      .catch(() => {});
+      .catch(() => show({ type: 'error', message: '페이지를 열지 못했어요' }));
   };
 
   // 해지 완료 처리(구독 종료·해지일 저장·점검 알림 중단) 후 해지를 시작한 구독 상세로. 상세는 구독 종료(M-05)로 바뀜
-  // shortcut: 실패 안내는 디자인에 없어 모달만 닫힘, 디자인 나오면 안내 추가
   const onComplete = () =>
     cancelSubscription.mutate(subscriptionId, {
       onSuccess: () => {
         router.dismissTo(`/manage/detail/${subscriptionId}`);
-        show({ type: 'success', message: fillName('{name}을 해지했어요', name) });
+        show(
+          { type: 'success', message: fillName('{name}을 해지했어요', name) },
+          { nextScreen: true },
+        );
       },
+      onError: () => show({ type: 'error', message: '저장하지 못했어요' }),
     });
 
   return (
@@ -103,6 +107,8 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
             </View>
           )}
         </View>
+        {/* 페이지 열기·해지 완료 실패 토스트는 CTA 위 */}
+        <ToastOutlet className="bottom-0 pb-stack-sm" />
       </View>
       <View className="pb-safe px-screen-x">
         <Cta testID="cancel-guide-cta" label={guide.cta} onPress={onCta} className="mb-[14px]" />

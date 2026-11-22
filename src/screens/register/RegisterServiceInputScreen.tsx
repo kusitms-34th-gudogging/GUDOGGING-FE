@@ -12,6 +12,7 @@ import { QueryState } from '@/components/common/QueryState';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { Text } from '@/components/common/Text';
 import { TextField } from '@/components/common/TextField';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { FadeScrollView } from '@/components/register/FadeScrollView';
 import type { SubscriptionDetail } from '@/constants/manage';
@@ -31,6 +32,7 @@ import { useSubscription } from '@/hooks/useSubscriptions';
 import { useToast } from '@/hooks/useToast';
 import { useUpdateSubscription } from '@/hooks/useUpdateSubscription';
 import { startOfToday } from '@/utils/date';
+import { fillName } from '@/utils/josa';
 
 const CATEGORIES = [
   '영상·OTT',
@@ -327,6 +329,8 @@ const ServiceInputForm = ({
             </View>
           </Pressable>
         </FadeScrollView>
+        {/* 편집·재등록 저장 실패 토스트는 CTA 위 */}
+        <ToastOutlet className="bottom-0 pb-stack-sm" />
       </View>
       <View className="pb-safe px-screen-x">
         <Cta
@@ -335,8 +339,7 @@ const ServiceInputForm = ({
           disabled={!valid || reactivateSubscription.isPending || updateSubscription.isPending}
           onPress={() => {
             if (!category || !nextDate) return;
-            // 재등록·편집: 저장하면 상세로 돌아가 구독 중(M-03)·바뀐 정보를 보여 줌
-            // shortcut: 실패 안내는 디자인에 없어 화면에 남음
+            // 재등록·편집: 저장하면 상세로 돌아가 구독 중(M-03)·바뀐 정보를 보여 줌. 실패하면 화면에 남음
             if (existing) {
               const input = {
                 name,
@@ -347,20 +350,20 @@ const ServiceInputForm = ({
                 nextDate,
                 paidAt,
               };
-              const back = {
+              const done = (message: string) => ({
                 onSuccess: () => {
                   allowLeave();
                   router.back();
+                  show({ type: 'success', message }, { nextScreen: true });
                 },
-              };
+                onError: () => show({ type: 'error', message: '저장하지 못했어요' }),
+              });
               return reactivate
-                ? reactivateSubscription.mutate(input, back)
-                : updateSubscription.mutate(input, {
-                    onSuccess: () => {
-                      back.onSuccess();
-                      show({ type: 'success', message: '구독 정보를 저장했어요' });
-                    },
-                  });
+                ? reactivateSubscription.mutate(
+                    input,
+                    done(fillName('{name}을 다시 등록했어요', existing.name)),
+                  )
+                : updateSubscription.mutate(input, done('구독 정보를 저장했어요'));
             }
             const id = serviceId ?? `custom-${Date.now()}`;
             setPayment(id, {

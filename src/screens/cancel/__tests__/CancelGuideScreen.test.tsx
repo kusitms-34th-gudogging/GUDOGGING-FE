@@ -1,5 +1,6 @@
 import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { Linking } from 'react-native';
 
 import CancelGuideRoute from '@/app/cancel/[id]';
 import CheckupCancelRoute from '@/app/checkup/[id]/cancel';
@@ -145,10 +146,16 @@ it('해지 완료 처리에 실패하면 해지 안내에 남는다', async () =
   await user.press(await screen.findByRole('button', { name: '해지했어요' }));
   await user.press(screen.getByRole('button', { name: '해지 완료' }));
 
-  await waitFor(() =>
-    expect(jest.mocked(globalThis.fetch).mock.calls.some(([, i]) => i?.method === 'PATCH')).toBe(
-      true,
-    ),
-  );
+  expect(await screen.findByText('저장하지 못했어요')).toBeOnTheScreen();
   expect(screen).toHavePathname('/cancel/melon');
+});
+
+it('해지 페이지를 열지 못하면 안내 토스트를 띄운다', async () => {
+  jest.spyOn(Linking, 'openURL').mockRejectedValue(new Error('cannot open'));
+  await renderGuide(guide({ cancelUrl: 'https://melon.com' }));
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+  await user.press(screen.getByRole('button', { name: '해지 페이지로 이동' }));
+
+  expect(await screen.findByText('페이지를 열지 못했어요')).toBeOnTheScreen();
 });

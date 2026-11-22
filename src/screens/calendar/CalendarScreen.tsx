@@ -15,6 +15,7 @@ import { Dial } from '@/components/common/Dial';
 import { ListItem } from '@/components/common/ListItem';
 import { QueryState } from '@/components/common/QueryState';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { PAID_AT } from '@/constants/services';
 import { type CalendarItem, useCalendar } from '@/hooks/useCalendar';
@@ -218,6 +219,12 @@ export const CalendarScreen = () => {
           </View>
         </ScrollView>
       </Animated.View>
+      {/* 상세에서 삭제(S-2) 후 돌아오면 토스트. 탭바(하단 안전 영역 + 4 + 52) 위 12, 구독 관리와 같음 */}
+      <View pointerEvents="box-none" className="pb-safe absolute inset-x-0 bottom-0 z-10">
+        <View pointerEvents="box-none" className="mb-[68px]">
+          <ToastOutlet className="bottom-0" />
+        </View>
+      </View>
       <BottomSheet
         visible={dateSheet}
         onClose={() => setDateSheet(false)}

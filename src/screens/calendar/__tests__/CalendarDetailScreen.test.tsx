@@ -2,6 +2,7 @@ import { act, userEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
 import { CalendarDetailScreen } from '@/screens/calendar/CalendarDetailScreen';
 
@@ -41,7 +42,7 @@ const renderDetail = async (routes: Record<string, unknown> = {}) => {
   mockApi({ 'GET /api/v1/subscriptions/netflix': detail(), ...routes });
   await renderRouter(
     {
-      index: () => null,
+      index: () => <ToastOutlet />,
       'calendar/detail/[id]': () => (
         <CalendarDetailScreen id="netflix" date={new Date(2026, 10, 17)} />
       ),
@@ -204,6 +205,18 @@ it('삭제하기를 누르면 이 구독을 삭제하고 캘린더로 돌아간�
   await user.press(screen.getByRole('button', { name: '삭제하기' }));
 
   await waitFor(() => expect(screen).toHavePathname('/'));
+  expect(await screen.findByText('넷플릭스를 삭제했어요')).toBeOnTheScreen();
   const del = jest.mocked(globalThis.fetch).mock.calls.find(([, i]) => i?.method === 'DELETE');
   expect(JSON.parse(String(del?.[1]?.body))).toEqual({ subscriptionIds: ['netflix'] });
+});
+
+it('삭제에 실패하면 상세에 남고 삭제 실패 토스트를 띄운다', async () => {
+  const user = await renderDetail({ 'DELETE /api/v1/subscriptions': apiError(500) });
+
+  await user.press(screen.getByRole('button', { name: '더보기' }));
+  await user.press(screen.getByText('삭제'));
+  await user.press(screen.getByRole('button', { name: '삭제하기' }));
+
+  expect(await screen.findByText('삭제하지 못했어요')).toBeOnTheScreen();
+  expect(screen).toHavePathname('/calendar/detail/netflix');
 });

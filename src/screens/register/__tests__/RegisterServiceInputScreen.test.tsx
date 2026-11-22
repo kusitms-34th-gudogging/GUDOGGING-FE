@@ -7,7 +7,7 @@ import { Keyboard, Pressable } from 'react-native';
 import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
-import { createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
+import { apiError, createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
 import { RegisterServiceInputScreen } from '@/screens/register/RegisterServiceInputScreen';
 import { RegisterServiceSelectScreen } from '@/screens/register/RegisterServiceSelectScreen';
 
@@ -283,7 +283,7 @@ it('지난 구독 재등록은 기존 정보로 채우고, 고친 정보를 재�
   });
   await renderRouter(
     {
-      'manage/detail': () => null,
+      'manage/detail': () => <ToastOutlet />,
       'register/input': () => <RegisterServiceInputScreen reactivateId="watcha" />,
     },
     { initialUrl: '/manage/detail', wrapper: createQueryWrapper() },
@@ -321,6 +321,7 @@ it('지난 구독 재등록은 기존 정보로 채우고, 고친 정보를 재�
   await user.press(screen.getByRole('button', { name: '저장하기' }));
 
   expect(screen).toHavePathname('/manage/detail');
+  expect(await screen.findByText('왓챠를 다시 등록했어요')).toBeOnTheScreen();
   const patches = jest
     .mocked(globalThis.fetch)
     .mock.calls.filter(([, init]) => init?.method === 'PATCH')
@@ -414,4 +415,43 @@ it('구독 편집은 기존 정보로 채우고, 고친 정보를 수정 API로 
     ],
   ]);
   expect(useRegisterDraft.getState().payments).toEqual({});
+});
+
+it('구독 편집 저장에 실패하면 화면에 남고 저장 실패 토스트를 띄운다', async () => {
+  jest.setSystemTime(new Date(2026, 10, 12, 10));
+  mockApi({
+    'GET /api/v1/services': { services: TEST_SERVICES },
+    'GET /api/v1/subscriptions/watcha': {
+      subscriptionId: 'watcha',
+      status: 'ACTIVE',
+      serviceName: '왓챠',
+      category: 'MUSIC',
+      amount: 7900,
+      billingCycleValue: 2,
+      billingCycleUnit: 'WEEK',
+      nextBillingDate: '2026-11-20',
+      startedAt: '2026-04-16',
+      paymentMethod: 'APP_STORE',
+      isSteady: false,
+      canceledAt: null,
+      totalPaidAmount: 47600,
+      latestCheckup: null,
+      pastCheckupAverage: null,
+    },
+    'PATCH /api/v1/subscriptions/watcha': apiError(500),
+  });
+  await renderRouter(
+    {
+      'manage/detail': () => null,
+      'register/input': () => <RegisterServiceInputScreen editId="watcha" />,
+    },
+    { initialUrl: '/manage/detail', wrapper: createQueryWrapper() },
+  );
+  await act(() => router.push('/register/input'));
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+  await user.press(await screen.findByRole('button', { name: '저장하기' }));
+
+  expect(await screen.findByText('저장하지 못했어요')).toBeOnTheScreen();
+  expect(screen).toHavePathname('/register/input');
 });

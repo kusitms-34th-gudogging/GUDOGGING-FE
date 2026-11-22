@@ -93,7 +93,7 @@ test('연동 요청이 실패하면 연동 실패 화면으로 이동한다', as
   expect(screen).toHavePathname('/mypage/gmail-failed');
 });
 
-test('연결 해제를 확인하면 미연결 상태로, 취소하면 연결 상태 그대로다', async () => {
+test('연결 해제를 확인하면 미연결 상태와 완료 토스트를, 취소하면 연결 상태 그대로다', async () => {
   await renderFromMypage({ [CONNECTION]: connected('suum.mail@gmail.com'), [DISCONNECT]: null });
 
   await userEvent.press(screen.getByRole('button', { name: 'Gmail 연결 해제하기' }));
@@ -105,6 +105,7 @@ test('연결 해제를 확인하면 미연결 상태로, 취소하면 연결 상
 
   expect(await screen.findByRole('button', { name: 'Gmail 연결하기' })).toBeOnTheScreen();
   expect(screen.queryByText('suum.mail@gmail.com')).toBeNull();
+  expect(screen.getByText('Gmail 연결을 해제했어요')).toBeOnTheScreen();
 });
 
 test('연결 해제가 실패하면 연결 상태를 유지하고 오류를 알린다', async () => {

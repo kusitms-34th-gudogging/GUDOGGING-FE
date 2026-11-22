@@ -12,10 +12,12 @@ import { Modal } from '@/components/common/Modal';
 import { MoreMenu } from '@/components/common/MoreMenu';
 import { Text } from '@/components/common/Text';
 import { TextArea } from '@/components/common/TextArea';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import type { EndedSubscriptionDetail } from '@/constants/manage';
 import { PAID_AT } from '@/constants/services';
 import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
+import { useToast } from '@/hooks/useToast';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
 import { fillName } from '@/utils/josa';
 
@@ -35,6 +37,7 @@ export const EndedSubscriptionDetailScreen = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const deleteSubscriptions = useDeleteSubscriptions();
+  const { show } = useToast();
 
   return (
     <View testID="manage-detail-ended" className="pt-safe pb-safe flex-1 bg-bg-default">
@@ -54,7 +57,7 @@ export const EndedSubscriptionDetailScreen = ({
           { label: '삭제', muted: true, onSelect: () => setDeleteOpen(true) },
         ]}
       />
-      {/* 삭제 확인 (C-04와 같은 문구). 삭제 완료 토스트 없음 */}
+      {/* 삭제 확인 (C-04와 같은 문구) */}
       <Modal
         visible={deleteOpen}
         onClose={() => setDeleteOpen(false)}
@@ -63,124 +66,139 @@ export const EndedSubscriptionDetailScreen = ({
         description="삭제하면 모든 정보가 사라져요."
         cancelLabel="취소"
         confirmLabel="삭제하기"
-        onConfirm={() => deleteSubscriptions.mutate([s.id], { onSuccess: () => router.back() })}
+        onConfirm={() =>
+          deleteSubscriptions.mutate([s.id], {
+            onSuccess: () => {
+              router.back();
+              show(
+                { type: 'success', message: fillName('{name}을 삭제했어요', s.name) },
+                { nextScreen: true },
+              );
+            },
+            onError: () => show({ type: 'error', message: '삭제하지 못했어요' }),
+          })
+        }
       />
-      <ScrollView bounces={false} contentContainerClassName="gap-s20 pb-stack-md pt-stack-md">
-        <View className="gap-stack-md px-screen-x">
-          <ServiceHeader
-            name={s.name}
-            logoUrl={s.logoUrl}
-            status="구독 종료"
-            category={s.category}
-            badgeVariant="mono"
-          />
-          <DetailCostCard
-            tone="mono"
-            label="지금까지 쓴 금액"
-            amount={formatWon(s.totalSpent)}
-            subText={`${dotDate(s.startedAt)} ~ ${dotDate(s.cancelledAt)}`}
-          />
-        </View>
-        <View className="gap-stack-md">
-          <View className="gap-stack-sm px-screen-x">
-            <Text accessibilityRole="header" className="text-text-primary text-body1-semibold">
-              결제
-            </Text>
-            <View>
-              <ListItem
-                title="해지일"
-                cost={fullDate(s.cancelledAt)}
-                showCost
-                costColor="text-text-secondary"
-                costFullWidth
-              />
-              <ListItem
-                title="결제 주기"
-                cost={formatCycle(s.cycle, s.unit)}
-                showCost
-                costColor="text-text-secondary"
-                costFullWidth
-              />
-              <ListItem
-                title="결제한 곳"
-                cost={PAID_AT.find((p) => p.value === s.paidAt)?.label ?? ''}
-                showCost
-                costColor="text-text-secondary"
-                costFullWidth
-              />
-              <ListItem
-                title="점검 알림"
-                cost="중단됨"
-                showCost
-                costColor="text-text-secondary"
-                costFullWidth
-              />
-            </View>
+      <View className="flex-1">
+        <ScrollView bounces={false} contentContainerClassName="gap-s20 pb-stack-md pt-stack-md">
+          <View className="gap-stack-md px-screen-x">
+            <ServiceHeader
+              name={s.name}
+              logoUrl={s.logoUrl}
+              status="구독 종료"
+              category={s.category}
+              badgeVariant="mono"
+            />
+            <DetailCostCard
+              tone="mono"
+              label="지금까지 쓴 금액"
+              amount={formatWon(s.totalSpent)}
+              subText={`${dotDate(s.startedAt)} ~ ${dotDate(s.cancelledAt)}`}
+            />
           </View>
-          {s.lastCheckup && (
-            <>
-              <Divider />
-              <View className="gap-inline-sm px-screen-x">
-                <View className="flex-row items-center gap-stack-xs">
-                  <Text
-                    accessibilityRole="header"
-                    className="text-text-primary text-body1-semibold"
-                  >
-                    마지막 점검
-                  </Text>
-                  <Badge
-                    variant="mono"
-                    // 해지를 골랐을 때만 '· 해지' (유지를 골랐거나 안 골랐으면 점검일만)
-                    label={`${monthDay(s.lastCheckup.checkedAt)} 점검${s.lastCheckup.decision === 'CANCEL' ? ' · 해지' : ''}`}
-                  />
-                </View>
-                <View className="gap-s2">
-                  <ListItem
-                    title="점검 결과"
-                    cost={s.lastCheckup.result}
-                    showCost
-                    costColor="text-text-secondary"
-                    costFullWidth
-                  />
-                  <ListItem
-                    title="이용도"
-                    cost={s.lastCheckup.usage}
-                    showCost
-                    costColor="text-text-secondary"
-                    costFullWidth
-                  />
-                  <ListItem
-                    title="만족도"
-                    cost={s.lastCheckup.satisfaction}
-                    showCost
-                    costColor="text-text-secondary"
-                    costFullWidth
-                  />
-                  <ListItem
-                    title="다음 달"
-                    cost={s.lastCheckup.plan}
-                    showCost
-                    costColor="text-text-secondary"
-                    costFullWidth
-                  />
-                  {s.lastCheckup.cancelReason && (
-                    <>
-                      <Text className="py-inline-xs text-text-primary text-body3-semibold">
-                        해지 이유
-                      </Text>
-                      <TextArea
-                        value={s.lastCheckup.cancelReason}
-                        editable={false}
-                        accessibilityLabel="해지 이유"
-                      />
-                    </>
-                  )}
-                </View>
+          <View className="gap-stack-md">
+            <View className="gap-stack-sm px-screen-x">
+              <Text accessibilityRole="header" className="text-text-primary text-body1-semibold">
+                결제
+              </Text>
+              <View>
+                <ListItem
+                  title="해지일"
+                  cost={fullDate(s.cancelledAt)}
+                  showCost
+                  costColor="text-text-secondary"
+                  costFullWidth
+                />
+                <ListItem
+                  title="결제 주기"
+                  cost={formatCycle(s.cycle, s.unit)}
+                  showCost
+                  costColor="text-text-secondary"
+                  costFullWidth
+                />
+                <ListItem
+                  title="결제한 곳"
+                  cost={PAID_AT.find((p) => p.value === s.paidAt)?.label ?? ''}
+                  showCost
+                  costColor="text-text-secondary"
+                  costFullWidth
+                />
+                <ListItem
+                  title="점검 알림"
+                  cost="중단됨"
+                  showCost
+                  costColor="text-text-secondary"
+                  costFullWidth
+                />
               </View>
-            </>
-          )}
-        </View>
-      </ScrollView>
+            </View>
+            {s.lastCheckup && (
+              <>
+                <Divider />
+                <View className="gap-inline-sm px-screen-x">
+                  <View className="flex-row items-center gap-stack-xs">
+                    <Text
+                      accessibilityRole="header"
+                      className="text-text-primary text-body1-semibold"
+                    >
+                      마지막 점검
+                    </Text>
+                    <Badge
+                      variant="mono"
+                      // 해지를 골랐을 때만 '· 해지' (유지를 골랐거나 안 골랐으면 점검일만)
+                      label={`${monthDay(s.lastCheckup.checkedAt)} 점검${s.lastCheckup.decision === 'CANCEL' ? ' · 해지' : ''}`}
+                    />
+                  </View>
+                  <View className="gap-s2">
+                    <ListItem
+                      title="점검 결과"
+                      cost={s.lastCheckup.result}
+                      showCost
+                      costColor="text-text-secondary"
+                      costFullWidth
+                    />
+                    <ListItem
+                      title="이용도"
+                      cost={s.lastCheckup.usage}
+                      showCost
+                      costColor="text-text-secondary"
+                      costFullWidth
+                    />
+                    <ListItem
+                      title="만족도"
+                      cost={s.lastCheckup.satisfaction}
+                      showCost
+                      costColor="text-text-secondary"
+                      costFullWidth
+                    />
+                    <ListItem
+                      title="다음 달"
+                      cost={s.lastCheckup.plan}
+                      showCost
+                      costColor="text-text-secondary"
+                      costFullWidth
+                    />
+                    {s.lastCheckup.cancelReason && (
+                      <>
+                        <Text className="py-inline-xs text-text-primary text-body3-semibold">
+                          해지 이유
+                        </Text>
+                        <TextArea
+                          value={s.lastCheckup.cancelReason}
+                          editable={false}
+                          accessibilityLabel="해지 이유"
+                        />
+                      </>
+                    )}
+                  </View>
+                </View>
+              </>
+            )}
+          </View>
+        </ScrollView>
+        {/* 해지 완료(S-5)·삭제 실패 토스트는 하단 버튼 위. 아래 버튼 영역의 위 패딩(stack-md)만큼 내려서 버튼 위 8 (CTA 화면과 같음) */}
+        <ToastOutlet className="-bottom-stack-md pb-stack-sm" />
+      </View>
       {/* 기존 정보를 채운 구독 정보 입력으로. 다음 결제일만 바꿔 같은 구독을 재등록 (명세 reactivate) */}
       <View className="px-screen-x pb-[14px] pt-stack-md">
         <Cta
