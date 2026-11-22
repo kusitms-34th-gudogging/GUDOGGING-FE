@@ -69,8 +69,7 @@ E2E는 적게, 제품 핵심 가치를 지나는 **사용자 여정** 단위로 
 
 ## 로그인
 
-- 지금은 Apple·Google SDK가 없어 버튼 탭만으로 로그인됨 (`src/hooks/useLogin.ts`)
-- SDK를 붙이면 네이티브 로그인 창은 조작 불가 → E2E 빌드에서만 켜지는 JS 우회 경로를 추가 (네이티브 변경 없이)
+- 네이티브 로그인 창(Apple·Google)은 Maestro로 조작 불가 → 셸에서 `EXPO_PUBLIC_E2E=1`을 주고 Release 빌드하면 창 없이 임시 토큰으로 목서버에 로그인 (`src/hooks/useLogin.ts`)
 
 ## 기다리기 ([Wait commands](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/wait-commands))
 
@@ -119,7 +118,7 @@ appId: com.subscribers.gudogging
 
 - **지금은 iOS만** (프로젝트 결정)
 - 준비 (한 번): Java 17 (`brew install openjdk@17` + PATH), Maestro CLI (`curl -Ls "https://get.maestro.mobile.dev" | bash`). 앱이 아니라 Mac에 설치
-- 빌드 (처음, 앱 코드가 바뀌었을 때): `EXPO_PUBLIC_API_URL=http://localhost:9090 npx expo run:ios --configuration Release --no-bundler`
+- 빌드 (처음, 앱 코드가 바뀌었을 때): `EXPO_PUBLIC_E2E=1 EXPO_PUBLIC_API_URL=http://localhost:9090 npx expo run:ios --configuration Release --no-bundler`
   - `ios/`가 없으면 prebuild가 돌며 `package.json` `scripts`를 바꿈 → 커밋하지 말고 되돌림 (`.claude/docs/deploy.md`)
 - 실행: `E2E=1 pnpm mock`을 띄워 두고 `sh scripts/e2e.sh` (플로우마다 초기화 후 `maestro test`, 실패해도 끝까지 돌고 마지막에 실패한 플로우를 모아 보여 줌. 하나만 돌릴 땐 `sh scripts/e2e.sh .maestro/{도메인}-{여정}.yml`)
   - 켜진 시뮬레이터가 하나여야 함 (여러 대면 Maestro가 아무거나 고름). E2E 도중엔 같은 시뮬레이터에서 Expo Go·개발 서버를 쓰지 않음

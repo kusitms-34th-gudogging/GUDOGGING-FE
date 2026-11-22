@@ -11,6 +11,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import { SocialLoginButton } from '@/components/common/SocialLoginButton';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { LOGIN_TRANSITION_SEC, LoginBackdrop } from '@/components/login/LoginBackdrop';
 import { openPolicy } from '@/constants/policy';
 import type { LoginProvider } from '@/types/auth';
@@ -119,6 +120,10 @@ export const LoginScreen = ({ onLogin, onLoggedIn }: LoginScreenProps) => {
       </View>
 
       <View className="gap-inline-sm px-screen-x pb-s16 pt-[43px]">
+        {/* 로그인 실패 토스트는 버튼 위 8. 버튼 윗변(pt와 같은 높이)에 높이 0 기준점 */}
+        <View pointerEvents="box-none" className="absolute inset-x-0 top-[43px]">
+          <ToastOutlet className="bottom-0 pb-stack-sm" />
+        </View>
         <View className="gap-stack-md">
           <SocialLoginButton
             provider="apple"
