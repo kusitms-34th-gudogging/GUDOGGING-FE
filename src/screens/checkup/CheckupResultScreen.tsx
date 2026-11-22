@@ -9,11 +9,10 @@ import { ListItem } from '@/components/common/ListItem';
 import { QueryState } from '@/components/common/QueryState';
 import { Text } from '@/components/common/Text';
 import { TopBar } from '@/components/common/TopBar';
+import { serviceLogo } from '@/constants/services';
 import { useCheckupResult } from '@/hooks/useCheckups';
 import { useDecideCheckup } from '@/hooks/useDecideCheckup';
 import { formatWon } from '@/utils/formatPayment';
-
-const LOGO = require('@/assets/images/logo_placeholder.png');
 
 interface CheckupResultScreenProps {
   checkupId: string;
@@ -54,7 +53,7 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
         <UsageBreath usage={usage} name={name}>
           <View className="flex-row items-center gap-inline-sm">
             <View className="size-logo-card overflow-hidden rounded-full border-default border-border-subtle">
-              <Image source={LOGO} className="size-full" />
+              <Image source={serviceLogo(subscription.logoUrl)} className="size-full" />
             </View>
             <View className="flex-1">
               <Text className="text-text-primary text-body1-bold">{name} 점검 완료</Text>
@@ -88,7 +87,7 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
                     showSubtitle={current}
                     cost={formatWon(s.monthly)}
                     showCost
-                    logo={LOGO}
+                    logo={serviceLogo(s.logoUrl)}
                     showLogo
                   />
                 );

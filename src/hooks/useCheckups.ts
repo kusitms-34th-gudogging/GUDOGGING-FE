@@ -51,7 +51,7 @@ interface CheckupResultResponse {
 
 // K-80 같은 카테고리 지출 (점검 중인 구독이 맨 위, '그 외 n개'로 줄이지 않고 전부 나열)
 export interface CategorySpending {
-  items: { name: string; monthly: number; current: boolean }[];
+  items: { name: string; logoUrl?: string; monthly: number; current: boolean }[];
   total: number;
 }
 
@@ -97,6 +97,8 @@ export const useCheckupResult = (checkupId: string) =>
       subscription: {
         id: r.subscriptionId,
         name: r.serviceName,
+        // 결과 응답엔 로고가 따로 없어 같은 카테고리 지출 맨 위(점검한 구독)의 로고를 씀
+        logoUrl: r.categorySpending.items[0]?.logoUrl ?? undefined,
         category: CATEGORY_LABEL[r.categorySpending.category],
         nextDate: r.nextBillingDate ? parseDate(r.nextBillingDate) : undefined,
       },
@@ -105,6 +107,7 @@ export const useCheckupResult = (checkupId: string) =>
         // 점검 중인 구독이 맨 위로 옴 (명세)
         items: r.categorySpending.items.map((s, i) => ({
           name: s.serviceName,
+          logoUrl: s.logoUrl ?? undefined,
           monthly: s.monthlyAmount,
           current: i === 0,
         })),

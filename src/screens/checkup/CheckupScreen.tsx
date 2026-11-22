@@ -17,9 +17,11 @@ import {
   type CheckupSubscription,
   toCheckupCategory,
 } from '@/constants/checkup';
+import { serviceLogo } from '@/constants/services';
 import { getCheckupScores, useCheckupDraft } from '@/hooks/useCheckupDraft';
 import { useCheckupForm } from '@/hooks/useCheckups';
 import { useSubmitCheckup } from '@/hooks/useSubmitCheckup';
+import { useSubscription } from '@/hooks/useSubscriptions';
 
 // 점수 문항 1~3, 마지막 4/4는 메모(K-70)
 const QUESTION_COUNT = 3;
@@ -65,6 +67,8 @@ const CheckupQuestions = ({
   restart,
 }: CheckupQuestionsProps) => {
   const { id, name, nextDate } = subscription;
+  // 점검 문항 응답엔 로고가 없어 구독 상세에서 가져옴 (상세·홈에서 들어오면 캐시)
+  const logoUrl = useSubscription(id).data?.logoUrl;
   const category = toCheckupCategory(subscription.category);
   // 같은 결제 주기 안에서만 이어 하기. 주기가 바뀌면 1/4부터
   const cycle = nextDate.toISOString();
@@ -135,10 +139,7 @@ const CheckupQuestions = ({
       >
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-inline-md">
-            <Image
-              source={require('@/assets/images/logo_placeholder.png')}
-              className="size-logo-card rounded-full"
-            />
+            <Image source={serviceLogo(logoUrl)} className="size-logo-card rounded-full" />
             <Text className="text-text-primary text-body2-semibold">{name}</Text>
           </View>
           {/* Figma: 시각 보정으로 2px 안쪽 */}
