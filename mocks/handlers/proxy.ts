@@ -22,6 +22,10 @@ const PROXY_PATHS = [
   '/api/v1/subscriptions/:subscriptionId/cancel',
   '/api/v1/subscriptions/:subscriptionId/reactivate',
   '/api/v1/subscriptions',
+  '/api/v1/subscriptions/:subscriptionId/checkups',
+  '/api/v1/subscriptions/:subscriptionId/checkups/form',
+  '/api/v1/checkups/:checkupId',
+  '/api/v1/checkups/:checkupId/decision',
 ];
 
 const upstream = process.env.DEV_API_URL;

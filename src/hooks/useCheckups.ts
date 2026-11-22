@@ -1,9 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type {
-  CheckupQuestion,
-  CheckupRecommendation,
-  CheckupSubscription,
+import {
+  type CheckupFactor,
+  type CheckupQuestion,
+  type CheckupRecommendation,
+  type CheckupStage,
+  type CheckupSubscription,
+  FACTOR_REASON,
+  STAGE_TITLE,
 } from '@/constants/checkup';
 import { request } from '@/lib/request';
 import { type ApiCategory, CATEGORY_LABEL } from '@/utils/apiCodes';
@@ -32,14 +36,17 @@ interface CheckupResultResponse {
   // 구독 종료된 구독의 점검이면 null
   nextBillingDate: string | null;
   score: number;
+  stage: CheckupStage;
+  mainFactor: CheckupFactor;
+  // 금액·막대는 BENEFIT(통신 요금제)면 null, monthlyPrice는 MAX(카드)면 null
   bundles: {
     name: string;
-    includes: string[];
+    includes: string;
     tags: string[];
-    monthlyPrice: number;
-    monthlySaving: number;
-    condition: string | null;
-    priceType: 'FIXED' | 'MAX';
+    priceType: 'FIXED' | 'MAX' | 'BENEFIT' | 'EXCLUDED';
+    monthlySaving: number | null;
+    savingRate: number | null;
+    monthlyPrice: number | null;
   }[];
   categorySpending: {
     category: ApiCategory;
@@ -50,7 +57,7 @@ interface CheckupResultResponse {
 
 // K-80 같은 카테고리 지출 (점검 중인 구독이 맨 위, '그 외 n개'로 줄이지 않고 전부 나열)
 export interface CategorySpending {
-  items: { name: string; monthly: number; current: boolean }[];
+  items: { name: string; logoUrl?: string; monthly: number; current: boolean }[];
   total: number;
 }
 
@@ -96,29 +103,41 @@ export const useCheckupResult = (checkupId: string) =>
       subscription: {
         id: r.subscriptionId,
         name: r.serviceName,
+        // 결과 응답엔 로고가 따로 없어 같은 카테고리 지출 맨 위(점검한 구독)의 로고를 씀
+        logoUrl: r.categorySpending.items[0]?.logoUrl ?? undefined,
         category: CATEGORY_LABEL[r.categorySpending.category],
-        nextDate: r.nextBillingDate ? parseDate(r.nextBillingDate) : undefined,
       },
+      // 추천 문구는 서버가 준 stage·mainFactor로 앱이 고름 (명세)
+      title: `${r.serviceName} ${STAGE_TITLE[r.stage]}`,
+      reason: FACTOR_REASON[r.stage.startsWith('KEEP') ? 'keep' : 'cancel'][r.mainFactor],
       usage: r.score,
       spending: {
         // 점검 중인 구독이 맨 위로 옴 (명세)
         items: r.categorySpending.items.map((s, i) => ({
           name: s.serviceName,
+          logoUrl: s.logoUrl ?? undefined,
           monthly: s.monthlyAmount,
           current: i === 0,
         })),
         total: r.categorySpending.monthlyTotal,
       } satisfies CategorySpending,
-      recommendations: r.bundles.map((b): CheckupRecommendation => ({
-        id: b.name,
-        title: b.name,
-        subtitle: b.includes.join(' + '),
-        tags: [b.tags[0] ?? '', b.tags[1] ?? ''],
-        saving: b.monthlySaving,
-        upTo: b.priceType === 'MAX',
-        // 카드는 'current - saving'을 이용 금액으로 보여 줌 → 번들 가격 + 절약 금액
-        current: b.monthlyPrice + b.monthlySaving,
-        condition: b.condition ?? undefined,
-      })),
+      // EXCLUDED는 명세 설명에 없는 값이라 숨김
+      recommendations: r.bundles.flatMap((b): CheckupRecommendation[] =>
+        b.priceType === 'EXCLUDED'
+          ? []
+          : [
+              {
+                id: b.name,
+                title: b.name,
+                subtitle: b.includes,
+                // 핵심 혜택이 빈 값으로 오기도 함 → 빈 태그는 그리지 않음
+                tags: b.tags.filter(Boolean),
+                priceType: b.priceType,
+                saving: b.monthlySaving,
+                rate: b.savingRate,
+                price: b.monthlyPrice,
+              },
+            ],
+      ),
     }),
   });
