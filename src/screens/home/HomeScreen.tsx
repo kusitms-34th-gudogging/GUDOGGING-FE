@@ -35,6 +35,7 @@ export const HomeScreen = () => {
     return (
       <View className="pt-safe flex-1 bg-bg-default">
         <QueryState isError={isError} onRetry={refetch} />
+        <ToastOutlet placement="bottom" />
       </View>
     );
   }
@@ -203,11 +204,7 @@ export const HomeScreen = () => {
         </View>
       )}
       {/* 상세에서 삭제(S-2) 후 돌아오면 토스트. 탭바 위 12, 구독 관리와 같음. + 버튼과 겹치면 토스트가 위 */}
-      <View pointerEvents="box-none" className="pb-safe absolute inset-x-0 bottom-0 z-10">
-        <View pointerEvents="box-none" className="mb-[68px]">
-          <ToastOutlet className="bottom-0" />
-        </View>
-      </View>
+      <ToastOutlet placement="bottom" />
     </View>
   );
 };

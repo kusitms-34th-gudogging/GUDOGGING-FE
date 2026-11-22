@@ -6,6 +6,7 @@ import { Button } from '@/components/common/Button';
 import { ShakingAlertIcon } from '@/components/common/ShakingAlertIcon';
 import { StatusBlurBackground } from '@/components/common/StatusBlurBackground';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useConnectGmail } from '@/hooks/useConnectGmail';
 import { useWithdraw } from '@/hooks/useWithdraw';
@@ -67,6 +68,7 @@ export const MypageFailedScreen = ({ kind }: MypageFailedScreenProps) => {
         <ShakingAlertIcon />
         <Text className="text-center text-text-primary text-head3-bold">{title}</Text>
       </View>
+      <ToastOutlet placement="aboveCta" />
       <View className="pb-safe px-screen-x">
         <View className="mb-[14px] flex-row gap-inline-sm">
           <Button

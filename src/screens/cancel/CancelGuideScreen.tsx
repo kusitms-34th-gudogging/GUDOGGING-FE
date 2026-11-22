@@ -45,6 +45,7 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
     return (
       <View className="pt-safe flex-1 bg-bg-default">
         <QueryState isError={isError} onRetry={refetch} />
+        <ToastOutlet placement="bottom" />
       </View>
     );
   }

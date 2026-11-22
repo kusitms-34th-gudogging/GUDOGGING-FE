@@ -5,6 +5,7 @@ import { AccessibilityInfo, View } from 'react-native';
 import { Cta } from '@/components/common/Cta';
 import { StatusBlurBackground } from '@/components/common/StatusBlurBackground';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { SparklingStarsIcon } from '@/components/mypage/SparklingStarsIcon';
 
@@ -41,6 +42,7 @@ export const MypageWithdrawDoneScreen = () => {
         <SparklingStarsIcon />
         <Text className="text-center text-text-primary text-head3-bold">{TITLE}</Text>
       </View>
+      <ToastOutlet placement="aboveCta" />
       <View className="pb-safe px-screen-x">
         <Cta testID="withdraw-done" label="확인" onPress={leave} className="mb-[14px]" />
       </View>

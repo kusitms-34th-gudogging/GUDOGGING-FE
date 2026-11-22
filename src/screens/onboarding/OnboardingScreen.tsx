@@ -11,6 +11,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Cta } from '@/components/common/Cta';
 import { Text } from '@/components/common/Text';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { NotificationSheet } from '@/components/onboarding/NotificationSheet';
 import { OnboardingVisual } from '@/components/onboarding/OnboardingVisual';
@@ -139,7 +140,9 @@ export const OnboardingScreen = ({ onRequestNotification, onComplete }: Onboardi
           </Animated.View>
         </View>
 
-        <View className="flex-1 justify-end px-screen-x">
+        <View className="flex-1" />
+        <ToastOutlet placement="aboveCta" />
+        <View className="px-screen-x">
           <Cta
             className="mb-[14px]"
             testID="onboarding-next"

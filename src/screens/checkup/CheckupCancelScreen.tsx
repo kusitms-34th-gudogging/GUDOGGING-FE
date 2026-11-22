@@ -14,6 +14,7 @@ import { OptionCard } from '@/components/common/OptionCard';
 import { QueryState } from '@/components/common/QueryState';
 import { Text } from '@/components/common/Text';
 import { TextArea } from '@/components/common/TextArea';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { CHECKUP_CATEGORIES, toCheckupCategory } from '@/constants/checkup';
 import { serviceLogo } from '@/constants/services';
@@ -43,6 +44,7 @@ export const CheckupCancelScreen = ({ id, checkupId }: CheckupCancelScreenProps)
     return (
       <View className="pt-safe flex-1 bg-bg-default">
         <QueryState isError={isError} onRetry={refetch} />
+        <ToastOutlet placement="bottom" />
       </View>
     );
   }
@@ -145,6 +147,7 @@ export const CheckupCancelScreen = ({ id, checkupId }: CheckupCancelScreenProps)
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
+      <ToastOutlet placement="aboveCta" />
       <View className="pb-safe px-screen-x">
         <Cta
           testID="cancel-reason-submit"

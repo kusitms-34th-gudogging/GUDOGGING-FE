@@ -49,6 +49,7 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
     return (
       <View className="pt-safe flex-1 bg-bg-default">
         <QueryState isError={isError} onRetry={refetch} />
+        <ToastOutlet placement="bottom" />
       </View>
     );
   }
@@ -187,11 +188,7 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
         </View>
       </ScrollView>
       {/* 삭제 실패 토스트. 하단 버튼이 없어 다른 화면과 같은 높이(하단 안전 영역 위 68)에 둠 (TST-001) */}
-      <View pointerEvents="box-none" className="pb-safe absolute inset-x-0 bottom-0">
-        <View pointerEvents="box-none" className="mb-[68px]">
-          <ToastOutlet className="bottom-0" />
-        </View>
-      </View>
+      <ToastOutlet placement="bottom" />
     </View>
   );
 };

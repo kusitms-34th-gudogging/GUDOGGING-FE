@@ -85,6 +85,7 @@ export const RegisterServiceInputScreen = (props: RegisterServiceInputScreenProp
     return (
       <View className="pt-safe flex-1 bg-bg-default">
         <QueryState isError={waiting.isError} onRetry={waiting.refetch} />
+        <ToastOutlet placement="bottom" />
       </View>
     );
   }

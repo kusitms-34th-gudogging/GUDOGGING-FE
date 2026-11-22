@@ -13,6 +13,7 @@ import {
 import { Modal } from '@/components/common/Modal';
 import { OptionCard } from '@/components/common/OptionCard';
 import { ScreenTitle } from '@/components/common/ScreenTitle';
+import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useDeleteSubscriptionDraft } from '@/hooks/useDeleteSubscriptionDraft';
 import { hasRegisterDraft, useRegisterDraft } from '@/hooks/useRegisterDraft';
@@ -132,6 +133,7 @@ export const RegisterSubscriptionScreen = () => {
           resume();
         }}
       />
+      <ToastOutlet placement="bottom" />
     </View>
   );
 };
