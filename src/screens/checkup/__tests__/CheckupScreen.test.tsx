@@ -160,7 +160,9 @@ describe('CheckupScreen', () => {
     answerAll();
     await renderCheckup({ restart: true });
 
-    expect(screen.queryByText('넷플릭스에 대해\n남기고 싶은 말이 있나요?')).not.toBeOnTheScreen();
+    expect(
+      screen.queryByText('넷플릭스\u2060에 대해 남기고 싶은 말이 있나요?'),
+    ).not.toBeOnTheScreen();
     expect(
       screen.getByText('최근 한 달 동안 넷플릭스를 얼마나 자주 이용했나요?'),
     ).toBeOnTheScreen();
@@ -171,7 +173,7 @@ describe('CheckupScreen', () => {
     const user = await renderCheckup();
     const dismiss = jest.spyOn(Keyboard, 'dismiss');
 
-    await user.press(screen.getByText('넷플릭스에 대해\n남기고 싶은 말이 있나요?'));
+    await user.press(screen.getByText('넷플릭스\u2060에 대해 남기고 싶은 말이 있나요?'));
 
     expect(dismiss).toHaveBeenCalled();
   });
@@ -179,7 +181,7 @@ describe('CheckupScreen', () => {
   it('3문항을 다 답했으면 4/4 메모부터, 칩은 입력란에 이어 붙고 건너뛰기가 보인다', async () => {
     answerAll();
     const user = await renderCheckup();
-    expect(screen.getByText('넷플릭스에 대해\n남기고 싶은 말이 있나요?')).toBeOnTheScreen();
+    expect(screen.getByText('넷플릭스\u2060에 대해 남기고 싶은 말이 있나요?')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: '건너뛰기' })).toBeOnTheScreen();
 
     const memo = screen.getByLabelText('메모');

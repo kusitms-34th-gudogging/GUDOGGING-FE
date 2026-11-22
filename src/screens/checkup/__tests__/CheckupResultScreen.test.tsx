@@ -17,13 +17,12 @@ jest.mock('@shopify/react-native-skia', () => ({
 
 const bundle = {
   name: '통신사 OTT 번들',
-  includes: ['넷플릭스', '티빙'],
+  includes: '넷플릭스 + 티빙',
   tags: ['통신사', '약정 없음'],
-  monthlyPrice: 19900,
-  monthlySaving: 5100,
-  condition: null,
-  providerType: '통신사',
   priceType: 'FIXED',
+  monthlySaving: 5100,
+  savingRate: 20,
+  monthlyPrice: 19900,
 };
 const result = (over: object = {}) => ({
   checkupId: 'c1',
@@ -33,6 +32,7 @@ const result = (over: object = {}) => ({
   yearlyCost: 162000,
   score: 28,
   stage: 'CANCEL_RECOMMENDED',
+  mainFactor: 'USAGE',
   bundles: [bundle],
   categorySpending: {
     category: 'VIDEO_OTT',
@@ -63,7 +63,7 @@ const renderResult = async (routes: Record<string, unknown> = {}) => {
   );
   // 홈에서 점검을 거쳐 온 것처럼 돌아갈 곳을 둠
   await act(() => router.push('/checkup/netflix/result'));
-  await screen.findByText('넷플릭스 점검 완료');
+  await screen.findByText(/^넷플릭스 (유지|해지)를/);
   return userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 };
 
@@ -98,15 +98,55 @@ describe('CheckupResultScreen', () => {
     expect(screen.queryByText(/추천 \d+개/)).not.toBeOnTheScreen();
   });
 
-  it('다음 결제일이 있으면 결제 전 확인 문구를 보여준다', async () => {
+  it('빈 태그는 그리지 않는다', async () => {
+    await renderResult({
+      'GET /api/v1/checkups/c1': result({ bundles: [{ ...bundle, tags: ['KT 구독', ''] }] }),
+    });
+
+    expect(screen.getByText('KT 구독')).toBeOnTheScreen();
+    expect(screen.queryByText('')).not.toBeOnTheScreen();
+  });
+
+  it('통신 요금제(BENEFIT)는 금액 대신 핵심 혜택과 요금제 가격을 보여준다', async () => {
+    await renderResult({
+      'GET /api/v1/checkups/c1': result({
+        bundles: [
+          {
+            ...bundle,
+            tags: ['통신사 · 요금제', '넷플릭스 무료'],
+            priceType: 'BENEFIT',
+            monthlySaving: null,
+            savingRate: null,
+            monthlyPrice: 69000,
+          },
+        ],
+      }),
+    });
+
+    expect(screen.getByText('요금제 월 69,000원')).toBeOnTheScreen();
+    expect(screen.getAllByText('넷플릭스 무료').length).toBeGreaterThan(0);
+  });
+
+  it('해지 쪽 결과는 활용도 구간 추천 문구와 가장 큰 영향 문항의 해지 쪽 문구를 보여준다', async () => {
     await renderResult();
-    expect(screen.getByText('11월 17일 결제 전에 확인했어요')).toBeOnTheScreen();
+
+    expect(screen.getByText('넷플릭스 해지를 추천해요.')).toBeOnTheScreen();
+    expect(screen.getByText('최근 한 달 동안 거의 이용하지 않았어요.')).toBeOnTheScreen();
+  });
+
+  it('유지 쪽 결과는 같은 문항이어도 유지 쪽 문구를 보여준다', async () => {
+    await renderResult({
+      'GET /api/v1/checkups/c1': result({ score: 72, stage: 'KEEP_CONSIDER', mainFactor: 'PLAN' }),
+    });
+
+    expect(screen.getByText('넷플릭스 유지를 고려해 보세요.')).toBeOnTheScreen();
+    expect(screen.getByText('다음 달에도 계속 쓸 계획이에요.')).toBeOnTheScreen();
   });
 
   it('구독 종료된 구독의 점검(nextBillingDate null)도 결과를 보여준다', async () => {
     await renderResult({ 'GET /api/v1/checkups/c1': result({ nextBillingDate: null }) });
 
-    expect(screen.queryByText(/결제 전에 확인했어요/)).not.toBeOnTheScreen();
+    expect(screen.getByText('넷플릭스 해지를 추천해요.')).toBeOnTheScreen();
   });
 
   it('추천 상품이 없으면 더 싸게 영역을 숨긴다', async () => {
