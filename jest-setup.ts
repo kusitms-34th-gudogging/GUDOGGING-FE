@@ -32,3 +32,9 @@ jest.mock('@react-native-firebase/messaging', () => ({
   getMessaging: jest.fn(),
   getToken: jest.fn(async () => 'fcm-test-token'),
 }));
+// Firebase Analytics도 네이티브 모듈이라 쓰는 함수만 대신함. 보낸 이벤트는 jest.mocked(logEvent)로 확인
+jest.mock('@react-native-firebase/analytics', () => ({
+  getAnalytics: jest.fn(),
+  logEvent: jest.fn(async () => {}),
+  setUserId: jest.fn(async () => {}),
+}));
