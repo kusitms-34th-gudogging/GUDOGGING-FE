@@ -12,11 +12,11 @@ interface RecommendCardProps {
 
 // K-80 "같은 {서비스명}, 더 싸게" 가로 스크롤 카드
 export const RecommendCard = ({
-  recommendation: { title, subtitle, tags, saving, upTo, current, condition },
+  recommendation: { title, subtitle, tags, priceType, saving, rate, price },
 }: RecommendCardProps) => {
-  // 절감 막대: 지금 내는 금액 중 아끼는 비율. 비율은 데이터마다 달라 클래스 대신 여기서 줌
+  // 절감 막대 비율은 서버가 줌. 데이터마다 달라 클래스 대신 여기서 줌
   const fillStyle = useAnimatedStyle(() => ({
-    width: `${Math.min(100, (saving / current) * 100)}%`,
+    width: `${Math.min(100, rate ?? 0)}%`,
   }));
 
   return (
@@ -39,19 +39,31 @@ export const RecommendCard = ({
       <View className="h-s16" />
       <View className="gap-s2">
         <View className="gap-stack-xs">
-          <View className="flex-row items-baseline gap-stack-xs">
-            <Text className="text-text-secondary text-caption1-regular">
-              {upTo ? '최대' : '월'}
+          {saving === null ? (
+            <Text numberOfLines={1} className="text-text-brand text-head2-bold">
+              {tags[1]}
             </Text>
-            <Text className="text-text-brand text-head2-bold">{formatWon(saving)}</Text>
-          </View>
-          <View className="h-s4 overflow-hidden rounded-[2px] bg-bg-muted">
-            <Animated.View style={fillStyle} className="h-full rounded-[2px] bg-icon-brand" />
-          </View>
+          ) : (
+            <View className="flex-row items-baseline gap-stack-xs">
+              <Text className="text-text-secondary text-caption1-regular">
+                {priceType === 'MAX' ? '최대' : '월'}
+              </Text>
+              <Text className="text-text-brand text-head2-bold">{formatWon(saving)}</Text>
+            </View>
+          )}
+          {rate !== null && (
+            <View className="h-s4 overflow-hidden rounded-[2px] bg-bg-muted">
+              <Animated.View style={fillStyle} className="h-full rounded-[2px] bg-icon-brand" />
+            </View>
+          )}
         </View>
-        <Text numberOfLines={1} className="text-text-secondary text-caption1-regular">
-          {condition ?? `월 ${formatWon(current - saving)}에 이용`}
-        </Text>
+        {price !== null && (
+          <Text numberOfLines={1} className="text-text-secondary text-caption1-regular">
+            {priceType === 'BENEFIT'
+              ? `요금제 월 ${formatWon(price)}`
+              : `월 ${formatWon(price)}에 이용`}
+          </Text>
+        )}
       </View>
     </View>
   );

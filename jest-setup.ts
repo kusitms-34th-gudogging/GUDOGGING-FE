@@ -27,3 +27,8 @@ jest.mock('expo-secure-store', () => {
 });
 // request()가 base URL 없으면 에러. API 테스트는 fetch를 mock해서 실제로 나가지 않음
 process.env.EXPO_PUBLIC_API_URL = 'https://api.test';
+// Firebase 메시징은 네이티브 모듈이라 쓰는 함수만 대신함 (홈·알림 설정 화면이 import만 해도 필요)
+jest.mock('@react-native-firebase/messaging', () => ({
+  getMessaging: jest.fn(),
+  getToken: jest.fn(async () => 'fcm-test-token'),
+}));

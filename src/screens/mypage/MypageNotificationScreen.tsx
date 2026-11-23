@@ -7,6 +7,7 @@ import { ToastOutlet } from '@/components/common/ToastProvider';
 import { Toggle } from '@/components/common/Toggle';
 import { TopBar } from '@/components/common/TopBar';
 import { useNotificationSettings } from '@/hooks/useNotificationSettings';
+import { useRegisterPushToken } from '@/hooks/useRegisterPushToken';
 import { useUpdateNotificationSettings } from '@/hooks/useUpdateNotificationSettings';
 
 interface MypageNotificationScreenProps {
@@ -20,6 +21,7 @@ export const MypageNotificationScreen = ({
 }: MypageNotificationScreenProps) => {
   const { data: settings, isError, refetch } = useNotificationSettings();
   const update = useUpdateNotificationSettings();
+  const registerPushToken = useRegisterPushToken().mutate;
   // 저장하는 동안은 바꾼 값을 먼저 보여 주고, 실패하면 서버 값으로 돌아감
   const enabled = update.isPending
     ? update.variables.paymentReminderEnabled
@@ -29,6 +31,8 @@ export const MypageNotificationScreen = ({
   // shortcut: 저장 실패 안내는 디자인에 없어 토글만 되돌아감, 디자인 나오면 토스트 추가
   const toggle = async (on: boolean) => {
     if (on && !(await onRequestPermission())) return;
+    // 여기서 처음 권한을 허용했으면 홈까지 기다리지 않고 바로 토큰 등록
+    if (on) registerPushToken();
     update.mutate({ paymentReminderEnabled: on });
   };
 

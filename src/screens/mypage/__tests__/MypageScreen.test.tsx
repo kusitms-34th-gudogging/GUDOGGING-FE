@@ -41,6 +41,12 @@ test('로그인 계정과 로그인 방식을 보여 준다', async () => {
   expect(screen.getByText('Apple로 로그인')).toBeOnTheScreen();
 });
 
+test('Apple 이메일 가리기로 이메일이 없으면 이메일 비공개로 보여 준다', async () => {
+  await renderMypage({}, { ...ME, email: null });
+
+  expect(await screen.findByText('이메일 비공개')).toBeOnTheScreen();
+});
+
 test('계정 정보를 못 불러와도 메뉴는 쓸 수 있다', async () => {
   await renderMypage({ 'mypage/notification': () => null }, apiError(500));
 

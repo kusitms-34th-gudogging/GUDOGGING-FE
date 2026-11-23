@@ -10,11 +10,10 @@ import { QueryState } from '@/components/common/QueryState';
 import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
+import { serviceLogo } from '@/constants/services';
 import { useCheckupResult } from '@/hooks/useCheckups';
 import { useDecideCheckup } from '@/hooks/useDecideCheckup';
 import { formatWon } from '@/utils/formatPayment';
-
-const LOGO = require('@/assets/images/logo_placeholder.png');
 
 interface CheckupResultScreenProps {
   checkupId: string;
@@ -35,8 +34,8 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
   }
 
   // 활용도(%)·같은 카테고리 지출·더 싸게(번들 추천, 없으면 영역 숨김)는 서버가 계산
-  const { subscription, usage, spending, recommendations } = data;
-  const { name, nextDate } = subscription;
+  const { subscription, title, reason, usage, spending, recommendations } = data;
+  const { name } = subscription;
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -56,15 +55,11 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
         <UsageBreath usage={usage} name={name}>
           <View className="flex-row items-center gap-inline-sm">
             <View className="size-logo-card overflow-hidden rounded-full">
-              <Image source={LOGO} className="size-full" />
+              <Image source={serviceLogo(subscription.logoUrl)} className="size-full" />
             </View>
             <View className="flex-1">
-              <Text className="text-text-primary text-body1-bold">{name} 점검 완료</Text>
-              {nextDate && (
-                <Text className="text-text-primary text-caption1-regular">
-                  {`${nextDate.getMonth() + 1}월 ${nextDate.getDate()}일 결제 전에 확인했어요`}
-                </Text>
-              )}
+              <Text className="text-text-primary text-body1-bold">{title}</Text>
+              <Text className="text-text-primary text-caption1-regular">{reason}</Text>
             </View>
           </View>
         </UsageBreath>
@@ -90,7 +85,7 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
                     showSubtitle={current}
                     cost={formatWon(s.monthly)}
                     showCost
-                    logo={LOGO}
+                    logo={serviceLogo(s.logoUrl)}
                     showLogo
                   />
                 );

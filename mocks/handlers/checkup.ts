@@ -104,21 +104,18 @@ export const checkupHandlers = [
       satisfactionAnswer: c.answerTexts.SATISFACTION,
       planAnswer: c.answerTexts.PLAN,
       memo: c.memo,
-      // ponytail: 번들 추천은 명세 mock 1개 고정, 추천 로직은 서버
+      // ponytail: 번들 추천은 1개 고정, 추천 로직은 서버
       bundles: [
         {
           name: '통신사 OTT 번들',
-          includes: ['넷플릭스', '티빙'],
-          tags: ['OTT', '통신사'],
-          monthlyPrice: 19900,
-          monthlySaving: 5100,
-          condition: '통신사 요금제 가입 필요',
-          // 임의: providerType·priceType은 명세 mock에 없음
-          providerType: '통신사',
+          includes: '넷플릭스 + 티빙',
+          tags: ['통신사 · 번들', '약정 없음'],
           priceType: 'FIXED',
+          monthlySaving: 5100,
+          savingRate: 20,
+          monthlyPrice: 19900,
         },
       ],
-      maxMonthlySaving: 5100,
       mainFactor,
       categorySpending: {
         category: s.category,

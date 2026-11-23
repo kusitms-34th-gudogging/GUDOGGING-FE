@@ -83,6 +83,6 @@ export const useSubscriptions = (page: number) =>
 
 - `request`·QueryClient·`_layout.tsx` Provider를 만들거나 고칠 때 → `.claude/rules/api-client.md`
 - API 훅·화면 테스트를 짤 때 → `.claude/docs/testing/api-hooks.md`
-- 서버 배포 전 목 응답으로 개발할 때 → `.claude/docs/api-mocking.md`
+- API 주소를 바꾸거나 E2E 목서버 핸들러를 고칠 때 → `.claude/docs/api-mocking.md`
 - `src/app/api`·`src/server`(BFF)를 쓸지 → `.claude/rules/server-env.md`
 - 새 파일 위치가 애매할 때 → `.claude/docs/architecture.md`
