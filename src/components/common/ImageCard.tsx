@@ -25,7 +25,7 @@ type ImageCardProps =
 const cardClassName =
   'size-[106px] overflow-hidden rounded-sheet border-[0.5px] border-border-default';
 
-// Figma add만 corner smoothing 80% → iOS 연속 곡선 (켜고 끄기만). NativeWind 클래스가 없어 style로
+// Figma corner smoothing 80% → iOS 연속 곡선 (켜고 끄기만). NativeWind 클래스가 없어 style로
 const SMOOTH_CORNER = { borderCurve: 'continuous' } as const;
 
 export const ImageCard = (props: ImageCardProps) => {
@@ -53,7 +53,7 @@ export const ImageCard = (props: ImageCardProps) => {
   const { source, showDelete = true, onDelete, deleteAccessibilityLabel, className } = props;
 
   return (
-    <View className={cn(cardClassName, className)}>
+    <View style={SMOOTH_CORNER} className={cn(cardClassName, className)}>
       <Image source={source} resizeMode="cover" className="size-full" />
       {showDelete && (
         <Pressable
