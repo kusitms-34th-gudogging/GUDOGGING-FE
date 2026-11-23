@@ -6,7 +6,8 @@ import { router } from 'expo-router';
 import { homeKeys } from '@/hooks/useHome';
 import { notificationKeys } from '@/hooks/useNotifications';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
-import { createQueryWrapper, mockApi } from '@/lib/testing';
+import { authToken } from '@/lib/authToken';
+import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
 
 jest.mock('expo-notifications');
 
@@ -26,7 +27,11 @@ let tap: (response: Notifications.NotificationResponse) => void;
 let receive: () => void;
 let push: jest.SpyInstance;
 
-beforeEach(() => {
+// 로그인 세션 확인(S-01) 통과: 저장된 리프레시 토큰으로 재발급 성공
+const SESSION = { 'POST /api/v1/auth/reissue': { accessToken: 'a2', refreshToken: 'r2' } };
+
+beforeEach(async () => {
+  await authToken.save({ accessToken: 'a', refreshToken: 'r' });
   jest.mocked(Notifications.addNotificationResponseReceivedListener).mockImplementation((l) => {
     tap = l;
     return { remove: jest.fn() };
@@ -38,7 +43,10 @@ beforeEach(() => {
   jest.mocked(Notifications.getLastNotificationResponse).mockReturnValue(null);
   push = jest.spyOn(router, 'push').mockImplementation(() => {});
 });
-afterEach(() => jest.restoreAllMocks());
+afterEach(async () => {
+  jest.restoreAllMocks();
+  await authToken.clear();
+});
 
 const render = () => renderHook(() => usePushNotifications(), { wrapper: createQueryWrapper() });
 
@@ -47,25 +55,43 @@ it.each([
   ['BILLING_REMINDER', '/manage/detail/sub-1'],
   ['CANCEL_CONFIRM', '/manage/detail/sub-1?confirmCancel=1'],
 ])('%s 푸시를 탭하면 읽음 처리하고 %s로 이동한다', async (type, target) => {
-  const fetchSpy = mockApi({ 'PATCH /api/v1/notifications/noti-1/read': null });
+  const fetchSpy = mockApi({ ...SESSION, 'PATCH /api/v1/notifications/noti-1/read': null });
   await render();
 
   tap(pushResponse({ ...CHECKUP_PUSH, type }));
 
-  expect(push).toHaveBeenCalledWith(target);
-  await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
+  await waitFor(() => expect(push).toHaveBeenCalledWith(target));
+  await waitFor(() =>
+    expect(fetchSpy).toHaveBeenCalledWith(
+      'https://api.test/api/v1/notifications/noti-1/read',
+      expect.anything(),
+    ),
+  );
 });
 
 it('앱이 꺼진 상태에서 푸시를 탭해 열었으면 그 알림 화면으로 간다', async () => {
-  mockApi({ 'PATCH /api/v1/notifications/noti-1/read': null });
+  mockApi({ ...SESSION, 'PATCH /api/v1/notifications/noti-1/read': null });
   jest
     .mocked(Notifications.getLastNotificationResponse)
     .mockReturnValue(pushResponse(CHECKUP_PUSH));
 
   await render();
 
-  expect(push).toHaveBeenCalledWith('/checkup/sub-1?restart=1');
+  await waitFor(() => expect(push).toHaveBeenCalledWith('/checkup/sub-1?restart=1'));
   expect(Notifications.clearLastNotificationResponse).toHaveBeenCalled();
+});
+
+it('로그인이 만료됐으면 탭해도 이동하지 않는다 (홈이 로그인으로 보냄)', async () => {
+  const fetchSpy = mockApi({ 'POST /api/v1/auth/reissue': apiError(401) });
+  jest
+    .mocked(Notifications.getLastNotificationResponse)
+    .mockReturnValue(pushResponse(CHECKUP_PUSH));
+
+  await render();
+
+  await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+  await waitFor(async () => expect(await authToken.getRefresh()).toBeNull());
+  expect(push).not.toHaveBeenCalled();
 });
 
 it('서버 형식이 아닌 푸시는 탭해도 이동하지 않는다', async () => {
