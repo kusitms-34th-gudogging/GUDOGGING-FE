@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import type { PaymentInfo } from '@/constants/services';
 import { invalidateSubscriptionData } from '@/hooks/useSubscriptions';
+import { track } from '@/lib/analytics';
 import { request } from '@/lib/request';
 import {
   type ApiCycleUnit,
@@ -66,6 +67,12 @@ export const useCreateSubscriptions = () => {
           })),
         },
       }),
-    onSuccess: () => invalidateSubscriptionData(client),
+    onSuccess: ({ createdCount }, { source }) => {
+      track('reg_complete', {
+        method: source === 'MANUAL' ? 'manual' : source === 'SCREENSHOT' ? 'screenshot' : 'gmail',
+        registered_count: createdCount,
+      });
+      return invalidateSubscriptionData(client);
+    },
   });
 };

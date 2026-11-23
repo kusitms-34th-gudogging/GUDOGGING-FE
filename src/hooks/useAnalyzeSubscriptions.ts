@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 
 import type { FoundSubscription, ReviewField } from '@/constants/services';
 import { requestGmailAuthCode } from '@/lib/account';
+import { track } from '@/lib/analytics';
 import { request } from '@/lib/request';
 import {
   type ApiCategory,
@@ -58,6 +59,19 @@ const analyze = async (path: string, signal: AbortSignal, body?: FormData) => {
   return candidates.map(toFound);
 };
 
+// 분석이 끝나면 GA로 결과를 보냄. 화면을 떠나 취소된 건 실패로 세지 않음
+const trackImport = (method: 'screenshot' | 'gmail') => ({
+  onSuccess: (found: FoundSubscription[]) =>
+    track('reg_import_result', {
+      method,
+      result: found.length > 0 ? 'success' : 'empty',
+      found_count: found.length,
+    }),
+  onError: (_: unknown, { signal }: { signal: AbortSignal }) => {
+    if (!signal.aborted) track('reg_import_result', { method, result: 'fail', found_count: 0 });
+  },
+});
+
 // 스크린샷 분석 (A-08): 고른 이미지(PNG·JPG, 1~5장)를 multipart로
 export const useAnalyzeScreenshots = () =>
   useMutation({
@@ -68,6 +82,7 @@ export const useAnalyzeScreenshots = () =>
       uris.forEach((uri) => form.append('images', new File(uri)));
       return analyze('/api/v1/subscriptions/screenshots/analyses', signal, form);
     },
+    ...trackImport('screenshot'),
   });
 
 // Gmail 연동하기 (A-11): Google 계정 선택·권한 동의 후 결제 메일 분석(A-12)으로
@@ -95,4 +110,5 @@ export const useAnalyzeGmail = () =>
       await request('/api/v1/gmail/connection', { method: 'POST', body: { authCode }, signal });
       return analyze('/api/v1/gmail/analyses', signal);
     },
+    ...trackImport('gmail'),
   });

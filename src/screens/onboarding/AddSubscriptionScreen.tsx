@@ -10,6 +10,7 @@ import { ScreenTitle } from '@/components/common/ScreenTitle';
 import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
+import { track } from '@/lib/analytics';
 import type { LoginProvider } from '@/types/auth';
 
 // Apple 로그인은 스크린샷 안내(O-04), Google 로그인은 Gmail 연동 안내(O-05)
@@ -35,6 +36,7 @@ const CONTENT = {
       },
     ],
     cta: '스크린샷 찍으러 가기',
+    method: 'screenshot',
   },
   google: {
     title: '결제 메일에서\n구독을 찾아드릴게요.',
@@ -53,6 +55,7 @@ const CONTENT = {
       },
     ],
     cta: 'Gmail 연동하기',
+    method: 'gmail',
   },
 } as const;
 
@@ -72,7 +75,7 @@ export const AddSubscriptionScreen = ({
   onConfirm,
   onAddScreenshots,
 }: AddSubscriptionScreenProps) => {
-  const { title, description, guides, cta } = CONTENT[provider];
+  const { title, description, guides, cta, method } = CONTENT[provider];
   // 구독 관리를 한 번 열었으면 다시 열기 + 스크린샷 등록하기 (A-06과 같음)
   const [opened, setOpened] = useState(false);
 
@@ -115,6 +118,7 @@ export const AddSubscriptionScreen = ({
           <Cta
             label={cta}
             onPress={() => {
+              track('reg_start', { method, entry_point: 'onboarding' });
               onConfirm?.();
               setOpened(true);
             }}

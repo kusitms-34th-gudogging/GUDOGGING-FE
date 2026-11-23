@@ -110,7 +110,7 @@ export const HomeScreen = () => {
           </View>
         </View>
         {isEmpty ? (
-          <HomeEmptyState onRegister={() => router.push('/register')} />
+          <HomeEmptyState onRegister={() => router.push('/register?from=home')} />
         ) : (
           <View className="gap-screen-x">
             <View className="gap-stack-md px-screen-x">
@@ -221,7 +221,7 @@ export const HomeScreen = () => {
           <FloatingButton
             testID="home-add"
             accessibilityLabel="구독 추가"
-            onPress={() => router.push('/register')}
+            onPress={() => router.push('/register?from=home')}
             className="mb-[74px]"
           />
         </View>

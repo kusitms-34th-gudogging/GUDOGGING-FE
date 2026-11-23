@@ -54,7 +54,7 @@ const renderScreen = async (serverDraft: object | null = null) => {
     {
       // 실제 앱처럼 Stack이라 다음 화면으로 가도 이 화면은 뒤에 남아 있음
       'register/_layout': () => <Stack />,
-      'register/index': RegisterSubscriptionScreen,
+      'register/index': () => <RegisterSubscriptionScreen />,
       'register/found': () => null,
       'register/selected': () => null,
       'register/select': () => null,

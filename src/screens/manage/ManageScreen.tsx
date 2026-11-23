@@ -125,7 +125,11 @@ export const ManageScreen = () => {
               {'스크린샷, Gmail, 직접 입력으로\n구독을 등록할 수 있어요'}
             </Text>
           </View>
-          <Button size="sm" label="구독 등록하기" onPress={() => router.push('/register')} />
+          <Button
+            size="sm"
+            label="구독 등록하기"
+            onPress={() => router.push('/register?from=list')}
+          />
         </View>
       ) : (
         // 탭·금액 줄은 고정하고 목록만 스크롤
@@ -266,7 +270,7 @@ export const ManageScreen = () => {
           ) : (
             <FloatingButton
               accessibilityLabel="구독 추가"
-              onPress={() => router.push('/register')}
+              onPress={() => router.push('/register?from=list')}
             />
           )}
         </View>

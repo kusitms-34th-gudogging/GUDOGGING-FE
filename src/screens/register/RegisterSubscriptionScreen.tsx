@@ -18,6 +18,7 @@ import { TopBar } from '@/components/common/TopBar';
 import { useDeleteSubscriptionDraft } from '@/hooks/useDeleteSubscriptionDraft';
 import { hasRegisterDraft, useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { fromDraft, useSubscriptionDraft } from '@/hooks/useSubscriptionDraft';
+import { track } from '@/lib/analytics';
 
 export type RegisterMethod = 'screenshot' | 'gmail' | 'manual';
 
@@ -64,7 +65,12 @@ const resume = () => {
   router.push({ pathname: '/register/input', params: editingId ? { id: editingId } : {} });
 };
 
-export const RegisterSubscriptionScreen = () => {
+interface RegisterSubscriptionScreenProps {
+  // 들어온 곳 (GA reg_start entry_point). 홈·구독 관리에서 ?from=으로 넘김
+  from?: 'home' | 'list';
+}
+
+export const RegisterSubscriptionScreen = ({ from = 'home' }: RegisterSubscriptionScreenProps) => {
   const [selected, setSelected] = useState<RegisterMethod>();
   // 선택 표시는 누른 순간 반응용. 다음 화면에서 돌아오면 풀어 둠
   useFocusEffect(useCallback(() => setSelected(undefined), []));
@@ -106,6 +112,7 @@ export const RegisterSubscriptionScreen = () => {
               selected={selected === method}
               onSelect={() => {
                 setSelected(method);
+                track('reg_start', { method, entry_point: from });
                 router.push(FIRST_SCREEN[method]);
               }}
             />
