@@ -31,6 +31,8 @@ const PROXY_PATHS = [
   '/api/v1/subscriptions/:subscriptionId/checkups/form',
   '/api/v1/checkups/:checkupId',
   '/api/v1/checkups/:checkupId/decision',
+  // 내 정보 조회(GET)·회원 탈퇴(DELETE)
+  '/api/v1/users/me',
 ];
 
 const upstream = process.env.DEV_API_URL;
