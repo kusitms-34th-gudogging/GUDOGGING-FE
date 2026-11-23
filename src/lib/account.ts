@@ -2,6 +2,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import { useCheckupDraft } from '@/hooks/useCheckupDraft';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
+import { clearAnalyticsUser } from '@/lib/analytics';
 import { authToken } from '@/lib/authToken';
 
 // Gmail 연동용 Google 서버 인증 코드 (명세: 웹 클라이언트 ID로 gmail.readonly·email 범위). 계정 선택·권한 동의를 취소하면 null
@@ -23,5 +24,6 @@ export const requestGmailAuthCode = async (): Promise<string | null> => {
 export const clearAccountData = () => {
   useRegisterDraft.getState().reset();
   useCheckupDraft.getState().reset();
+  clearAnalyticsUser();
   return authToken.clear();
 };
