@@ -8,9 +8,12 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastProvider } from '@/components/common/ToastProvider';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { queryClient } from '@/lib/queryClient';
 
 export default function RootLayout() {
+  usePushNotifications();
+
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView className="flex-1">
