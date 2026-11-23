@@ -207,6 +207,7 @@ export const ManageScreen = () => {
             >
               <ScrollView
                 bounces={false}
+                showsVerticalScrollIndicator={false}
                 contentContainerClassName="gap-stack-sm px-screen-x pb-[52px]"
                 snapToOffsets={snap.snapOffsets}
               >

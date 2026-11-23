@@ -115,7 +115,11 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
         confirmLabel="삭제하기"
         onConfirm={onDelete}
       />
-      <ScrollView bounces={false} contentContainerClassName="gap-s20 pb-[14px] pt-stack-md">
+      <ScrollView
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+        contentContainerClassName="gap-s20 pb-[14px] pt-stack-md"
+      >
         <View className="gap-stack-md px-screen-x">
           {/* 기준일(고른 날짜) 기준 상태. 다음 결제일이 없으면 구독 종료라 구독 종료 상세(M-05)처럼 회색 (C-03, 서버가 계산) */}
           <ServiceHeader

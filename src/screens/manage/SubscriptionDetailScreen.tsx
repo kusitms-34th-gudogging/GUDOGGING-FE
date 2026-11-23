@@ -99,7 +99,11 @@ export const SubscriptionDetailScreen = ({
         }
       />
       <View className="flex-1">
-        <ScrollView bounces={false} contentContainerClassName="gap-s20 pb-stack-md pt-stack-md">
+        <ScrollView
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+          contentContainerClassName="gap-s20 pb-stack-md pt-stack-md"
+        >
           <View className="gap-stack-md px-screen-x">
             <ServiceHeader
               name={s.name}

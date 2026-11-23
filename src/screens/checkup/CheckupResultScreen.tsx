@@ -49,6 +49,7 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
       {/* 스크롤 내용이 아래 버튼에 바로 붙어 잘려 보이지 않게 버튼 위로 간격 */}
       <ScrollView
         bounces={false}
+        showsVerticalScrollIndicator={false}
         className="mb-s12 flex-1"
         contentContainerClassName="px-screen-x pb-section pt-stack-md"
       >

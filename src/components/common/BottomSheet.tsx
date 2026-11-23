@@ -107,7 +107,12 @@ export const BottomSheet = ({
               )}
             </View>
             {tall ? (
-              <ScrollView bounces={false} nestedScrollEnabled style={contentStyle}>
+              <ScrollView
+                bounces={false}
+                showsVerticalScrollIndicator={false}
+                nestedScrollEnabled
+                style={contentStyle}
+              >
                 {children}
               </ScrollView>
             ) : (

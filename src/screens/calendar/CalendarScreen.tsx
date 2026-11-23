@@ -123,6 +123,7 @@ export const CalendarScreen = () => {
       >
         <ScrollView
           bounces={false}
+          showsVerticalScrollIndicator={false}
           contentContainerClassName="pb-s20 pt-s12"
           snapToOffsets={snap.snapOffsets}
         >

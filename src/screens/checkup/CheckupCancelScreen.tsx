@@ -111,6 +111,7 @@ export const CheckupCancelScreen = ({ id, checkupId }: CheckupCancelScreenProps)
           {/* 설계서: 선택지 영역은 최대 높이(360)를 넘기지 않음 */}
           <ScrollView
             bounces={false}
+            showsVerticalScrollIndicator={false}
             ref={scrollRef}
             className="max-h-[360px] shrink"
             contentContainerClassName="gap-stack-md"
