@@ -11,16 +11,20 @@ import { ToastProvider } from '@/components/common/ToastProvider';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { queryClient } from '@/lib/queryClient';
 
-export default function RootLayout() {
+// 푸시 탭 처리가 읽음 API(useMutation)를 써서 QueryClientProvider 안쪽에서 호출
+function RootStack() {
   usePushNotifications();
+  return <Stack screenOptions={{ headerShown: false }} />;
+}
 
+export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView className="flex-1">
         <SafeAreaProvider>
           <BottomSheetModalProvider>
             <ToastProvider>
-              <Stack screenOptions={{ headerShown: false }} />
+              <RootStack />
             </ToastProvider>
           </BottomSheetModalProvider>
         </SafeAreaProvider>

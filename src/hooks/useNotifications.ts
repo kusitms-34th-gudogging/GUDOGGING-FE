@@ -4,7 +4,7 @@ import type { AppNotification, NotificationKind } from '@/constants/notification
 import { serviceLogo } from '@/constants/services';
 import { request } from '@/lib/request';
 
-type ApiNotificationType = 'CHECK_REMINDER' | 'BILLING_REMINDER' | 'CANCEL_CONFIRM';
+export type ApiNotificationType = 'CHECK_REMINDER' | 'BILLING_REMINDER' | 'CANCEL_CONFIRM';
 
 interface NotificationListResponse {
   notifications: {
@@ -20,7 +20,8 @@ interface NotificationListResponse {
   }[];
 }
 
-const KIND: Record<ApiNotificationType, NotificationKind> = {
+// 푸시 payload의 type도 같은 값 (usePushNotifications)
+export const notificationKinds: Record<ApiNotificationType, NotificationKind> = {
   CHECK_REMINDER: 'checkup',
   BILLING_REMINDER: 'payment',
   CANCEL_CONFIRM: 'cancel-confirm',
@@ -38,7 +39,7 @@ export const useNotifications = () =>
     select: (data): AppNotification[] =>
       data.notifications.map((n) => ({
         id: n.notificationId,
-        kind: KIND[n.type],
+        kind: notificationKinds[n.type],
         subscriptionId: n.subscriptionId,
         title: n.title,
         description: n.body,

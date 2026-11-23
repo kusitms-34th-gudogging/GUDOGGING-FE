@@ -1,3 +1,7 @@
+import type { Href } from 'expo-router';
+
+import type { NotificationKind } from '@/constants/notification';
+
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
@@ -27,4 +31,16 @@ export const groupNotifications = <T extends { receivedAt: Date }>(list: T[], no
     today: kept.filter((n) => isSameDay(n.receivedAt, now)),
     previous: kept.filter((n) => !isSameDay(n.receivedAt, now)),
   };
+};
+
+// 알림 목록·푸시 탭이 같은 규칙으로 이동 (화면설계서 NOT-001·002)
+export const notificationTarget = (kind: NotificationKind, subscriptionId: string): Href => {
+  switch (kind) {
+    case 'checkup':
+      return `/checkup/${subscriptionId}?restart=1`;
+    case 'payment':
+      return `/manage/detail/${subscriptionId}`;
+    case 'cancel-confirm':
+      return `/manage/detail/${subscriptionId}?confirmCancel=1`;
+  }
 };
