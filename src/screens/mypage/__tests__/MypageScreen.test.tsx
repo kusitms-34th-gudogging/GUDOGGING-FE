@@ -47,6 +47,13 @@ test('Apple 이메일 가리기로 이메일이 없으면 이메일 비공개로
   expect(await screen.findByText('이메일 비공개')).toBeOnTheScreen();
 });
 
+test('Apple 이메일 가리기 릴레이 주소면 이메일 비공개로 보여 준다', async () => {
+  await renderMypage({}, { ...ME, email: '7nkf2bbrvt@privaterelay.appleid.com' });
+
+  expect(await screen.findByText('이메일 비공개')).toBeOnTheScreen();
+  expect(screen.queryByText('7nkf2bbrvt@privaterelay.appleid.com')).not.toBeOnTheScreen();
+});
+
 test('계정 정보를 못 불러와도 메뉴는 쓸 수 있다', async () => {
   await renderMypage({ 'mypage/notification': () => null }, apiError(500));
 
