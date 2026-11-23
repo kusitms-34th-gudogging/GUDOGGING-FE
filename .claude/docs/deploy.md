@@ -39,5 +39,6 @@ npx eas-cli@latest submit -p ios --id <빌드ID>             # 빌드는 됐는�
 ## 빌드에서만 생기는 문제
 
 - `EXPO_PUBLIC_*`는 `.env.local`이 아니라 EAS 환경 변수(production)에서 들어감. 새 변수는 `npx eas-cli@latest env:create --environment production --name <이름> --value <값> --visibility plaintext`
+- `GoogleService-Info.plist`(Firebase)는 공개 레포라 커밋하지 않음. 로컬은 루트에 두고(gitignore), EAS 빌드는 파일 환경변수 `GOOGLE_SERVICES_PLIST`(`app.config.ts`가 경로를 읽음), CI는 GitHub Secret `GOOGLE_SERVICES_PLIST`(base64)에서 복원. 지문이 파일 내용을 해시하므로 plist를 바꾸면 **둘 다** 갱신 (`npx eas-cli@latest env:create --environment production --name GOOGLE_SERVICES_PLIST --type file --value ./GoogleService-Info.plist --visibility secret` · `base64 -i GoogleService-Info.plist | gh secret set GOOGLE_SERVICES_PLIST`)
 - `babel.config.js`·babel preset이 문자열로 부르는 패키지는 `package.json`에 직접 있어야 함. pnpm이라 로컬은 우연히 찾아도 EAS의 expo-updates 빌드 단계(`createUpdatesResources.js`)는 못 찾음 (`babel-preset-expo`, `@babel/plugin-transform-react-jsx`가 이 이유로 devDependencies에 있음)
 - 테스터 화면에서 애니메이션이 멈춰 보이면 기기의 "동작 줄이기"(`useReducedMotion`) 확인

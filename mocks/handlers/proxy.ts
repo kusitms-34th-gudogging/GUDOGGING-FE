@@ -12,10 +12,11 @@ const PROXY_PATHS = [
   '/api/v1/gmail/connection',
   '/api/v1/gmail/analyses',
   '/api/v1/home',
-  // 알림 목록·읽음 처리·알림 설정 조회(GET)·변경(PATCH)
+  // 알림 목록·읽음 처리·알림 설정 조회(GET)·변경(PATCH)·푸시 토큰 등록
   '/api/v1/notifications',
   '/api/v1/notifications/:notificationId/read',
   '/api/v1/notifications/settings',
+  '/api/v1/notifications/tokens',
   '/api/v1/services',
   '/api/v1/subscriptions/drafts',
   '/api/v1/subscriptions/screenshots/analyses',

@@ -47,3 +47,6 @@ example
 # Claude Code 개인 설정
 CLAUDE.local.md
 .claude/settings.local.json
+
+# Firebase 설정 파일 (공개 레포라 커밋 안 함, .claude/docs/deploy.md)
+GoogleService-Info.plist

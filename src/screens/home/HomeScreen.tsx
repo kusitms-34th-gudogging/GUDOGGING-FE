@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useEffect } from 'react';
 import { ScrollView, View } from 'react-native';
 
 import { CalendarColorAsset, EditColorAsset } from '@/assets/graphics';
@@ -17,6 +18,7 @@ import { ServiceCard } from '@/components/home/ServiceCard';
 import { StateCard } from '@/components/home/StateCard';
 import { serviceLogo } from '@/constants/services';
 import { useHome } from '@/hooks/useHome';
+import { useRegisterPushToken } from '@/hooks/useRegisterPushToken';
 import { cn } from '@/utils/cn';
 import { parseDate } from '@/utils/date';
 import { formatWon } from '@/utils/formatPayment';
@@ -29,7 +31,11 @@ const dateLabel = (date: string) => {
 // H-01 홈 (등록된 구독 없음) · H-02 홈 (구독 있음) · H-03 홈 (점검 유도)
 export const HomeScreen = () => {
   const { data, isError, refetch } = useHome();
+  const registerPushToken = useRegisterPushToken().mutate;
   const today = new Date();
+
+  // 홈에 올 때마다 푸시 토큰 등록·갱신 (권한 없으면 훅이 건너뜀). 실패해도 화면엔 영향 없음
+  useEffect(() => registerPushToken(), [registerPushToken]);
 
   if (!data) {
     return (
