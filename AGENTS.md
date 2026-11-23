@@ -40,6 +40,7 @@
 - 아이콘·에셋: `.claude/skills/add-icon/SKILL.md` · `.claude/skills/add-asset/SKILL.md`
 - 토큰·폰트: `.claude/docs/design-tokens.md`
 - API 연동: `.claude/rules/data-fetching.md`
+- GA 이벤트 추가·수정: `.claude/docs/analytics.md`
 - 테스트: `.claude/skills/add-test/SKILL.md`
 - 커밋·PR: `.claude/skills/commit/SKILL.md` · `.claude/skills/pr/SKILL.md`
 - CodeRabbit 리뷰 대응: `.claude/skills/coderabbit-review/SKILL.md`
