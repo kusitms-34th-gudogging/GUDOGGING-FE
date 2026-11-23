@@ -2,11 +2,11 @@
 
 앱은 `request()`로 `EXPO_PUBLIC_API_URL`에 요청함. 주소만 바꾸면 서버가 바뀜
 
-| 쓰는 곳                     | 주소                             | 설정                                 |
-| --------------------------- | -------------------------------- | ------------------------------------ |
-| 로컬 개발 (시뮬레이터·기기) | `https://dev-api.gudogging.com`  | `.env.example`을 `.env.local`로 복사 |
-| TestFlight (EAS 빌드·OTA)   | `https://dev-api.gudogging.com`  | EAS 환경변수 production              |
-| E2E (Maestro)               | `http://localhost:9090` (목서버) | `.claude/rules/e2e-test.md`          |
+| 쓰는 곳                     | 주소                             | 설정                                                                          |
+| --------------------------- | -------------------------------- | ----------------------------------------------------------------------------- |
+| 로컬 개발 (시뮬레이터·기기) | `https://dev-api.gudogging.com`  | `.env.example`을 `.env.local`로 복사하고 `EXPO_PUBLIC_API_URL`에 이 주소 입력 |
+| TestFlight (EAS 빌드·OTA)   | `https://dev-api.gudogging.com`  | EAS 환경변수 production                                                       |
+| E2E (Maestro)               | `http://localhost:9090` (목서버) | `.claude/rules/e2e-test.md`                                                   |
 
 - 환경변수를 바꾼 뒤엔 `pnpm start -c` (캐시 초기화)
 - EAS 값 바꾸기: `npx eas-cli@latest env:update production --variable-name EXPO_PUBLIC_API_URL --value <주소>`. 다음 OTA·빌드부터 반영

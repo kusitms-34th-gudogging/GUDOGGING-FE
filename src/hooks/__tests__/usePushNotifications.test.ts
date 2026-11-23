@@ -95,14 +95,18 @@ it('로그인이 만료됐으면 탭해도 이동하지 않는다 (홈이 로그
 });
 
 it('서버 형식이 아닌 푸시는 탭해도 이동하지 않는다', async () => {
-  const fetchSpy = mockApi({});
+  mockApi({ ...SESSION, 'PATCH /api/v1/notifications/noti-1/read': null });
   await render();
 
+  // 'constructor'는 객체가 상속받은 속성이라 type 검사를 잘못 통과하기 쉬움
   tap(pushResponse({ type: 'UNKNOWN', subscriptionId: 'sub-1', notificationId: 'noti-1' }));
+  tap(pushResponse({ type: 'constructor', subscriptionId: 'sub-1', notificationId: 'noti-1' }));
   tap(pushResponse({}));
+  // 이동은 로그인 확인 뒤라 비동기 → 정상 푸시의 이동을 기다린 뒤 그것만 이동했는지 확인
+  tap(pushResponse(CHECKUP_PUSH));
 
-  expect(push).not.toHaveBeenCalled();
-  expect(fetchSpy).not.toHaveBeenCalled();
+  await waitFor(() => expect(push).toHaveBeenCalledWith('/checkup/sub-1?restart=1'));
+  expect(push).toHaveBeenCalledTimes(1);
 });
 
 it('앱을 보는 중에 푸시가 오면 알림 목록과 홈을 다시 불러온다', async () => {

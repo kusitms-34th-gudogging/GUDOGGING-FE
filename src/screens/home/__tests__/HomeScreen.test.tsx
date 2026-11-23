@@ -1,9 +1,13 @@
-import { userEvent } from '@testing-library/react-native';
+import { userEvent, waitFor } from '@testing-library/react-native';
+import * as Notifications from 'expo-notifications';
 import { renderRouter, screen } from 'expo-router/testing-library';
+import { AppState, type AppStateStatus } from 'react-native';
 
 import type { Home } from '@/hooks/useHome';
 import { apiError, createQueryWrapper, mockApi } from '@/lib/testing';
 import { HomeScreen } from '@/screens/home/HomeScreen';
+
+jest.mock('expo-notifications');
 
 const payment = (id: string, name: string, date: string, dDay: number, needsCheckup = true) => ({
   subscriptionId: id,
@@ -235,5 +239,31 @@ describe('HomeScreen', () => {
 
     await user.press(await screen.findByRole('button', { name: '알림' }));
     expect(screen).toHavePathname('/notification');
+  });
+
+  it('설정 앱에서 알림을 허용하고 앱으로 돌아오면 푸시 토큰을 등록한다', async () => {
+    const permission = (granted: boolean) =>
+      jest
+        .mocked(Notifications.getPermissionsAsync)
+        .mockResolvedValue({ granted } as Notifications.NotificationPermissionsStatus);
+    const listeners: ((state: AppStateStatus) => void)[] = [];
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_, listener) => {
+      listeners.push(listener);
+      return { remove: jest.fn() };
+    });
+    permission(false);
+    await renderHome(home());
+    await screen.findByRole('button', { name: '알림' });
+    const fetchSpy = mockApi({ 'POST /api/v1/notifications/tokens': null });
+
+    permission(true);
+    listeners.forEach((listener) => listener('active'));
+
+    await waitFor(() =>
+      expect(fetchSpy).toHaveBeenCalledWith(
+        'https://api.test/api/v1/notifications/tokens',
+        expect.anything(),
+      ),
+    );
   });
 });

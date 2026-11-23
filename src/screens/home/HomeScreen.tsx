@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect } from 'react';
-import { ScrollView, View } from 'react-native';
+import { AppState, ScrollView, View } from 'react-native';
 
 import { CalendarColorAsset, EditColorAsset } from '@/assets/graphics';
 import { BellDotIcon, BellIcon } from '@/assets/icons';
@@ -35,7 +35,14 @@ export const HomeScreen = () => {
   const today = new Date();
 
   // 홈에 올 때마다 푸시 토큰 등록·갱신 (권한 없으면 훅이 건너뜀). 실패해도 화면엔 영향 없음
-  useEffect(() => registerPushToken(), [registerPushToken]);
+  useEffect(() => {
+    registerPushToken();
+    // 설정 앱에서 알림을 허용하고 돌아와도 등록 (홈은 탭이라 계속 마운트돼 있어 위 호출이 다시 안 돎)
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') registerPushToken();
+    });
+    return () => sub.remove();
+  }, [registerPushToken]);
 
   if (!data) {
     return (

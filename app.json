@@ -85,7 +85,8 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.529271302257-459v9bpsrvni4rp7cmp0bdb591fc1f6v"
+          "iosUrlScheme": "com.googleusercontent.apps.529271302257-459v9bpsrvni4rp7cmp0bdb591fc1f6v",
+          "iosDependencyManager": "spm"
         }
       ],
       "@react-native-firebase/app",

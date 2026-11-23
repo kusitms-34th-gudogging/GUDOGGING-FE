@@ -33,7 +33,7 @@ const pushDataOf = (notification: Notifications.Notification) => {
   const { type, subscriptionId, notificationId } = payload ?? {};
   if (
     typeof type !== 'string' ||
-    !(type in notificationKinds) ||
+    !Object.hasOwn(notificationKinds, type) ||
     typeof subscriptionId !== 'string' ||
     typeof notificationId !== 'string'
   ) {
