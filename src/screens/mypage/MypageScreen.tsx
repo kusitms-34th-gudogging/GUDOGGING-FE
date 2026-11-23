@@ -103,7 +103,7 @@ export const MypageScreen = () => {
         <View className="ml-screen-x w-[279px] flex-row items-center gap-inline-sm">
           <Image source={PROFILE} className="size-logo-card rounded-full" />
           <View className="flex-1">
-            {me?.email && <Text className="text-text-primary text-body1-semibold">{me.email}</Text>}
+            {me && <Text className="text-text-primary text-body1-semibold">{me.email}</Text>}
             <Text className="text-text-secondary text-caption1-regular">{me?.loginProvider}</Text>
           </View>
         </View>

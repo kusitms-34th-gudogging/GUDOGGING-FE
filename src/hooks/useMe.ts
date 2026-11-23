@@ -22,5 +22,9 @@ export const useMe = () =>
   useQuery({
     queryKey: meKeys.all,
     queryFn: ({ signal }) => request<MeResponse>('/api/v1/users/me', { signal }),
-    select: (me) => ({ email: me.email, loginProvider: PROVIDER_LABEL[me.provider] }),
+    // Apple '나의 이메일 가리기'면 서버가 email을 null로 줌 → 대체 문구
+    select: (me) => ({
+      email: me.email ?? '이메일 비공개',
+      loginProvider: PROVIDER_LABEL[me.provider],
+    }),
   });

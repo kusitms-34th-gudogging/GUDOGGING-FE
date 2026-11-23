@@ -1,4 +1,4 @@
-import { type Href, router } from 'expo-router';
+import { router } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 
 import { BellColorAsset } from '@/assets/graphics';
@@ -10,19 +10,7 @@ import { NotificationItem } from '@/components/home/NotificationItem';
 import type { AppNotification } from '@/constants/notification';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useReadNotification } from '@/hooks/useReadNotification';
-import { formatReceivedAt, groupNotifications } from '@/utils/notification';
-
-// 푸시 알림과 같은 규칙으로 이동 (화면설계서 NOT-001·002)
-const targetOf = (n: AppNotification): Href => {
-  switch (n.kind) {
-    case 'checkup':
-      return `/checkup/${n.subscriptionId}?restart=1`;
-    case 'payment':
-      return `/manage/detail/${n.subscriptionId}`;
-    case 'cancel-confirm':
-      return `/manage/detail/${n.subscriptionId}?confirmCancel=1`;
-  }
-};
+import { formatReceivedAt, groupNotifications, notificationTarget } from '@/utils/notification';
 
 // H-04 알림 목록 · H-05 알림 없음
 export const HomeNotificationScreen = () => {
@@ -36,7 +24,7 @@ export const HomeNotificationScreen = () => {
 
   const open = (n: AppNotification) => {
     if (!n.read) readNotification.mutate(n.id);
-    router.push(targetOf(n));
+    router.push(notificationTarget(n.kind, n.subscriptionId));
   };
 
   return (

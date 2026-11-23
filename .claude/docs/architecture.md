@@ -6,7 +6,7 @@ SDK 55+ 기본 템플릿(`app` · `components` · `constants` · `hooks`) + Expo
 ```txt
 tokens/            # 디자인 토큰 (루트). default-token.json 원본, tailwind-token.json 생성물, index.ts → @tokens
 .maestro/          # E2E 플로우 (Maestro YAML)
-mocks/             # 서버 배포 전 로컬 목서버 (pnpm mock). 앱 번들에 안 들어감
+mocks/             # E2E용 로컬 목서버 (pnpm mock). 앱 번들에 안 들어감
 src/
 ├─ app/            # 라우트 전용. screens 컴포넌트를 반환하는 얇은 껍데기
 │  ├─ api/         # +api 파일(서버 API 라우트)
