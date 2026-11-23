@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { type ComponentType, Fragment, useState } from 'react';
-import { Image, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
 import {
@@ -9,6 +9,7 @@ import {
   CheckColorAsset,
   CheckupColorAsset,
   MailColorAsset,
+  ProfileColorAsset,
 } from '@/assets/graphics';
 import { ChevronRightIcon } from '@/assets/icons';
 import { ListItem } from '@/components/common/ListItem';
@@ -19,8 +20,6 @@ import { TopBar } from '@/components/common/TopBar';
 import { openPolicy } from '@/constants/policy';
 import { useLogout } from '@/hooks/useLogout';
 import { useMe } from '@/hooks/useMe';
-
-const PROFILE = require('@/assets/images/logo_placeholder.png');
 
 // ListItem 왼쪽 아이콘 슬롯은 28, Figma는 그 안에 24 에셋을 가운데 둠
 const assetSlot = (Asset: ComponentType<SvgProps>) =>
@@ -101,7 +100,7 @@ export const MypageScreen = () => {
       <TopBar title="마이페이지" showAction1={false} showAction2={false} />
       <ScrollView bounces={false} contentContainerClassName="gap-inset-lg pb-[120px] pt-[12px]">
         <View className="ml-screen-x w-[279px] flex-row items-center gap-inline-sm">
-          <Image source={PROFILE} className="size-logo-card rounded-full" />
+          <ProfileColorAsset className="size-logo-card" />
           <View className="flex-1">
             {me && <Text className="text-text-primary text-body1-semibold">{me.email}</Text>}
             <Text className="text-text-secondary text-caption1-regular">{me?.loginProvider}</Text>
