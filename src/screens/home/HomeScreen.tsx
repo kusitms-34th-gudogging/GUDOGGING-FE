@@ -48,7 +48,7 @@ export const HomeScreen = () => {
     return (
       <View className="pt-safe flex-1 bg-bg-default">
         <QueryState isError={isError} onRetry={refetch} />
-        <ToastOutlet placement="bottom" />
+        <ToastOutlet placement="aboveTabBar" />
       </View>
     );
   }
@@ -76,6 +76,7 @@ export const HomeScreen = () => {
           맨 아래 여백은 없음 (+ 버튼이 마지막 행 금액을 가려도 됨). 빈 상태는 화면 높이만큼 채우고 안에서 탭바만큼 뺌 */}
       <ScrollView
         bounces={false}
+        showsVerticalScrollIndicator={false}
         className={cn(!isEmpty && 'mb-[68px]')}
         contentContainerClassName={cn('gap-inset-lg pt-stack-md', isEmpty && 'grow')}
       >
@@ -227,7 +228,7 @@ export const HomeScreen = () => {
         </View>
       )}
       {/* 상세에서 삭제(S-2) 후 돌아오면 토스트. 탭바 위 12, 구독 관리와 같음. + 버튼과 겹치면 토스트가 위 */}
-      <ToastOutlet placement="bottom" />
+      <ToastOutlet placement="aboveTabBar" />
     </View>
   );
 };

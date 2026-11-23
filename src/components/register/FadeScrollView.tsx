@@ -28,6 +28,7 @@ export const FadeScrollView = ({
     <View className={className}>
       <ScrollView
         bounces={false}
+        showsVerticalScrollIndicator={false}
         {...props}
         scrollEventThrottle={16}
         onLayout={(e) => {

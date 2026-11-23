@@ -89,20 +89,24 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
 interface ToastOutletProps {
   // 화면마다 위치가 달라서 쓰는 곳이 정함 (예: CTA 위 본문 영역 끝에 bottom-0 pb-stack-sm)
   className?: string;
-  // 'bottom': 하단 안전 영역 위 68에 고정. 탭바 화면(탭바 위 12)과 버튼·탭바가 없는 화면 (TST-001 y 666)
-  //   화면 최상위 View 안 아무 데나 두면 됨
+  // 'aboveTabBar': 하단 안전 영역 위 68에 고정 = 탭바(52 + 아래 4) 위 12. 탭바 화면
+  // 'bottom': 하단 안전 영역 위 6에 고정. 버튼·탭바가 없는 화면
+  //   둘 다 화면 최상위 View 안 아무 데나 두면 됨
   // 'aboveCta': 바로 다음 형제(하단 CTA 영역) 위 8. CTA 영역 바로 앞에 둠
-  placement?: 'bottom' | 'aboveCta';
+  placement?: 'aboveTabBar' | 'bottom' | 'aboveCta';
 }
 
 // 토스트가 그려지는 자리. 이걸 둔 화면에서만 토스트가 보임
 // 포커스된 화면에서만 그림: 뒤로 가면서 띄우면 떠나는 화면에도 잠깐 보였다가 도착 화면에서 또 떠 두 번처럼 보임
 export const ToastOutlet = ({ className, placement }: ToastOutletProps) => {
-  if (placement === 'bottom') {
+  if (placement === 'aboveTabBar' || placement === 'bottom') {
     // pb-safe 있는 View 안에선 bottom-full이 패딩만큼 어긋나서 높이 0 기준점 + bottom-0. 다른 요소와 겹치면 토스트가 위
     return (
       <View pointerEvents="box-none" className="pb-safe absolute inset-x-0 bottom-0 z-10">
-        <View pointerEvents="box-none" className="mb-[68px]">
+        <View
+          pointerEvents="box-none"
+          className={placement === 'aboveTabBar' ? 'mb-[68px]' : 'mb-[6px]'}
+        >
           <ToastOutletView className={cn('bottom-0', className)} />
         </View>
       </View>
