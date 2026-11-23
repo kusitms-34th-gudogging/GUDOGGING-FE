@@ -153,7 +153,7 @@ export const MypageScreen = () => {
         confirmTestID="mypage-logout-confirm"
         onConfirm={logout}
       />
-      <ToastOutlet placement="bottom" />
+      <ToastOutlet placement="aboveTabBar" />
     </View>
   );
 };

@@ -221,7 +221,7 @@ export const CalendarScreen = () => {
         </ScrollView>
       </Animated.View>
       {/* 상세에서 삭제(S-2) 후 돌아오면 토스트. 탭바(하단 안전 영역 + 4 + 52) 위 12, 구독 관리와 같음 */}
-      <ToastOutlet placement="bottom" />
+      <ToastOutlet placement="aboveTabBar" />
       <BottomSheet
         visible={dateSheet}
         onClose={() => setDateSheet(false)}

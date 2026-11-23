@@ -58,7 +58,7 @@ export const MypageNotificationScreen = ({
           <Toggle value={enabled} onValueChange={toggle} accessibilityLabel="구독 점검 알림" />
         </View>
       )}
-      <ToastOutlet placement="bottom" />
+      <ToastOutlet placement="aboveTabBar" />
     </View>
   );
 };
