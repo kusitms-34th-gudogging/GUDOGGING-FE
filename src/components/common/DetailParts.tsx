@@ -25,7 +25,7 @@ export const ServiceHeader = ({
 }: ServiceHeaderProps) => (
   <View className="flex-row items-center gap-inline-xs">
     <View className="shrink flex-row items-center gap-inline-sm">
-      <View className="size-logo-card overflow-hidden rounded-full border-default border-border-subtle">
+      <View className="size-logo-card overflow-hidden rounded-full">
         <Image source={serviceLogo(logoUrl)} className="size-full" />
       </View>
       <Text numberOfLines={1} className="shrink text-text-primary text-body2-semibold">

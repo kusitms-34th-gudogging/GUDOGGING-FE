@@ -71,8 +71,8 @@ export const ListItem = ({
   return (
     <Row action={rowAction} className={className}>
       {showLogo && logo && (
-        // 흰 로고도 구분되게 border/subtle 1px
-        <View className="size-logo-card overflow-hidden rounded-full border-default border-border-subtle">
+        // Figma 로고 원에 테두리 없음 (컴포넌트 설명의 border/subtle 1px은 GUI에 없어 GUI를 따름)
+        <View className="size-logo-card overflow-hidden rounded-full">
           {typeof logo === 'function' ? (
             <SvgLogo Logo={logo} />
           ) : (

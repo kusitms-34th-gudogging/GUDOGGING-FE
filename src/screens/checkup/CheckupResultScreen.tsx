@@ -55,7 +55,7 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
       >
         <UsageBreath usage={usage} name={name}>
           <View className="flex-row items-center gap-inline-sm">
-            <View className="size-logo-card overflow-hidden rounded-full border-default border-border-subtle">
+            <View className="size-logo-card overflow-hidden rounded-full">
               <Image source={LOGO} className="size-full" />
             </View>
             <View className="flex-1">
