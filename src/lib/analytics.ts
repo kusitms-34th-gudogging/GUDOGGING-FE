@@ -1,4 +1,4 @@
-import { getAnalytics, logEvent, setUserId } from '@react-native-firebase/analytics';
+import { getAnalytics, setUserId } from '@react-native-firebase/analytics';
 
 import { request } from '@/lib/request';
 
@@ -47,9 +47,10 @@ export const recommendationOf = (score: number): Recommendation =>
 
 // 수집 실패가 앱 동작을 막지 않게 오류는 버림
 export const track = <K extends keyof AnalyticsEvents>(name: K, params: AnalyticsEvents[K]) => {
-  // logEvent는 이름별 오버로드라 제네릭 이름이면 반환 타입이 void로 잡힘 → Promise로 감쌈
+  // 모듈형 logEvent()는 네이티브 Promise를 버려서 거부를 못 잡음 → Promise를 돌려주는 인스턴스 메서드로
+  // then 안에서 불러 입력 검증 예외(동기)도 같이 catch
   Promise.resolve()
-    .then(() => logEvent(getAnalytics(), name, params))
+    .then(() => getAnalytics().logEvent(name, params))
     .catch(() => {});
 };
 

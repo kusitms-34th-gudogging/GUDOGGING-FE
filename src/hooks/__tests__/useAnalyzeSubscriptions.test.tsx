@@ -1,4 +1,4 @@
-import { logEvent } from '@react-native-firebase/analytics';
+import { getAnalytics } from '@react-native-firebase/analytics';
 import { act, renderHook } from '@testing-library/react-native';
 
 import { useAnalyzeGmail } from '@/hooks/useAnalyzeSubscriptions';
@@ -18,6 +18,8 @@ const CANDIDATE = {
   reviewFields: [],
 };
 
+const { logEvent } = getAnalytics();
+
 afterEach(() => jest.clearAllMocks());
 
 const analyze = async (analyses: unknown, abort = false) => {
@@ -36,7 +38,7 @@ it.each([
   ['오류면 fail', apiError(500), 'fail', 0],
 ])('불러오기가 끝나면 결과를 GA로 보낸다: %s', async (_, analyses, result, found_count) => {
   await analyze(analyses);
-  expect(logEvent).toHaveBeenCalledWith(undefined, 'reg_import_result', {
+  expect(logEvent).toHaveBeenCalledWith('reg_import_result', {
     method: 'gmail',
     result,
     found_count,

@@ -55,11 +55,12 @@ export const usePushNotifications = () => {
       if (!data) return;
       // 앱을 꺼진 상태에서 탭해 열었을 때 다시 처리하지 않게 (Expo 문서 예시)
       Notifications.clearLastNotificationResponse();
+      // 로그인이 만료돼 이동하지 않아도 알림으로 앱에 들어온 건 기록
+      track('push_open', { open_from: 'push' });
       // 로그인 세션 확인(S-01)이 끝난 뒤에 이동. 오래 안 열어 리프레시 토큰이 만료됐으면 확인이 토큰을 지움
       // → 이동하지 않고 홈이 로그인으로 보냄. 확인이 네트워크로 실패하면 토큰이 남아 홈처럼 그대로 이동
       await client.fetchQuery(sessionQuery).catch(() => {});
       if (!(await authToken.getRefresh())) return;
-      track('push_open', { open_from: 'push' });
       readNotification(data.notificationId);
       router.push(notificationTarget(data.kind, data.subscriptionId));
     };
