@@ -1,3 +1,4 @@
+import { getAnalytics } from '@react-native-firebase/analytics';
 import { QueryClient } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react-native';
 import * as Notifications from 'expo-notifications';
@@ -51,7 +52,7 @@ afterEach(async () => {
 const render = () => renderHook(() => usePushNotifications(), { wrapper: createQueryWrapper() });
 
 it.each([
-  ['CHECK_REMINDER', '/checkup/sub-1?restart=1'],
+  ['CHECK_REMINDER', '/checkup/sub-1?restart=1&from=push'],
   ['BILLING_REMINDER', '/manage/detail/sub-1'],
   ['CANCEL_CONFIRM', '/manage/detail/sub-1?confirmCancel=1'],
 ])('%s 푸시를 탭하면 읽음 처리하고 %s로 이동한다', async (type, target) => {
@@ -77,21 +78,24 @@ it('앱이 꺼진 상태에서 푸시를 탭해 열었으면 그 알림 화면�
 
   await render();
 
-  await waitFor(() => expect(push).toHaveBeenCalledWith('/checkup/sub-1?restart=1'));
+  await waitFor(() => expect(push).toHaveBeenCalledWith('/checkup/sub-1?restart=1&from=push'));
   expect(Notifications.clearLastNotificationResponse).toHaveBeenCalled();
 });
 
-it('로그인이 만료됐으면 탭해도 이동하지 않는다 (홈이 로그인으로 보냄)', async () => {
+it('로그인이 만료됐으면 탭해도 이동하지 않지만 푸시 열기는 GA로 보낸다 (홈이 로그인으로 보냄)', async () => {
   const fetchSpy = mockApi({ 'POST /api/v1/auth/reissue': apiError(401) });
   jest
     .mocked(Notifications.getLastNotificationResponse)
     .mockReturnValue(pushResponse(CHECKUP_PUSH));
+  // 앞 테스트에서 보낸 push_open과 섞이지 않게
+  jest.mocked(getAnalytics().logEvent).mockClear();
 
   await render();
 
   await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
   await waitFor(async () => expect(await authToken.getRefresh()).toBeNull());
   expect(push).not.toHaveBeenCalled();
+  expect(getAnalytics().logEvent).toHaveBeenCalledWith('push_open', { open_from: 'push' });
 });
 
 it('서버 형식이 아닌 푸시는 탭해도 이동하지 않는다', async () => {
@@ -105,7 +109,7 @@ it('서버 형식이 아닌 푸시는 탭해도 이동하지 않는다', async (
   // 이동은 로그인 확인 뒤라 비동기 → 정상 푸시의 이동을 기다린 뒤 그것만 이동했는지 확인
   tap(pushResponse(CHECKUP_PUSH));
 
-  await waitFor(() => expect(push).toHaveBeenCalledWith('/checkup/sub-1?restart=1'));
+  await waitFor(() => expect(push).toHaveBeenCalledWith('/checkup/sub-1?restart=1&from=push'));
   expect(push).toHaveBeenCalledTimes(1);
 });
 

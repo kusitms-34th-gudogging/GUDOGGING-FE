@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Image, Keyboard, Pressable, View } from 'react-native';
 
 import { PlusIcon } from '@/assets/icons';
@@ -23,6 +23,7 @@ import { getCheckupScores, useCheckupDraft } from '@/hooks/useCheckupDraft';
 import { useCheckupForm } from '@/hooks/useCheckups';
 import { useSubmitCheckup } from '@/hooks/useSubmitCheckup';
 import { useSubscription } from '@/hooks/useSubscriptions';
+import { type CheckEntry, track } from '@/lib/analytics';
 
 // 점수 문항 1~3, 마지막 4/4는 메모(K-70)
 const QUESTION_COUNT = 3;
@@ -34,10 +35,12 @@ interface CheckupScreenProps {
   id: string;
   // 홈에서 들어오면 저장된 답과 상관없이 1/4부터 (화면설계서 HOM-001)
   restart?: boolean;
+  // 들어온 곳 (GA check_start entry_point)
+  from?: CheckEntry;
 }
 
 // 점검 문항 조회(구독 이름·금액·다음 결제일)와 임시 저장 복원이 끝난 뒤에 시작 문항을 정함
-export const CheckupScreen = ({ id, restart }: CheckupScreenProps) => {
+export const CheckupScreen = ({ id, restart, from = 'detail' }: CheckupScreenProps) => {
   const { data, isError, refetch } = useCheckupForm(id);
   // useSyncExternalStore는 구독 직후 값을 다시 읽어서, 렌더~구독 사이에 복원이 끝나도 놓치지 않음
   const { onFinishHydration, hasHydrated } = useCheckupDraft.persist;
@@ -50,7 +53,7 @@ export const CheckupScreen = ({ id, restart }: CheckupScreenProps) => {
       </View>
     );
   }
-  return hydrated ? <CheckupQuestions {...data} restart={restart} /> : null;
+  return hydrated ? <CheckupQuestions {...data} restart={restart} from={from} /> : null;
 };
 
 interface CheckupQuestionsProps {
@@ -59,6 +62,7 @@ interface CheckupQuestionsProps {
   questions: CheckupQuestion[];
   memo: { placeholder: string; chips: string[] };
   restart?: boolean;
+  from: CheckEntry;
 }
 
 // K-11~K-66: 카테고리마다 문항·선택지·에셋만 다르고 레이아웃은 같음
@@ -67,8 +71,19 @@ const CheckupQuestions = ({
   questions,
   memo: memoConfig,
   restart,
+  from,
 }: CheckupQuestionsProps) => {
   const { id, name, nextDate } = subscription;
+  // 카테고리를 못 받으면 '기타' (점검 결과 화면과 같음)
+  const ga = { service_name: name, category: subscription.category ?? '기타' };
+  // 문항 화면이 처음 보일 때 한 번 (이어 하기로 중간 문항부터여도 점검 시작으로 셈)
+  useEffect(() => {
+    track('check_start', {
+      service_name: name,
+      category: subscription.category ?? '기타',
+      entry_point: from,
+    });
+  }, [name, subscription.category, from]);
   // 점검 문항 응답엔 로고가 없어 구독 상세에서 가져옴 (상세·홈에서 들어오면 캐시)
   const logoUrl = useSubscription(id).data?.logoUrl;
   const category = toCheckupCategory(subscription.category);
@@ -103,6 +118,7 @@ const CheckupQuestions = ({
   const onNext = () => {
     if (selected === undefined) return;
     setScore(id, cycle, step, selected);
+    track('check_answer', { ...ga, step: step + 1, answer: selected });
     goTo(step + 1);
   };
 
@@ -113,7 +129,8 @@ const CheckupQuestions = ({
   // 공백만 입력했으면 빈 메모. 메모는 점수에 반영하지 않음
   // 제출하면 임시 저장을 지우고, 뒤로 가기로 메모에 돌아오지 않게 replace
   // shortcut: 제출 실패 안내는 디자인에 없어 화면에 그대로 남음, 디자인 나오면 안내 추가
-  const finish = (memo: string) =>
+  const finish = (memo: string) => {
+    track('check_answer', { ...ga, step: MEMO_STEP + 1 });
     submit.mutate(
       { scores: getCheckupScores(id, cycle), memo },
       {
@@ -123,6 +140,7 @@ const CheckupQuestions = ({
         },
       },
     );
+  };
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import type { GuideType } from '@/lib/analytics';
 import { request } from '@/lib/request';
 import type { ApiPaymentMethod } from '@/utils/apiCodes';
 
@@ -20,6 +21,8 @@ export interface CancelGuide {
   // 없으면 '해지했어요' 버튼 (X-05)
   url?: string;
   cta: string;
+  // X-01·X-03·X-04·X-05 중 어느 안내인지 (GA guide_type)
+  type: GuideType;
 }
 
 const PAYMENT: Record<ApiPaymentMethod, string> = {
@@ -69,5 +72,13 @@ export const useCancelGuide = (subscriptionId: string) =>
       notice: g.caution ?? undefined,
       url: g.cancelUrl ?? undefined,
       cta: ctaOf(g.paymentMethod, g.cancelUrl),
+      type:
+        g.paymentMethod === 'APP_STORE'
+          ? 'app_store'
+          : g.paymentMethod === 'GOOGLE_PLAY'
+            ? 'google_play'
+            : g.cancelUrl
+              ? 'web'
+              : 'no_link',
     }),
   });

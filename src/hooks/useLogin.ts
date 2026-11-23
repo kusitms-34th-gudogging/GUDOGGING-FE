@@ -2,6 +2,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useMutation } from '@tanstack/react-query';
 import * as AppleAuthentication from 'expo-apple-authentication';
 
+import { identifyUser } from '@/lib/analytics';
 import { authToken, type AuthTokens } from '@/lib/authToken';
 import { request } from '@/lib/request';
 import type { LoginProvider } from '@/types/auth';
@@ -58,6 +59,7 @@ export const useLogin = () =>
         { method: 'POST', body: await bodyOf[provider]() },
       );
       await authToken.save(tokens);
+      identifyUser();
       return isNewUser;
     },
   });

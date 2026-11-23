@@ -10,6 +10,7 @@ import { NotificationItem } from '@/components/home/NotificationItem';
 import type { AppNotification } from '@/constants/notification';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useReadNotification } from '@/hooks/useReadNotification';
+import { track } from '@/lib/analytics';
 import { formatReceivedAt, groupNotifications, notificationTarget } from '@/utils/notification';
 
 // H-04 알림 목록 · H-05 알림 없음
@@ -23,6 +24,7 @@ export const HomeNotificationScreen = () => {
   ].filter((s) => s.items.length > 0);
 
   const open = (n: AppNotification) => {
+    track('push_open', { open_from: 'inbox' });
     if (!n.read) readNotification.mutate(n.id);
     router.push(notificationTarget(n.kind, n.subscriptionId));
   };

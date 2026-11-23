@@ -111,7 +111,7 @@ export const HomeScreen = () => {
           </View>
         </View>
         {isEmpty ? (
-          <HomeEmptyState onRegister={() => router.push('/register')} />
+          <HomeEmptyState onRegister={() => router.push('/register?from=home')} />
         ) : (
           <View className="gap-screen-x">
             <View className="gap-stack-md px-screen-x">
@@ -147,7 +147,8 @@ export const HomeScreen = () => {
                         s.needsCheckup
                           ? {
                               accessibilityLabel: `${s.serviceName} 점검하기`,
-                              onPress: () => router.push(`/checkup/${s.subscriptionId}?restart=1`),
+                              onPress: () =>
+                                router.push(`/checkup/${s.subscriptionId}?restart=1&from=home`),
                             }
                           : undefined
                       }
@@ -204,7 +205,7 @@ export const HomeScreen = () => {
                     buttonTestID="home-checkup"
                     onPress={() =>
                       usage.nudgeSubscriptionId &&
-                      router.push(`/checkup/${usage.nudgeSubscriptionId}?restart=1`)
+                      router.push(`/checkup/${usage.nudgeSubscriptionId}?restart=1&from=home`)
                     }
                   />
                 </>
@@ -222,7 +223,7 @@ export const HomeScreen = () => {
           <FloatingButton
             testID="home-add"
             accessibilityLabel="구독 추가"
-            onPress={() => router.push('/register')}
+            onPress={() => router.push('/register?from=home')}
             className="mb-[74px]"
           />
         </View>

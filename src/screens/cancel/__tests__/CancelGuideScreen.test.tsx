@@ -97,7 +97,11 @@ it('불러오지 못하면 다시 시도로 다시 요청한다', async () => {
 
   await user.press(await screen.findByRole('button', { name: '다시 시도' }));
 
-  expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+  // 구독 상세(GA 카테고리·금액용) 요청은 빼고 해지 안내만 셈
+  const guideCalls = jest
+    .mocked(globalThis.fetch)
+    .mock.calls.filter(([url]) => String(url).endsWith('/cancel-guide'));
+  expect(guideCalls).toHaveLength(2);
 });
 
 it('해지 완료하면 해지 완료 처리 후 해지를 시작한 구독 상세로 돌아간다', async () => {

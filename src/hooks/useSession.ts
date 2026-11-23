@@ -1,5 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 
+import { identifyUser } from '@/lib/analytics';
 import { restoreSession } from '@/lib/request';
 
 export const sessionKeys = { all: ['session'] as const };
@@ -9,7 +10,12 @@ export const sessionKeys = { all: ['session'] as const };
 // 푸시 탭 처리(usePushNotifications)도 같은 확인 결과를 기다림 → 재발급은 한 번만
 export const sessionQuery = queryOptions({
   queryKey: sessionKeys.all,
-  queryFn: restoreSession,
+  // 로그인이 살아 있으면 GA user_id도 다시 설정 (업데이트 전부터 로그인해 있던 사용자)
+  queryFn: async () => {
+    const ok = await restoreSession();
+    if (ok) identifyUser();
+    return ok;
+  },
   retry: false,
   staleTime: Infinity,
 });

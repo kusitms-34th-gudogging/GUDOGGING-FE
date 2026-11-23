@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useEffect } from 'react';
 import { Image, ScrollView, View } from 'react-native';
 
 import { RecommendCard } from '@/components/checkup/RecommendCard';
@@ -13,6 +14,7 @@ import { TopBar } from '@/components/common/TopBar';
 import { serviceLogo } from '@/constants/services';
 import { useCheckupResult } from '@/hooks/useCheckups';
 import { useDecideCheckup } from '@/hooks/useDecideCheckup';
+import { recommendationOf, track } from '@/lib/analytics';
 import { formatWon } from '@/utils/formatPayment';
 
 interface CheckupResultScreenProps {
@@ -23,6 +25,19 @@ interface CheckupResultScreenProps {
 export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => {
   const { data, isError, refetch } = useCheckupResult(checkupId);
   const decide = useDecideCheckup(checkupId);
+  const serviceName = data?.subscription.name;
+  const category = data?.subscription.category;
+  const score = data?.usage;
+  // 결과를 받아 처음 그릴 때 한 번
+  useEffect(() => {
+    if (serviceName === undefined || category === undefined || score === undefined) return;
+    track('check_result_view', {
+      service_name: serviceName,
+      category,
+      score,
+      recommendation: recommendationOf(score),
+    });
+  }, [serviceName, category, score]);
 
   if (!data) {
     return (
@@ -36,6 +51,13 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
   // 활용도(%)·같은 카테고리 지출·더 싸게(번들 추천, 없으면 영역 숨김)는 서버가 계산
   const { subscription, title, reason, usage, spending, recommendations } = data;
   const { name } = subscription;
+  const trackDecision = (decision: 'keep' | 'cancel') =>
+    track('check_decision', {
+      service_name: subscription.name,
+      category: subscription.category,
+      decision,
+      recommendation: recommendationOf(usage),
+    });
 
   return (
     <View className="pt-safe flex-1 bg-bg-default">
@@ -122,7 +144,10 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
             variant="tonal"
             testID="checkup-result-cancel"
             label="해지하기"
-            onPress={() => router.push(`/checkup/${subscription.id}/cancel?checkupId=${checkupId}`)}
+            onPress={() => {
+              trackDecision('cancel');
+              router.push(`/checkup/${subscription.id}/cancel?checkupId=${checkupId}`);
+            }}
             className="flex-1"
           />
           {/* 유지 결정을 저장하면 홈 사용 현황에서 빠짐. D-1 알림은 서버가 모든 구독에 보냄 (명세)
@@ -130,9 +155,10 @@ export const CheckupResultScreen = ({ checkupId }: CheckupResultScreenProps) => 
           <Button
             label="유지하기"
             disabled={decide.isPending}
-            onPress={() =>
-              decide.mutate({ decision: 'KEEP' }, { onSuccess: () => router.dismissTo('/') })
-            }
+            onPress={() => {
+              trackDecision('keep');
+              decide.mutate({ decision: 'KEEP' }, { onSuccess: () => router.dismissTo('/') });
+            }}
             className="flex-1"
           />
         </View>
