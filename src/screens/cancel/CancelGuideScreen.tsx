@@ -13,7 +13,10 @@ import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useCancelGuide } from '@/hooks/useCancelGuide';
 import { useCancelSubscription } from '@/hooks/useCancelSubscription';
+import { useSubscription } from '@/hooks/useSubscriptions';
 import { useToast } from '@/hooks/useToast';
+import { track } from '@/lib/analytics';
+import { monthly } from '@/utils/homeSummary';
 import { fillName } from '@/utils/josa';
 
 const STEP_ICONS = [Step1Icon, Step2Icon, Step3Icon];
@@ -25,6 +28,8 @@ interface CancelGuideScreenProps {
 // X-01·X-03·X-04·X-05 해지 안내 + X-06 해지 완료 확인 모달
 export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) => {
   const { data: guide, isError, refetch } = useCancelGuide(subscriptionId);
+  // 카테고리·금액(GA)은 구독 상세에서. 상세·점검에서 들어와 보통 캐시에 있음
+  const { data: subscription } = useSubscription(subscriptionId);
   const cancelSubscription = useCancelSubscription();
   const { show } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -40,6 +45,14 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
     });
     return () => sub.remove();
   }, [awaitingReturn]);
+
+  const guideType = guide?.type;
+  const serviceName = subscription?.name;
+  const category = subscription?.category;
+  useEffect(() => {
+    if (!guideType || serviceName === undefined || category === undefined) return;
+    track('cancel_guide_view', { service_name: serviceName, category, guide_type: guideType });
+  }, [guideType, serviceName, category]);
 
   if (!guide) {
     return (
@@ -63,6 +76,14 @@ export const CancelGuideScreen = ({ subscriptionId }: CancelGuideScreenProps) =>
   const onComplete = () =>
     cancelSubscription.mutate(subscriptionId, {
       onSuccess: () => {
+        if (subscription)
+          track('cancel_complete', {
+            service_name: subscription.name,
+            category: subscription.category,
+            guide_type: guide.type,
+            amount: monthly(subscription),
+            cancel_from: 'guide',
+          });
         router.dismissTo(`/manage/detail/${subscriptionId}`);
         show(
           { type: 'success', message: fillName('{name}을 해지했어요', name) },

@@ -20,7 +20,9 @@ import { useCancelSubscription } from '@/hooks/useCancelSubscription';
 import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
 import { useSetSteadySubscription } from '@/hooks/useSetSteadySubscription';
 import { useToast } from '@/hooks/useToast';
+import { track } from '@/lib/analytics';
 import { formatCycle, formatWon } from '@/utils/formatPayment';
+import { monthly } from '@/utils/homeSummary';
 import { fillName } from '@/utils/josa';
 
 const monthDay = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
@@ -49,6 +51,11 @@ export const SubscriptionDetailScreen = ({
   const cancelSubscription = useCancelSubscription();
   const changeSteady = (next: boolean) => {
     setSteady(next);
+    track('steady_toggle', {
+      service_name: s.name,
+      category: s.category,
+      enabled: next ? 'true' : 'false',
+    });
     setSteadySubscription.mutate(next, { onError: () => setSteady(!next) });
   };
 
@@ -242,7 +249,16 @@ export const SubscriptionDetailScreen = ({
         // 재조회로 구독 종료 화면으로 바뀌면 이 화면이 사라져 mutate 콜백이 안 불림 → mutateAsync로
         onConfirm={() =>
           cancelSubscription.mutateAsync(s.id).then(
-            () => show({ type: 'success', message: fillName('{name}을 해지했어요', s.name) }),
+            () => {
+              // 이 모달은 해지 확인 알림(N-02)으로 들어올 때만 열림
+              track('cancel_complete', {
+                service_name: s.name,
+                category: s.category,
+                amount: monthly(s),
+                cancel_from: 'push',
+              });
+              show({ type: 'success', message: fillName('{name}을 해지했어요', s.name) });
+            },
             () => show({ type: 'error', message: '저장하지 못했어요' }),
           )
         }
