@@ -83,31 +83,36 @@ export const HomeScreen = () => {
           <Text accessibilityRole="header" className="px-s2 text-text-primary text-body1-bold">
             내 구독 정보
           </Text>
+          {/* 카드를 틀로 감쌈: flex-1을 카드에 바로 주면 패딩이 큰 CostCard(20)가 ServiceCard(16)보다 넓어짐 */}
           <View className="flex-row gap-[15px]">
-            <CostCard
-              label={`${today.getMonth() + 1}월 결제 예정`}
-              amount={formatWon(summary.expectedAmount)}
-              yearAmount={`연 ${formatWon(summary.yearlyAmount)}`}
-              className="flex-1"
-            />
-            <ServiceCard
-              label={`${summary.subscriptionCount}개 구독 중이에요`}
-              // 구독이 있으면 개수만큼(최대 10) 둥둥. 서버 logos엔 로고 없는 구독(직접 입력 등)이 빠져 있어 그 자리는 기본 이미지
-              logos={Array.from(
-                { length: Math.min(Math.max(summary.subscriptionCount, summary.logos.length), 10) },
-                (_, i) => ({
-                  id: `${i}-${summary.logos[i] ?? ''}`,
-                  logo: serviceLogo(summary.logos[i]),
-                }),
-              )}
-              className="flex-1"
-            />
+            <View className="flex-1">
+              <CostCard
+                label={`${today.getMonth() + 1}월 결제 예정`}
+                amount={formatWon(summary.expectedAmount)}
+                yearAmount={`연 ${formatWon(summary.yearlyAmount)}`}
+              />
+            </View>
+            <View className="flex-1">
+              <ServiceCard
+                label={`${summary.subscriptionCount}개 구독 중이에요`}
+                // 구독이 있으면 개수만큼(최대 10) 둥둥. 서버 logos엔 로고 없는 구독(직접 입력 등)이 빠져 있어 그 자리는 기본 이미지
+                logos={Array.from(
+                  {
+                    length: Math.min(Math.max(summary.subscriptionCount, summary.logos.length), 10),
+                  },
+                  (_, i) => ({
+                    id: `${i}-${summary.logos[i] ?? ''}`,
+                    logo: serviceLogo(summary.logos[i]),
+                  }),
+                )}
+              />
+            </View>
           </View>
         </View>
         {isEmpty ? (
           <HomeEmptyState onRegister={() => router.push('/register')} />
         ) : (
-          <View className="gap-stack-md">
+          <View className="gap-screen-x">
             <View className="gap-stack-md px-screen-x">
               <SectionHeader
                 title="구독 점검하기"
@@ -120,6 +125,8 @@ export const HomeScreen = () => {
                   title={'구독 점검 완료!\n이번 달 결제 일정을 확인해요'}
                   buttonLabel="캘린더 확인하기"
                   Asset={CalendarColorAsset}
+                  // Figma H-03.1: 오른쪽에서 4 안쪽
+                  assetRightClassName="right-[4px]"
                   onPress={() => router.navigate('/calendar')}
                 />
               ) : (
@@ -148,7 +155,8 @@ export const HomeScreen = () => {
                 </View>
               )}
             </View>
-            <View className="h-[2px] bg-bg-subtle" />
+            {/* 구분선 0.5는 토큰 없음 (border 최소 1) */}
+            <View className="h-[0.5px] bg-bg-muted" />
             <View className="gap-stack-md px-screen-x">
               {/* 잘 안 쓰는 구독이 없으면(점검 기록이 없거나 다 잘 쓰는 중) 점검 유도 카드 (H-03) */}
               {usage.items.length > 0 ? (
@@ -190,6 +198,8 @@ export const HomeScreen = () => {
                     title={'결제 전 30초 질문,\n잘 쓰는 구독을 가려 드려요'}
                     buttonLabel="점검하러 가기"
                     Asset={EditColorAsset}
+                    // Figma H-03: 오른쪽으로 2 넘침
+                    assetRightClassName="-right-[2px]"
                     buttonTestID="home-checkup"
                     onPress={() =>
                       usage.nudgeSubscriptionId &&

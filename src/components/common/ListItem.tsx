@@ -70,37 +70,17 @@ export const ListItem = ({
 
   return (
     <Row action={rowAction} className={className}>
-      {(showCheckBox || (showLogo && logo) || (showIconLeft && IconLeft)) && (
-        <View className="flex-row items-center gap-stack-xs">
-          {(showCheckBox || (showLogo && logo)) && (
-            <View className="flex-row items-center gap-s2">
-              {showCheckBox && (
-                // Figma 인스턴스(34×44, 박스 왼쪽 정렬)에 맞춤: 44 체크박스를 34 틀 오른쪽 끝에 붙여 왼쪽 10을 잘라냄 → 박스가 틀 왼쪽에 오고 터치 영역도 34×44
-                <View className="w-[34px] flex-row justify-end overflow-hidden">
-                  <Checkbox
-                    checked={checked}
-                    testID={checkBoxTestID}
-                    onCheckedChange={(next) => onCheckedChange?.(next)}
-                    locked={checkBoxLocked}
-                    accessibilityLabel={title}
-                  />
-                </View>
-              )}
-              {showLogo && logo && (
-                // 흰 로고도 구분되게 border/subtle 1px
-                <View className="size-logo-card overflow-hidden rounded-full border-default border-border-subtle">
-                  {typeof logo === 'function' ? (
-                    <SvgLogo Logo={logo} />
-                  ) : (
-                    <Image source={logo} className="size-full" />
-                  )}
-                </View>
-              )}
-            </View>
+      {showLogo && logo && (
+        // Figma 로고 원에 테두리 없음 (컴포넌트 설명의 border/subtle 1px은 GUI에 없어 GUI를 따름)
+        <View className="size-logo-card overflow-hidden rounded-full">
+          {typeof logo === 'function' ? (
+            <SvgLogo Logo={logo} />
+          ) : (
+            <Image source={logo} className="size-full" />
           )}
-          {showIconLeft && IconLeft && <IconLeft className={cn('size-[28px]', iconLeftColor)} />}
         </View>
       )}
+      {showIconLeft && IconLeft && <IconLeft className={cn('size-[28px]', iconLeftColor)} />}
       <View className="flex-1">
         <Text numberOfLines={1} className="text-text-primary text-body3-semibold">
           {title}
@@ -111,30 +91,46 @@ export const ListItem = ({
           </Text>
         )}
       </View>
-      {((showCost && cost) || (showIconRight && IconRight)) && (
-        <Trailing action={trailingAction}>
-          {showCost && cost && (
-            <Text
-              numberOfLines={1}
-              className={cn(
-                costFullWidth ? 'shrink' : 'max-w-[120px]',
-                'text-body3-semibold',
-                costColor,
+      {((showCost && cost) || (showIconRight && IconRight) || showCheckBox) && (
+        <View className="shrink flex-row items-center gap-inline-xs">
+          {((showCost && cost) || (showIconRight && IconRight)) && (
+            <Trailing action={trailingAction}>
+              {showCost && cost && (
+                <Text
+                  numberOfLines={1}
+                  className={cn(
+                    costFullWidth ? 'shrink' : 'max-w-[120px]',
+                    'text-body3-semibold',
+                    costColor,
+                  )}
+                >
+                  {cost}
+                </Text>
               )}
-            >
-              {cost}
-            </Text>
+              {showIconRight && IconRight && (
+                <IconRight className={cn('size-icon-list', iconRightColor)} />
+              )}
+            </Trailing>
           )}
-          {showIconRight && IconRight && (
-            <IconRight className={cn('size-icon-list', iconRightColor)} />
+          {showCheckBox && (
+            // Figma 인스턴스 34×44(박스 가운데)에 맞춤: 44 체크박스를 34 틀 가운데 두고 양옆 5씩 잘라냄
+            <View className="w-[34px] flex-row justify-center overflow-hidden">
+              <Checkbox
+                checked={checked}
+                testID={checkBoxTestID}
+                onCheckedChange={(next) => onCheckedChange?.(next)}
+                locked={checkBoxLocked}
+                accessibilityLabel={title}
+              />
+            </View>
           )}
-        </Trailing>
+        </View>
       )}
     </Row>
   );
 };
 
-const rowClassName = 'min-w-[280px] flex-row items-center gap-inset-xs py-inline-xs';
+const rowClassName = 'min-w-[280px] flex-row items-center gap-inline-md py-inline-xs';
 
 const Row = ({
   action,
@@ -166,12 +162,12 @@ const Trailing = ({ action, children }: { action?: ListItemIconAction; children:
       accessibilityRole="button"
       accessibilityLabel={action.accessibilityLabel}
       onPress={action.onPress}
-      className="flex-row items-center gap-s2 active:opacity-pressed"
+      className="shrink flex-row items-center gap-s2 active:opacity-pressed"
     >
       {children}
     </Pressable>
   ) : (
-    <View className="flex-row items-center gap-s2">{children}</View>
+    <View className="shrink flex-row items-center gap-s2">{children}</View>
   );
 
 const SvgLogo = ({ Logo }: { Logo: ComponentType<SvgProps> }) => (

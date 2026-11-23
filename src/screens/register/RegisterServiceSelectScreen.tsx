@@ -102,7 +102,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
           {/* 검색 키보드가 떠 있어도 목록·직접 입력하기가 한 번에 눌리게 (기본값은 첫 탭이 키보드만 내림) */}
           <FadeScrollView
             className="flex-1"
-            contentContainerClassName="gap-inline-xs"
+            contentContainerClassName="gap-stack-sm"
             keyboardShouldPersistTaps="handled"
           >
             {results.map((s) => (

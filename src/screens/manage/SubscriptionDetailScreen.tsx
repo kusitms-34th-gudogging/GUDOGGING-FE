@@ -114,7 +114,7 @@ export const SubscriptionDetailScreen = ({
               subText={`연 환산 ${formatWon(s.yearlyAmount)}`}
             />
           </View>
-          <View className="gap-stack-md">
+          <View className="gap-screen-x">
             <View className="flex-row items-center justify-between gap-inline-sm px-screen-x">
               <View className="shrink">
                 <Text className="text-text-primary text-body2-bold">꾸준히 쓰는 구독</Text>

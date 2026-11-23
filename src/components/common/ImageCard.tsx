@@ -21,8 +21,12 @@ type ImageCardProps =
       testID?: string;
     };
 
+// 테두리 0.5는 토큰 없음 (border 최소 1)
 const cardClassName =
-  'size-[106px] overflow-hidden rounded-card border-default border-border-default';
+  'size-[106px] overflow-hidden rounded-sheet border-[0.5px] border-border-default';
+
+// Figma corner smoothing 80% → iOS 연속 곡선 (켜고 끄기만). NativeWind 클래스가 없어 style로
+const SMOOTH_CORNER = { borderCurve: 'continuous' } as const;
 
 export const ImageCard = (props: ImageCardProps) => {
   if (props.variant === 'add') {
@@ -32,6 +36,7 @@ export const ImageCard = (props: ImageCardProps) => {
         accessibilityRole="button"
         accessibilityLabel={props.accessibilityLabel}
         onPress={props.onPress}
+        style={SMOOTH_CORNER}
         className={cn(
           cardClassName,
           'items-center justify-center bg-bg-default active:opacity-pressed',
@@ -48,14 +53,14 @@ export const ImageCard = (props: ImageCardProps) => {
   const { source, showDelete = true, onDelete, deleteAccessibilityLabel, className } = props;
 
   return (
-    <View className={cn(cardClassName, className)}>
+    <View style={SMOOTH_CORNER} className={cn(cardClassName, className)}>
       <Image source={source} resizeMode="cover" className="size-full" />
       {showDelete && (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={deleteAccessibilityLabel}
           onPress={onDelete}
-          className="absolute -top-[2px] right-0 px-inline-sm py-stack-sm active:opacity-pressed"
+          className="absolute right-[2px] top-[1px] px-inline-sm py-stack-sm active:opacity-pressed"
         >
           <View className="size-[22px] items-center justify-center rounded-pill bg-[#D9D9D9]">
             <CloseIcon className="size-icon-xs text-icon-secondary" />
