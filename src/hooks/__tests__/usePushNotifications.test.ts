@@ -51,7 +51,7 @@ afterEach(async () => {
 const render = () => renderHook(() => usePushNotifications(), { wrapper: createQueryWrapper() });
 
 it.each([
-  ['CHECK_REMINDER', '/checkup/sub-1?restart=1'],
+  ['CHECK_REMINDER', '/checkup/sub-1?restart=1&from=push'],
   ['BILLING_REMINDER', '/manage/detail/sub-1'],
   ['CANCEL_CONFIRM', '/manage/detail/sub-1?confirmCancel=1'],
 ])('%s 푸시를 탭하면 읽음 처리하고 %s로 이동한다', async (type, target) => {
@@ -77,7 +77,7 @@ it('앱이 꺼진 상태에서 푸시를 탭해 열었으면 그 알림 화면�
 
   await render();
 
-  await waitFor(() => expect(push).toHaveBeenCalledWith('/checkup/sub-1?restart=1'));
+  await waitFor(() => expect(push).toHaveBeenCalledWith('/checkup/sub-1?restart=1&from=push'));
   expect(Notifications.clearLastNotificationResponse).toHaveBeenCalled();
 });
 
@@ -105,7 +105,7 @@ it('서버 형식이 아닌 푸시는 탭해도 이동하지 않는다', async (
   // 이동은 로그인 확인 뒤라 비동기 → 정상 푸시의 이동을 기다린 뒤 그것만 이동했는지 확인
   tap(pushResponse(CHECKUP_PUSH));
 
-  await waitFor(() => expect(push).toHaveBeenCalledWith('/checkup/sub-1?restart=1'));
+  await waitFor(() => expect(push).toHaveBeenCalledWith('/checkup/sub-1?restart=1&from=push'));
   expect(push).toHaveBeenCalledTimes(1);
 });
 

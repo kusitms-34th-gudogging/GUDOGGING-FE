@@ -75,7 +75,7 @@ describe('HomeNotificationScreen', () => {
   });
 
   it.each([
-    ['CHECK_REMINDER', '/checkup/netflix', { id: 'netflix', restart: '1' }],
+    ['CHECK_REMINDER', '/checkup/netflix', { id: 'netflix', restart: '1', from: 'push' }],
     ['BILLING_REMINDER', '/manage/detail/netflix', { id: 'netflix' }],
     ['CANCEL_CONFIRM', '/manage/detail/netflix', { id: 'netflix', confirmCancel: '1' }],
   ])('%s 알림을 누르면 읽음 처리하고 정해진 화면으로 간다', async (type, path, params) => {

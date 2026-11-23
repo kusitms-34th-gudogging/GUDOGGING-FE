@@ -111,7 +111,7 @@ describe('HomeScreen', () => {
 
     await user.press(screen.getByRole('button', { name: '넷플릭스 점검하기' }));
     expect(screen).toHavePathname('/checkup/netflix');
-    expect(screen).toHaveSearchParams({ id: 'netflix', restart: '1' });
+    expect(screen).toHaveSearchParams({ id: 'netflix', restart: '1', from: 'home' });
   });
 
   it('점검할 구독이 없으면 점검 완료 카드를 보여 주고, 캘린더 확인하기로 캘린더에 간다', async () => {

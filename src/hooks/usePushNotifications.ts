@@ -11,6 +11,7 @@ import {
 } from '@/hooks/useNotifications';
 import { useReadNotification } from '@/hooks/useReadNotification';
 import { sessionQuery } from '@/hooks/useSession';
+import { track } from '@/lib/analytics';
 import { authToken } from '@/lib/authToken';
 import { notificationTarget } from '@/utils/notification';
 
@@ -58,6 +59,7 @@ export const usePushNotifications = () => {
       // → 이동하지 않고 홈이 로그인으로 보냄. 확인이 네트워크로 실패하면 토큰이 남아 홈처럼 그대로 이동
       await client.fetchQuery(sessionQuery).catch(() => {});
       if (!(await authToken.getRefresh())) return;
+      track('push_open', { open_from: 'push' });
       readNotification(data.notificationId);
       router.push(notificationTarget(data.kind, data.subscriptionId));
     };

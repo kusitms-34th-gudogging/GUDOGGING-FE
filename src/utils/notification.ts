@@ -37,7 +37,7 @@ export const groupNotifications = <T extends { receivedAt: Date }>(list: T[], no
 export const notificationTarget = (kind: NotificationKind, subscriptionId: string): Href => {
   switch (kind) {
     case 'checkup':
-      return `/checkup/${subscriptionId}?restart=1`;
+      return `/checkup/${subscriptionId}?restart=1&from=push`;
     case 'payment':
       return `/manage/detail/${subscriptionId}`;
     case 'cancel-confirm':
