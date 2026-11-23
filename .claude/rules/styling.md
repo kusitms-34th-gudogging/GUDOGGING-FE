@@ -32,6 +32,10 @@ paths:
 - 아이콘·버튼 크기는 size 토큰 (`size-icon-md`, `h-button-lg`)
 - className으로 안 되는 motion(등장·퇴장 애니메이션 등)·gradient·grid·`TextInput` 플레이스홀더 색(`placeholderTextColor={colors.text.tertiary}`)은 `@tokens`
 
+## 스크롤
+
+- 세로 스크롤(`ScrollView`·`FlatList` 등)은 모두 스크롤바 숨김: `showsVerticalScrollIndicator={false}` (`FadeScrollView`는 이미 적용됨)
+
 ## 플랫폼별 코드
 
 - 값 몇 개 차이: `Platform.select({ ios, android })`
