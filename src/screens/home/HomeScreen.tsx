@@ -19,6 +19,8 @@ import { StateCard } from '@/components/home/StateCard';
 import { serviceLogo } from '@/constants/services';
 import { useHome } from '@/hooks/useHome';
 import { useRegisterPushToken } from '@/hooks/useRegisterPushToken';
+import { useUpdateNotificationSettings } from '@/hooks/useUpdateNotificationSettings';
+import { notificationPermissionGained } from '@/lib/notifications';
 import { cn } from '@/utils/cn';
 import { parseDate } from '@/utils/date';
 import { formatWon } from '@/utils/formatPayment';
@@ -32,17 +34,23 @@ const dateLabel = (date: string) => {
 export const HomeScreen = () => {
   const { data, isError, refetch } = useHome();
   const registerPushToken = useRegisterPushToken().mutate;
+  const saveSettings = useUpdateNotificationSettings().mutate;
   const today = new Date();
 
   // 홈에 올 때마다 푸시 토큰 등록·갱신 (권한 없으면 훅이 건너뜀). 실패해도 화면엔 영향 없음
+  // 기기 설정에서 알림을 새로 허용했으면 점검 알림도 켬 (QA: 설정에서 허용 후 복귀하면 자동 ON)
   useEffect(() => {
-    registerPushToken();
+    const sync = async () => {
+      registerPushToken();
+      if (await notificationPermissionGained()) saveSettings({ paymentReminderEnabled: true });
+    };
+    void sync();
     // 설정 앱에서 알림을 허용하고 돌아와도 등록 (홈은 탭이라 계속 마운트돼 있어 위 호출이 다시 안 돎)
     const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') registerPushToken();
+      if (state === 'active') void sync();
     });
     return () => sub.remove();
-  }, [registerPushToken]);
+  }, [registerPushToken, saveSettings]);
 
   if (!data) {
     return (

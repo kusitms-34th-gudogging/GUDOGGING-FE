@@ -254,7 +254,10 @@ describe('HomeScreen', () => {
     permission(false);
     await renderHome(home());
     await screen.findByRole('button', { name: '알림' });
-    const fetchSpy = mockApi({ 'POST /api/v1/notifications/tokens': null });
+    const fetchSpy = mockApi({
+      'POST /api/v1/notifications/tokens': null,
+      'PATCH /api/v1/notifications/settings': { paymentReminderEnabled: true },
+    });
 
     permission(true);
     listeners.forEach((listener) => listener('active'));
@@ -263,6 +266,16 @@ describe('HomeScreen', () => {
       expect(fetchSpy).toHaveBeenCalledWith(
         'https://api.test/api/v1/notifications/tokens',
         expect.anything(),
+      ),
+    );
+    // 꺼져 있던 권한을 새로 허용했으니 점검 알림도 켬
+    await waitFor(() =>
+      expect(fetchSpy).toHaveBeenCalledWith(
+        'https://api.test/api/v1/notifications/settings',
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ paymentReminderEnabled: true }),
+        }),
       ),
     );
   });
