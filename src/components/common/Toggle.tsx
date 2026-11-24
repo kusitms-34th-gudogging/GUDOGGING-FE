@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import { Pressable, View } from 'react-native';
 
 import { cn } from '@/utils/cn';
@@ -14,7 +15,10 @@ export const Toggle = ({ value, onValueChange, accessibilityLabel, className }: 
     accessibilityRole="switch"
     accessibilityState={{ checked: value }}
     accessibilityLabel={accessibilityLabel}
-    onPress={() => onValueChange(!value)}
+    onPress={() => {
+      void Haptics.selectionAsync();
+      onValueChange(!value);
+    }}
     className={cn(
       'h-[31px] w-[51px] rounded-full p-s2 transition-colors duration-200',
       value ? 'bg-action-primary' : 'bg-border-default',

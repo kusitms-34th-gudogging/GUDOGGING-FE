@@ -1,7 +1,13 @@
 import { motion } from '@tokens';
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
+import { router, useScrollToTop } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Pressable,
+  ScrollView,
+  type ScrollViewInstance,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
 import Animated, { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -38,6 +44,8 @@ const useMonth = (page: number) => {
 
 // C-01 캘린더 (월별 결제 일정)
 export const CalendarScreen = () => {
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  useScrollToTop(scrollRef);
   const today = new Date();
   const { width } = useWindowDimensions();
   const [page, setPage] = useState(() => pageOf(today));
@@ -122,6 +130,7 @@ export const CalendarScreen = () => {
         style={snap.hiddenStyle}
       >
         <ScrollView
+          ref={scrollRef}
           bounces={false}
           showsVerticalScrollIndicator={false}
           contentContainerClassName="pb-s20 pt-s12"

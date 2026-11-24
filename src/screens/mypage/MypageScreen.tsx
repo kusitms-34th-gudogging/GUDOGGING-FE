@@ -1,6 +1,6 @@
-import { router } from 'expo-router';
-import { type ComponentType, Fragment, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { router, useScrollToTop } from 'expo-router';
+import { type ComponentType, Fragment, useRef, useState } from 'react';
+import { ScrollView, type ScrollViewInstance, View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
 import {
@@ -86,6 +86,8 @@ const getSections = (openLogout: () => void): { title: string; items: MenuItem[]
 
 // 계정 정보를 못 불러와도 메뉴는 쓸 수 있게 계정 칸만 비워 둠
 export const MypageScreen = () => {
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  useScrollToTop(scrollRef);
   const { data: me } = useMe();
   const logoutMutation = useLogout();
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -99,6 +101,7 @@ export const MypageScreen = () => {
     <View className="pt-safe flex-1 bg-bg-default">
       <TopBar title="마이페이지" showAction1={false} showAction2={false} />
       <ScrollView
+        ref={scrollRef}
         bounces={false}
         showsVerticalScrollIndicator={false}
         contentContainerClassName="gap-inset-lg pb-[120px] pt-[12px]"

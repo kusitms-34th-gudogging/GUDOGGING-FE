@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -50,7 +51,10 @@ export const TabBar = ({ selected, onSelect, className }: TabBarProps) => {
           icon={icon}
           accessibilityLabel={label}
           selected={selected === menu}
-          onSelect={() => onSelect(menu)}
+          onSelect={() => {
+            void Haptics.selectionAsync();
+            onSelect(menu);
+          }}
           onLayout={onItemLayout(index)}
           className="flex-1"
         />

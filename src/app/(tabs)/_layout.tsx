@@ -16,7 +16,7 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{ headerShown: false }}
-      tabBar={({ state }) => (
+      tabBar={({ state, emitter }) => (
         // 화면 위에 떠 있는 탭바 (좌우 20, 하단 Safe Area + 4)
         <View
           pointerEvents="box-none"
@@ -24,7 +24,16 @@ export default function TabsLayout() {
         >
           <TabBar
             selected={TAB_ROUTES[state.index].menu}
-            onSelect={(menu) => router.navigate(TAB_ROUTES.find((tab) => tab.menu === menu)!.href)}
+            onSelect={(menu) => {
+              const index = TAB_ROUTES.findIndex((tab) => tab.menu === menu);
+              // 현재 탭을 다시 누르면 화면의 useScrollToTop이 이 이벤트로 맨 위로 스크롤
+              emitter.emit({
+                type: 'tabPress',
+                target: state.routes[index].key,
+                canPreventDefault: true,
+              });
+              router.navigate(TAB_ROUTES[index].href);
+            }}
             className="mb-s4"
           />
         </View>
