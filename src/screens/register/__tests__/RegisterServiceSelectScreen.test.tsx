@@ -7,6 +7,7 @@ import { Pressable } from 'react-native';
 import { Text } from '@/components/common/Text';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { createQueryWrapper, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
+import { RegisterSelectedServiceScreen } from '@/screens/register/RegisterSelectedServiceScreen';
 import { RegisterServiceSelectScreen } from '@/screens/register/RegisterServiceSelectScreen';
 
 // 검색어별 서버 응답 (검색·순위는 서버가 함). 검색어가 없으면 전체
@@ -136,24 +137,17 @@ it('불러온 구독 확인에서 추가 선택으로 들어왔으면 뒤로 가
 
 // QA KAN-80: 선택한 구독(A-04)에서 구독 추가하기 후 뒤로 가면 구독 추가(A-01)로 가던 버그
 describe('선택한 구독에서 구독 추가하기로 들어오면', () => {
+  const routes = {
+    'register/_layout': () => <Stack />,
+    'register/index': Start,
+    'register/selected': () => <RegisterSelectedServiceScreen />,
+    'register/select': () => <RegisterServiceSelectScreen />,
+  };
   const renderAdding = async () => {
     useRegisterDraft.getState().setSelectedIds(['spotify']);
-    const Selected = () => (
-      <Pressable accessibilityRole="button" onPress={() => router.push('/register/select')}>
-        <Text>구독 추가하기</Text>
-      </Pressable>
-    );
-    await renderRouter(
-      {
-        'register/_layout': () => <Stack />,
-        'register/index': Start,
-        'register/selected': Selected,
-        'register/select': () => <RegisterServiceSelectScreen />,
-      },
-      { initialUrl: '/register/selected', wrapper: createQueryWrapper() },
-    );
+    await renderRouter(routes, { initialUrl: '/register/selected', wrapper: createQueryWrapper() });
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
-    await user.press(screen.getByRole('button', { name: '구독 추가하기' }));
+    await user.press(await screen.findByRole('button', { name: '구독 추가하기' }));
     await screen.findByRole('checkbox', { name: 'Netflix' });
     return user;
   };
@@ -178,6 +172,23 @@ describe('선택한 구독에서 구독 추가하기로 들어오면', () => {
     // 원래 화면으로 돌아왔으면 그 아래엔 서비스 선택이 없음 (새로 쌓으면 뒤로 가기에 다시 나옴)
     await act(async () => router.back());
     expect(screen).not.toHavePathname('/register/select');
+  });
+
+  // 추가 선택 중 바뀐 목록 때문에 아래 깔린 처음 서비스 선택도 다시 그려짐. 그때 값으로 판단하면 선택 완료가 첫 화면으로 감
+  it('돌아온 뒤 처음 서비스 선택으로 가서 선택 완료하면 선택한 구독으로 간다', async () => {
+    await renderRouter(routes, { initialUrl: '/register', wrapper: createQueryWrapper() });
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await user.press(screen.getByRole('button', { name: '직접 등록하기' }));
+    await user.press(await screen.findByRole('checkbox', { name: 'Spotify' }));
+    await user.press(screen.getByRole('button', { name: '1개 선택 완료' }));
+    await user.press(await screen.findByRole('button', { name: '구독 추가하기' }));
+    await user.press(await screen.findByRole('checkbox', { name: 'Netflix' }));
+    await user.press(screen.getByRole('button', { name: '2개 선택 완료' }));
+    await user.press(await screen.findByRole('button', { name: '뒤로 가기' }));
+
+    await user.press(await screen.findByRole('button', { name: '2개 선택 완료' }));
+
+    expect(screen).toHavePathname('/register/selected');
   });
 });
 
