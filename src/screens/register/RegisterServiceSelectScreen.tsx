@@ -35,6 +35,8 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
   const payments = useRegisterDraft((s) => s.payments);
   const found = useRegisterDraft((s) => s.found);
   const lockedIds = more ? getFoundServiceIds(found, payments) : [];
+  // 선택한 구독(A-04)의 구독 추가하기로 왔으면 선택 완료·뒤로가기 모두 그 화면으로
+  const adding = !!navigation.getState()?.routes.some((r) => r.name === 'selected');
 
   const toggle = (id: string) =>
     setSelectedIds(
@@ -56,7 +58,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
         title="직접 등록"
         onBack={() => {
           // 추가 선택은 불러온 구독 확인에서 들어오므로 그 화면으로만 돌아감
-          if (more) return router.back();
+          if (more || adding) return router.back();
           // 온보딩은 구독 추가(A-01) 없이 들어오므로 등록 스택을 닫고 첫 등록 화면(O-04·O-05)으로. A-01이 없어 불러오기 팝업도 안 뜸
           if (!navigation.getState()?.routes.some((r) => r.name === 'index'))
             return navigation.getParent()?.goBack();
@@ -153,6 +155,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
           label={`${count}개 선택 완료`}
           disabled={count === 0}
           onPress={() => {
+            if (adding) return router.back();
             if (!more) return router.push('/register/selected');
             // 결제 정보 입력 없이 불러온 구독 확인으로 돌아가 확인 필요에 보임
             useRegisterDraft
