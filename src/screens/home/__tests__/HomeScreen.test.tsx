@@ -313,4 +313,43 @@ describe('HomeScreen', () => {
       ),
     );
   });
+
+  it('권한 변경을 서버에 저장하지 못했으면 다음에 앱으로 돌아올 때 다시 저장한다', async () => {
+    await AsyncStorage.clear();
+    const permission = (granted: boolean) =>
+      jest
+        .mocked(Notifications.getPermissionsAsync)
+        .mockResolvedValue({ granted } as Notifications.NotificationPermissionsStatus);
+    const listeners: ((state: AppStateStatus) => void)[] = [];
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_, listener) => {
+      listeners.push(listener);
+      return { remove: jest.fn() };
+    });
+    permission(false);
+    await renderHome(home());
+    await screen.findByRole('button', { name: '알림' });
+    const failed = mockApi({ 'PATCH /api/v1/notifications/settings': apiError(500) });
+    permission(true);
+    listeners.forEach((listener) => listener('active'));
+    await waitFor(() =>
+      expect(failed).toHaveBeenCalledWith(
+        'https://api.test/api/v1/notifications/settings',
+        expect.anything(),
+      ),
+    );
+
+    // mockApi는 같은 fetch 스파이를 돌려줘서, 실패한 첫 요청 기록을 지워야 재시도만 셈
+    failed.mockClear();
+    const retried = mockApi({
+      'PATCH /api/v1/notifications/settings': { paymentReminderEnabled: true },
+    });
+    listeners.forEach((listener) => listener('active'));
+
+    await waitFor(() =>
+      expect(retried).toHaveBeenCalledWith(
+        'https://api.test/api/v1/notifications/settings',
+        expect.objectContaining({ body: JSON.stringify({ paymentReminderEnabled: true }) }),
+      ),
+    );
+  });
 });

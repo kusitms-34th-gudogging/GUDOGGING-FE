@@ -16,7 +16,7 @@ import { TopBar } from '@/components/common/TopBar';
 import { NotificationSheet } from '@/components/onboarding/NotificationSheet';
 import { OnboardingVisual } from '@/components/onboarding/OnboardingVisual';
 import { useUpdateNotificationSettings } from '@/hooks/useUpdateNotificationSettings';
-import type { NotificationPermission } from '@/lib/notifications';
+import { type NotificationPermission, rememberNotificationPermission } from '@/lib/notifications';
 import { cn } from '@/utils/cn';
 
 // 화면 높이 계산용 고정 블록 (상단바 · 문구 · CTA + 하단 여백)
@@ -52,7 +52,7 @@ export const OnboardingScreen = ({ onRequestNotification, onComplete }: Onboardi
   const step = useSharedValue(0);
   const reduceMotion = useReducedMotion();
   const finishing = useRef(false);
-  const saveSettings = useUpdateNotificationSettings().mutate;
+  const saveSettings = useUpdateNotificationSettings().mutateAsync;
 
   // 비주얼은 폭에 맞춘 높이가 기본이고, 안 들어가는 작은 화면(SE 등)에서만 줄임
   const { width, height } = useWindowDimensions();
@@ -92,7 +92,10 @@ export const OnboardingScreen = ({ onRequestNotification, onComplete }: Onboardi
     finishing.current = true;
     try {
       if (requestPermission && (await onRequestNotification?.()) === 'granted') {
-        saveSettings({ paymentReminderEnabled: true });
+        // 저장에 실패하면 권한을 반영 안 한 것으로 기록 → 홈에서 다시 ON 저장 시도 (화면을 떠난 뒤라 mutateAsync로)
+        saveSettings({ paymentReminderEnabled: true }).catch(() =>
+          rememberNotificationPermission(false),
+        );
       }
     } finally {
       setSheetVisible(false);

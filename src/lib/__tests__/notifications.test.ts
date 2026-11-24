@@ -1,7 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 
-import { notificationPermissionChange, requestNotificationPermission } from '@/lib/notifications';
+import {
+  notificationPermissionChange,
+  rememberNotificationPermission,
+  requestNotificationPermission,
+} from '@/lib/notifications';
 
 jest.mock('expo-notifications');
 
@@ -62,22 +66,24 @@ describe('notificationPermissionChange', () => {
     await AsyncStorage.clear();
   });
 
-  it('꺼져 있다가 허용되면 한 번만 true', async () => {
+  it('꺼져 있다가 허용되면 반영했다고 기록할 때까지 true', async () => {
     getPermissions.mockResolvedValue(status(false, false));
     await requestNotificationPermission();
     getPermissions.mockResolvedValue(status(true, true));
 
     expect(await notificationPermissionChange()).toBe(true);
+    // 서버 저장이 실패해 기록하지 않았으면 다음 확인에서도 다시 알려 줌
+    expect(await notificationPermissionChange()).toBe(true);
+    await rememberNotificationPermission(true);
     expect(await notificationPermissionChange()).toBeNull();
   });
 
-  it('허용돼 있다가 꺼지면 한 번만 false', async () => {
+  it('허용돼 있다가 꺼지면 false', async () => {
     getPermissions.mockResolvedValue(status(true, true));
     await requestNotificationPermission();
     getPermissions.mockResolvedValue(status(false, false));
 
     expect(await notificationPermissionChange()).toBe(false);
-    expect(await notificationPermissionChange()).toBeNull();
   });
 
   it('처음 확인할 때는 기준만 남기고 null', async () => {
