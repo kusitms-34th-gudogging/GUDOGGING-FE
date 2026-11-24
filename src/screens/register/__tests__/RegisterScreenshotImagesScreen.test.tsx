@@ -53,9 +53,20 @@ describe('RegisterScreenshotImagesScreen', () => {
 
     await user.press(screen.getByRole('button', { name: '스크린샷 추가' }));
 
-    expect(screen.getByText('10MB 이하 이미지만 올릴 수 있어요')).toBeOnTheScreen();
+    expect(screen.getByText('PNG, JPG 파일만 올릴 수 있어요')).toBeOnTheScreen();
+    expect(screen.queryByText('10MB 이하 이미지만 올릴 수 있어요')).not.toBeOnTheScreen();
     expect(screen.getByRole('button', { name: '스크린샷 1 삭제' })).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: '스크린샷 2 삭제' })).not.toBeOnTheScreen();
+  });
+
+  it('PNG·JPG가 10MB를 넘을 때만 용량 토스트를 띄운다', async () => {
+    picked([{ ...png('big'), fileSize: 10 * 1024 * 1024 + 1 }]);
+    const user = await renderImages();
+
+    await user.press(screen.getByRole('button', { name: '스크린샷 추가' }));
+
+    expect(screen.getByText('10MB 이하 이미지만 올릴 수 있어요')).toBeOnTheScreen();
+    expect(screen.queryByText('PNG, JPG 파일만 올릴 수 있어요')).not.toBeOnTheScreen();
   });
 
   it('추가할 수 있는 사진이 없으면 불러오기를 누를 수 없다', async () => {

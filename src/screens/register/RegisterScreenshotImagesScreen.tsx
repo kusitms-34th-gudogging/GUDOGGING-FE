@@ -10,7 +10,7 @@ import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { useToast } from '@/hooks/useToast';
-import { isAllowedImage } from '@/utils/imageFile';
+import { getImageError } from '@/utils/imageFile';
 
 const MAX_IMAGES = 5;
 
@@ -25,9 +25,11 @@ export const RegisterScreenshotImagesScreen = () => {
       selectionLimit: MAX_IMAGES - uris.length,
     });
     if (result.canceled) return;
-    const allowed = result.assets.filter(isAllowedImage);
-    if (allowed.length < result.assets.length)
-      // 앨범에서 PNG·JPG만 고를 수 있어 걸러지는 건 사실상 용량 초과뿐
+    const errors = result.assets.map(getImageError);
+    const allowed = result.assets.filter((_, i) => !errors[i]);
+    // 형식·용량이 섞여 걸리면 형식 토스트 하나만 (E-8 > E-3)
+    if (errors.includes('type')) show({ type: 'error', message: 'PNG, JPG 파일만 올릴 수 있어요' });
+    else if (errors.includes('size'))
       show({ type: 'error', message: '10MB 이하 이미지만 올릴 수 있어요' });
     setUris((prev) => [...prev, ...allowed.map((a) => a.uri)].slice(0, MAX_IMAGES));
   };
