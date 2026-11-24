@@ -28,10 +28,15 @@ const candidate = (over: object = {}) => ({
   ...over,
 });
 
-const renderAnalyze = async (source: 'screenshot' | 'gmail' = 'screenshot') => {
+const renderAnalyze = async (
+  source: 'screenshot' | 'gmail' = 'screenshot',
+  { onboarding = false } = {},
+) => {
   await renderRouter(
     {
+      'onboarding/add-subscription': () => null,
       'register/_layout': () => <Stack />,
+      'register/index': () => null,
       'register/screenshot': () => null,
       'register/gmail': () => null,
       'register/images': () => null,
@@ -46,10 +51,13 @@ const renderAnalyze = async (source: 'screenshot' | 'gmail' = 'screenshot') => {
       'register/found': () => null,
     },
     {
-      initialUrl: source === 'gmail' ? '/register/gmail' : '/register/screenshot',
+      initialUrl: onboarding ? '/onboarding/add-subscription' : '/register',
       wrapper: createQueryWrapper(),
     },
   );
+  // 일반 등록은 A-01 → 안내 화면, 온보딩은 첫 등록 화면에서 바로 A-07·분석으로
+  if (!onboarding)
+    await act(() => router.push(source === 'gmail' ? '/register/gmail' : '/register/screenshot'));
   if (source === 'screenshot') await act(() => router.push('/register/images'));
   await act(() => router.push('/register/analyze'));
 };
@@ -143,6 +151,24 @@ it.each([
     // 스와이프 뒤로가기 = 스택에서 한 칸 뒤로
     await act(() => router.back());
     expect(screen).toHavePathname('/register/images');
+  },
+);
+
+it.each(['screenshot', 'gmail'] as const)(
+  '온보딩 %s 분석이 실패하면 실패 화면만 남겨, 스와이프로 돌아가도 첫 등록 화면이다',
+  async (source) => {
+    mockApi({
+      [SCREENSHOT]: { candidates: [] },
+      'POST /api/v1/gmail/connection': {},
+      'POST /api/v1/gmail/analyses': { candidates: [] },
+    });
+    await renderAnalyze(source, { onboarding: true });
+
+    await act(() => jest.advanceTimersByTime(1500));
+    await waitFor(() => expect(screen).toHavePathname('/register/failed'));
+
+    await act(() => router.back());
+    expect(screen).toHavePathname('/onboarding/add-subscription');
   },
 );
 

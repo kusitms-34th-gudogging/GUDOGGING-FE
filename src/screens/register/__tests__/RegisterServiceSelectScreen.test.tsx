@@ -78,6 +78,38 @@ describe('RegisterServiceSelectScreen 뒤로 가기', () => {
   });
 });
 
+it('온보딩에서 들어왔으면 뒤로 가기에 구독 추가(A-01)가 아니라 첫 등록 화면으로 돌아가고 고른 값은 남는다', async () => {
+  const Onboarding = () => (
+    <Pressable accessibilityRole="button" onPress={() => router.push('/register/failed')}>
+      <Text>첫 등록</Text>
+    </Pressable>
+  );
+  const Failed = () => (
+    <Pressable accessibilityRole="button" onPress={() => router.push('/register/select')}>
+      <Text>직접 등록하기</Text>
+    </Pressable>
+  );
+  await renderRouter(
+    {
+      'onboarding/add-subscription': Onboarding,
+      'register/_layout': () => <Stack />,
+      'register/index': Start,
+      'register/failed': Failed,
+      'register/select': () => <RegisterServiceSelectScreen />,
+    },
+    { initialUrl: '/onboarding/add-subscription', wrapper: createQueryWrapper() },
+  );
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+  await user.press(screen.getByRole('button', { name: '첫 등록' }));
+  await user.press(screen.getByRole('button', { name: '직접 등록하기' }));
+  await user.press(await screen.findByRole('checkbox', { name: 'Netflix' }));
+
+  await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
+
+  expect(screen).toHavePathname('/onboarding/add-subscription');
+  expect(useRegisterDraft.getState().selectedIds).toEqual(['netflix']);
+});
+
 it('불러온 구독 확인에서 추가 선택으로 들어왔으면 뒤로 가기에 그 화면으로 돌아간다', async () => {
   const Found = () => (
     <Pressable accessibilityRole="button" onPress={() => router.push('/register/select')}>

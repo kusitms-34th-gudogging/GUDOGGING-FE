@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { useEffect } from 'react';
 import { AccessibilityInfo, View } from 'react-native';
 
@@ -32,6 +32,7 @@ export const RegisterAnalyzeScreen = ({
   const { title, message } = COPY[source];
   const screenshots = useAnalyzeScreenshots();
   const gmail = useAnalyzeGmail();
+  const navigation = useNavigation();
 
   useEffect(() => {
     AccessibilityInfo.announceForAccessibility(message);
@@ -39,6 +40,18 @@ export const RegisterAnalyzeScreen = ({
     const done = (found: FoundSubscription[]) => {
       // 찾은 구독이 없으면 인식 실패(A-08e·A-12e)로
       if (found.length === 0) {
+        // 온보딩은 구독 추가(A-01) 없이 들어오므로 실패 화면만 남겨, 스와이프도 첫 등록 화면(Apple O-04·Google O-05)으로 (QA)
+        const state = navigation.getState();
+        if (state && !state.routes.some((r) => r.name === 'index'))
+          // router.dismissAll·replace는 등록 스택에 화면이 하나뿐이면 온보딩까지 건드려서 등록 스택만 다시 만듦
+          return navigation.dispatch({
+            type: 'RESET',
+            payload: {
+              ...state,
+              index: 0,
+              routes: [{ key: `failed-${source}`, name: 'failed', params: { source } }],
+            },
+          });
         // 실패 화면에서 뒤로가기·스와이프 모두 스크린샷 확인(A-07)·Gmail 안내(A-11)로 (화면설계서 A-08e·A-12e)
         router.dismissTo(source === 'gmail' ? '/register/gmail' : '/register/images');
         return router.push({ pathname: '/register/failed', params: { source } });
