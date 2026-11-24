@@ -1,6 +1,6 @@
-import { router } from 'expo-router';
-import { useEffect } from 'react';
-import { AppState, ScrollView, View } from 'react-native';
+import { router, useScrollToTop } from 'expo-router';
+import { useEffect, useRef } from 'react';
+import { AppState, ScrollView, type ScrollViewInstance, View } from 'react-native';
 
 import { CalendarColorAsset, EditColorAsset } from '@/assets/graphics';
 import { BellDotIcon, BellIcon } from '@/assets/icons';
@@ -32,6 +32,8 @@ const dateLabel = (date: string) => {
 
 // H-01 홈 (등록된 구독 없음) · H-02 홈 (구독 있음) · H-03 홈 (점검 유도)
 export const HomeScreen = () => {
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  useScrollToTop(scrollRef);
   const { data, isError, refetch } = useHome();
   const registerPushToken = useRegisterPushToken().mutate;
   const saveSettings = useUpdateNotificationSettings().mutate;
@@ -89,6 +91,7 @@ export const HomeScreen = () => {
       {/* 캘린더·구독 관리처럼 스크롤 영역을 떠 있는 탭바(52 + 아래 4) + 간격 12 위에서 끝냄 (아래 끝 내용은 잘려 보여도 됨)
           맨 아래 여백은 없음 (+ 버튼이 마지막 행 금액을 가려도 됨). 빈 상태는 화면 높이만큼 채우고 안에서 탭바만큼 뺌 */}
       <ScrollView
+        ref={scrollRef}
         bounces={false}
         showsVerticalScrollIndicator={false}
         className={cn(!isEmpty && 'mb-[68px]')}

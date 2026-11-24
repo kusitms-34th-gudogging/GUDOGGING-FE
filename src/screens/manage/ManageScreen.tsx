@@ -1,6 +1,6 @@
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { router, useFocusEffect, useScrollToTop } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
+import { Pressable, ScrollView, type ScrollViewInstance, View } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 import { ChevronDownIcon, MoreIcon, TrashIcon } from '@/assets/icons';
@@ -28,6 +28,8 @@ const monthDay = (d: Date) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
 
 // M-01 등록된 구독 없음 · M-02 구독 중 탭(.1 더보기 · .2 삭제 선택 · .3 삭제 모달) · M-04 구독 종료 탭
 export const ManageScreen = () => {
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  useScrollToTop(scrollRef);
   const [tab, setTab] = useState<Tab>('ACTIVE');
   const [sort, setSort] = useState<SubscriptionSort>();
   const [sortOpen, setSortOpen] = useState(false);
@@ -210,6 +212,7 @@ export const ManageScreen = () => {
               style={snap.hiddenStyle}
             >
               <ScrollView
+                ref={scrollRef}
                 bounces={false}
                 showsVerticalScrollIndicator={false}
                 contentContainerClassName="gap-stack-sm px-screen-x pb-[52px]"
