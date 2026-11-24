@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
@@ -24,6 +24,7 @@ interface RegisterServiceSelectScreenProps {
 
 export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScreenProps) => {
   useRegisterStep('SELECT_SERVICES');
+  const navigation = useNavigation();
   const [query, setQuery] = useState('');
   // 불러오기 팝업으로 이어서 등록할 수 있게 저장소에 둠
   const selectedIds = useRegisterDraft((s) => s.selectedIds);
@@ -53,8 +54,14 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
       <TopBar
         variant="detail"
         title="직접 등록"
-        // 추가 선택은 불러온 구독 확인에서 들어오므로 그 화면으로만 돌아감
-        onBack={() => (more ? router.back() : router.dismissTo('/register'))}
+        onBack={() => {
+          // 추가 선택은 불러온 구독 확인에서 들어오므로 그 화면으로만 돌아감
+          if (more) return router.back();
+          // 온보딩은 구독 추가(A-01) 없이 들어오므로 등록 스택을 닫고 첫 등록 화면(O-04·O-05)으로. A-01이 없어 불러오기 팝업도 안 뜸
+          if (!navigation.getState()?.routes.some((r) => r.name === 'index'))
+            return navigation.getParent()?.goBack();
+          router.dismissTo('/register');
+        }}
         showAction1={false}
         showAction2={false}
       />

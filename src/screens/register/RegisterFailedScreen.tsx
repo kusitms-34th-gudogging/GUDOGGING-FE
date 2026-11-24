@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { useEffect } from 'react';
 import { AccessibilityInfo, View } from 'react-native';
 
@@ -31,6 +31,7 @@ interface RegisterFailedScreenProps {
 
 export const RegisterFailedScreen = ({ source }: RegisterFailedScreenProps) => {
   const { header, guide, title, description } = COPY[source];
+  const navigation = useNavigation();
 
   useEffect(() => {
     AccessibilityInfo.announceForAccessibility(`${title} ${description}`);
@@ -42,8 +43,13 @@ export const RegisterFailedScreen = ({ source }: RegisterFailedScreenProps) => {
       <TopBar
         variant="detail"
         title={header}
-        // 스크린샷 확인(A-07)·Gmail 안내(A-11)로. 분석 화면이 사이 화면을 걷어 내서 스와이프도 같은 곳으로 감
-        onBack={() => router.dismissTo(guide)}
+        onBack={() => {
+          // 온보딩은 구독 추가(A-01) 없이 들어오므로 등록 스택을 닫고 첫 등록 화면(Apple O-04·Google O-05)으로 (QA)
+          if (!navigation.getState()?.routes.some((r) => r.name === 'index'))
+            return navigation.getParent()?.goBack();
+          // 스크린샷 확인(A-07)·Gmail 안내(A-11)로. 분석 화면이 사이 화면을 걷어 내서 스와이프도 같은 곳으로 감
+          router.dismissTo(guide);
+        }}
         showAction1={false}
         showAction2={false}
       />
