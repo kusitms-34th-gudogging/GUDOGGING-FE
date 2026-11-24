@@ -25,17 +25,17 @@ export const requestNotificationPermission = async (): Promise<NotificationPermi
   }
 };
 
-// 지난번 확인 때는 꺼져 있었는데 지금 허용돼 있으면 true (기기 설정에서 직접 허용하고 돌아온 경우)
-// 처음 확인할 때(저장값 없음)는 기준만 남기고 false
-export const notificationPermissionGained = async () => {
+// 지난번 확인 이후 OS 권한이 바뀌었으면 지금 허용 여부, 그대로면 null (기기 설정에서 직접 켜거나 끄고 돌아온 경우)
+// 처음 확인할 때(저장값 없음)는 기준만 남기고 null
+export const notificationPermissionChange = async () => {
   try {
     const [{ granted }, last] = await Promise.all([
       Notifications.getPermissionsAsync(),
       AsyncStorage.getItem(LAST_GRANTED_KEY),
     ]);
     await saveGranted(granted);
-    return granted && last === 'false';
+    return last !== null && last !== String(granted) ? granted : null;
   } catch {
-    return false;
+    return null;
   }
 };

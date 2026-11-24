@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 
-import { notificationPermissionGained, requestNotificationPermission } from '@/lib/notifications';
+import { notificationPermissionChange, requestNotificationPermission } from '@/lib/notifications';
 
 jest.mock('expo-notifications');
 
@@ -56,31 +56,33 @@ describe('requestNotificationPermission', () => {
   });
 });
 
-describe('notificationPermissionGained', () => {
+describe('notificationPermissionChange', () => {
   beforeEach(async () => {
     resetPermissions();
     await AsyncStorage.clear();
   });
 
-  it('지난번엔 꺼져 있다가 지금 허용돼 있으면 한 번만 true', async () => {
+  it('꺼져 있다가 허용되면 한 번만 true', async () => {
     getPermissions.mockResolvedValue(status(false, false));
     await requestNotificationPermission();
     getPermissions.mockResolvedValue(status(true, true));
 
-    expect(await notificationPermissionGained()).toBe(true);
-    expect(await notificationPermissionGained()).toBe(false);
+    expect(await notificationPermissionChange()).toBe(true);
+    expect(await notificationPermissionChange()).toBeNull();
   });
 
-  it('처음 확인할 때는 허용돼 있어도 false (기준만 남김)', async () => {
+  it('허용돼 있다가 꺼지면 한 번만 false', async () => {
+    getPermissions.mockResolvedValue(status(true, true));
+    await requestNotificationPermission();
+    getPermissions.mockResolvedValue(status(false, false));
+
+    expect(await notificationPermissionChange()).toBe(false);
+    expect(await notificationPermissionChange()).toBeNull();
+  });
+
+  it('처음 확인할 때는 기준만 남기고 null', async () => {
     getPermissions.mockResolvedValue(status(true, true));
 
-    expect(await notificationPermissionGained()).toBe(false);
-  });
-
-  it('계속 꺼져 있으면 false', async () => {
-    getPermissions.mockResolvedValue(status(false, false));
-    await notificationPermissionGained();
-
-    expect(await notificationPermissionGained()).toBe(false);
+    expect(await notificationPermissionChange()).toBeNull();
   });
 });

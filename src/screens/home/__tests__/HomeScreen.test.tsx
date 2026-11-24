@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { userEvent, waitFor } from '@testing-library/react-native';
 import * as Notifications from 'expo-notifications';
 import { renderRouter, screen } from 'expo-router/testing-library';
@@ -242,6 +243,7 @@ describe('HomeScreen', () => {
   });
 
   it('설정 앱에서 알림을 허용하고 앱으로 돌아오면 푸시 토큰을 등록한다', async () => {
+    await AsyncStorage.clear();
     const permission = (granted: boolean) =>
       jest
         .mocked(Notifications.getPermissionsAsync)
@@ -275,6 +277,38 @@ describe('HomeScreen', () => {
         expect.objectContaining({
           method: 'PATCH',
           body: JSON.stringify({ paymentReminderEnabled: true }),
+        }),
+      ),
+    );
+  });
+
+  it('설정 앱에서 알림을 끄고 앱으로 돌아오면 점검 알림을 끈다', async () => {
+    await AsyncStorage.clear();
+    const permission = (granted: boolean) =>
+      jest
+        .mocked(Notifications.getPermissionsAsync)
+        .mockResolvedValue({ granted } as Notifications.NotificationPermissionsStatus);
+    const listeners: ((state: AppStateStatus) => void)[] = [];
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_, listener) => {
+      listeners.push(listener);
+      return { remove: jest.fn() };
+    });
+    permission(true);
+    await renderHome(home());
+    await screen.findByRole('button', { name: '알림' });
+    const fetchSpy = mockApi({
+      'PATCH /api/v1/notifications/settings': { paymentReminderEnabled: false },
+    });
+
+    permission(false);
+    listeners.forEach((listener) => listener('active'));
+
+    await waitFor(() =>
+      expect(fetchSpy).toHaveBeenCalledWith(
+        'https://api.test/api/v1/notifications/settings',
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ paymentReminderEnabled: false }),
         }),
       ),
     );

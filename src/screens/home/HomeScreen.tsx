@@ -20,7 +20,7 @@ import { serviceLogo } from '@/constants/services';
 import { useHome } from '@/hooks/useHome';
 import { useRegisterPushToken } from '@/hooks/useRegisterPushToken';
 import { useUpdateNotificationSettings } from '@/hooks/useUpdateNotificationSettings';
-import { notificationPermissionGained } from '@/lib/notifications';
+import { notificationPermissionChange } from '@/lib/notifications';
 import { cn } from '@/utils/cn';
 import { parseDate } from '@/utils/date';
 import { formatWon } from '@/utils/formatPayment';
@@ -38,11 +38,12 @@ export const HomeScreen = () => {
   const today = new Date();
 
   // 홈에 올 때마다 푸시 토큰 등록·갱신 (권한 없으면 훅이 건너뜀). 실패해도 화면엔 영향 없음
-  // 기기 설정에서 알림을 새로 허용했으면 점검 알림도 켬 (QA: 설정에서 허용 후 복귀하면 자동 ON)
+  // 기기 설정에서 알림 권한을 바꾸고 돌아오면 점검 알림도 맞춤 (허용 → ON, 거부 → OFF)
   useEffect(() => {
     const sync = async () => {
       registerPushToken();
-      if (await notificationPermissionGained()) saveSettings({ paymentReminderEnabled: true });
+      const granted = await notificationPermissionChange();
+      if (granted !== null) saveSettings({ paymentReminderEnabled: granted });
     };
     void sync();
     // 설정 앱에서 알림을 허용하고 돌아와도 등록 (홈은 탭이라 계속 마운트돼 있어 위 호출이 다시 안 돎)
