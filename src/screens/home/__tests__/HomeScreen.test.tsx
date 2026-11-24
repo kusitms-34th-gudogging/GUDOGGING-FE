@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { userEvent, waitFor } from '@testing-library/react-native';
 import * as Notifications from 'expo-notifications';
 import { renderRouter, screen } from 'expo-router/testing-library';
@@ -242,6 +243,7 @@ describe('HomeScreen', () => {
   });
 
   it('설정 앱에서 알림을 허용하고 앱으로 돌아오면 푸시 토큰을 등록한다', async () => {
+    await AsyncStorage.clear();
     const permission = (granted: boolean) =>
       jest
         .mocked(Notifications.getPermissionsAsync)
@@ -254,7 +256,10 @@ describe('HomeScreen', () => {
     permission(false);
     await renderHome(home());
     await screen.findByRole('button', { name: '알림' });
-    const fetchSpy = mockApi({ 'POST /api/v1/notifications/tokens': null });
+    const fetchSpy = mockApi({
+      'POST /api/v1/notifications/tokens': null,
+      'PATCH /api/v1/notifications/settings': { paymentReminderEnabled: true },
+    });
 
     permission(true);
     listeners.forEach((listener) => listener('active'));
@@ -263,6 +268,87 @@ describe('HomeScreen', () => {
       expect(fetchSpy).toHaveBeenCalledWith(
         'https://api.test/api/v1/notifications/tokens',
         expect.anything(),
+      ),
+    );
+    // 꺼져 있던 권한을 새로 허용했으니 점검 알림도 켬
+    await waitFor(() =>
+      expect(fetchSpy).toHaveBeenCalledWith(
+        'https://api.test/api/v1/notifications/settings',
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ paymentReminderEnabled: true }),
+        }),
+      ),
+    );
+  });
+
+  it('설정 앱에서 알림을 끄고 앱으로 돌아오면 점검 알림을 끈다', async () => {
+    await AsyncStorage.clear();
+    const permission = (granted: boolean) =>
+      jest
+        .mocked(Notifications.getPermissionsAsync)
+        .mockResolvedValue({ granted } as Notifications.NotificationPermissionsStatus);
+    const listeners: ((state: AppStateStatus) => void)[] = [];
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_, listener) => {
+      listeners.push(listener);
+      return { remove: jest.fn() };
+    });
+    permission(true);
+    await renderHome(home());
+    await screen.findByRole('button', { name: '알림' });
+    const fetchSpy = mockApi({
+      'PATCH /api/v1/notifications/settings': { paymentReminderEnabled: false },
+    });
+
+    permission(false);
+    listeners.forEach((listener) => listener('active'));
+
+    await waitFor(() =>
+      expect(fetchSpy).toHaveBeenCalledWith(
+        'https://api.test/api/v1/notifications/settings',
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ paymentReminderEnabled: false }),
+        }),
+      ),
+    );
+  });
+
+  it('권한 변경을 서버에 저장하지 못했으면 다음에 앱으로 돌아올 때 다시 저장한다', async () => {
+    await AsyncStorage.clear();
+    const permission = (granted: boolean) =>
+      jest
+        .mocked(Notifications.getPermissionsAsync)
+        .mockResolvedValue({ granted } as Notifications.NotificationPermissionsStatus);
+    const listeners: ((state: AppStateStatus) => void)[] = [];
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_, listener) => {
+      listeners.push(listener);
+      return { remove: jest.fn() };
+    });
+    permission(false);
+    await renderHome(home());
+    await screen.findByRole('button', { name: '알림' });
+    const failed = mockApi({ 'PATCH /api/v1/notifications/settings': apiError(500) });
+    permission(true);
+    listeners.forEach((listener) => listener('active'));
+    await waitFor(() =>
+      expect(failed).toHaveBeenCalledWith(
+        'https://api.test/api/v1/notifications/settings',
+        expect.anything(),
+      ),
+    );
+
+    // mockApi는 같은 fetch 스파이를 돌려줘서, 실패한 첫 요청 기록을 지워야 재시도만 셈
+    failed.mockClear();
+    const retried = mockApi({
+      'PATCH /api/v1/notifications/settings': { paymentReminderEnabled: true },
+    });
+    listeners.forEach((listener) => listener('active'));
+
+    await waitFor(() =>
+      expect(retried).toHaveBeenCalledWith(
+        'https://api.test/api/v1/notifications/settings',
+        expect.objectContaining({ body: JSON.stringify({ paymentReminderEnabled: true }) }),
       ),
     );
   });

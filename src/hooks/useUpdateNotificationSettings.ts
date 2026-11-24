@@ -10,6 +10,8 @@ import { request } from '@/lib/request';
 export const useUpdateNotificationSettings = () => {
   const client = useQueryClient();
   return useMutation({
+    // 토글을 빠르게 켜고 끄거나 권한이 연달아 바뀌어도 보낸 순서대로 저장 (늦게 도착한 요청이 덮어쓰지 않게)
+    scope: { id: 'notification-settings' },
     mutationFn: (settings: NotificationSettings) =>
       request<NotificationSettings>('/api/v1/notifications/settings', {
         method: 'PATCH',

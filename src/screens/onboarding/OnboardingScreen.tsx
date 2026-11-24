@@ -15,6 +15,8 @@ import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { NotificationSheet } from '@/components/onboarding/NotificationSheet';
 import { OnboardingVisual } from '@/components/onboarding/OnboardingVisual';
+import { useUpdateNotificationSettings } from '@/hooks/useUpdateNotificationSettings';
+import { type NotificationPermission, rememberNotificationPermission } from '@/lib/notifications';
 import { cn } from '@/utils/cn';
 
 // 화면 높이 계산용 고정 블록 (상단바 · 문구 · CTA + 하단 여백)
@@ -39,7 +41,7 @@ const easeOut = (x: number) => {
 
 interface OnboardingScreenProps {
   /** OS 알림 권한 요청. 허용·거부와 관계없이 끝나면 시트를 닫고 다음으로 진행 */
-  onRequestNotification?: () => Promise<unknown>;
+  onRequestNotification?: () => Promise<NotificationPermission>;
   /** 알림 권한 시트까지 끝났을 때 (구독 등록 시퀀스로 이동) */
   onComplete?: () => void;
 }
@@ -50,6 +52,7 @@ export const OnboardingScreen = ({ onRequestNotification, onComplete }: Onboardi
   const step = useSharedValue(0);
   const reduceMotion = useReducedMotion();
   const finishing = useRef(false);
+  const saveSettings = useUpdateNotificationSettings().mutateAsync;
 
   // 비주얼은 폭에 맞춘 높이가 기본이고, 안 들어가는 작은 화면(SE 등)에서만 줄임
   const { width, height } = useWindowDimensions();
@@ -83,11 +86,17 @@ export const OnboardingScreen = ({ onRequestNotification, onComplete }: Onboardi
   });
 
   // 알림 받기: OS 응답까지 기다린 뒤 시트를 닫음 / 다음에 설정하기: 요청 없이 바로 닫음
+  // 허용하면 점검 알림을 켬 (서버 기본값이 OFF). 저장은 기다리지 않음
   const finish = async (requestPermission: boolean) => {
     if (finishing.current) return;
     finishing.current = true;
     try {
-      if (requestPermission) await onRequestNotification?.();
+      if (requestPermission && (await onRequestNotification?.()) === 'granted') {
+        // 저장에 실패하면 권한을 반영 안 한 것으로 기록 → 홈에서 다시 ON 저장 시도 (화면을 떠난 뒤라 mutateAsync로)
+        saveSettings({ paymentReminderEnabled: true }).catch(() =>
+          rememberNotificationPermission(false),
+        );
+      }
     } finally {
       setSheetVisible(false);
       finishing.current = false;
