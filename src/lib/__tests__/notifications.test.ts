@@ -22,7 +22,10 @@ const status = (granted: boolean, canAskAgain: boolean) =>
   ({ granted, canAskAgain }) as Notifications.NotificationPermissionsStatus;
 
 describe('requestNotificationPermission', () => {
-  beforeEach(resetPermissions);
+  beforeEach(async () => {
+    resetPermissions();
+    await AsyncStorage.clear();
+  });
 
   it('아직 정해지지 않았으면 OS에 요청하고 응답을 돌려준다', async () => {
     getPermissions.mockResolvedValue(status(false, true));
@@ -44,6 +47,16 @@ describe('requestNotificationPermission', () => {
     requestPermissions.mockResolvedValue(status(false, false));
 
     expect(await requestNotificationPermission()).toBe('denied');
+  });
+
+  it('팝업에서 거부한 뒤엔 OS가 아직 물을 수 있다고 해도 요청 없이 blocked (iOS)', async () => {
+    getPermissions.mockResolvedValue(status(false, true));
+    requestPermissions.mockResolvedValue(status(false, false));
+    await requestNotificationPermission();
+    requestPermissions.mockClear();
+
+    expect(await requestNotificationPermission()).toBe('blocked');
+    expect(requestPermissions).not.toHaveBeenCalled();
   });
 
   it('이미 거부돼 다시 물을 수 없으면 요청 없이 blocked', async () => {
