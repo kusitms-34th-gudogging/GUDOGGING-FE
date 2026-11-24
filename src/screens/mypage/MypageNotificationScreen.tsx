@@ -36,7 +36,7 @@ export const MypageNotificationScreen = ({
     if (on) {
       const permission = await onRequestPermission();
       if (permission === 'blocked') {
-        show({ message: '기기 설정에서 알림을 허용하면 켤 수 있어요' });
+        show({ type: 'error', message: '기기 설정에서 알림을 허용하면 켤 수 있어요' });
         return;
       }
       if (permission === 'denied') return;
