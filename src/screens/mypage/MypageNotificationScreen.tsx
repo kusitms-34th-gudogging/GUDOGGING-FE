@@ -8,11 +8,13 @@ import { Toggle } from '@/components/common/Toggle';
 import { TopBar } from '@/components/common/TopBar';
 import { useNotificationSettings } from '@/hooks/useNotificationSettings';
 import { useRegisterPushToken } from '@/hooks/useRegisterPushToken';
+import { useToast } from '@/hooks/useToast';
 import { useUpdateNotificationSettings } from '@/hooks/useUpdateNotificationSettings';
+import type { NotificationPermission } from '@/lib/notifications';
 
 interface MypageNotificationScreenProps {
-  // OS 알림 권한을 요청하고 허용 여부를 돌려줌
-  onRequestPermission: () => Promise<boolean>;
+  // OS 알림 권한을 요청하고 결과를 돌려줌
+  onRequestPermission: () => Promise<NotificationPermission>;
 }
 
 // E-05 알림 설정
@@ -22,17 +24,25 @@ export const MypageNotificationScreen = ({
   const { data: settings, isError, refetch } = useNotificationSettings();
   const update = useUpdateNotificationSettings();
   const registerPushToken = useRegisterPushToken().mutate;
+  const { show } = useToast();
   // 저장하는 동안은 바꾼 값을 먼저 보여 주고, 실패하면 서버 값으로 돌아감
   const enabled = update.isPending
     ? update.variables.paymentReminderEnabled
     : settings?.paymentReminderEnabled;
 
-  // 켤 때만 권한을 묻고, 거부하면 꺼진 채로 둠
+  // 켤 때만 권한을 확인. 미정이면 OS 팝업, 팝업에서 거부하면 꺼진 채로, 이미 거부돼 있으면 안내 (E-08)
   // shortcut: 저장 실패 안내는 디자인에 없어 토글만 되돌아감, 디자인 나오면 토스트 추가
   const toggle = async (on: boolean) => {
-    if (on && !(await onRequestPermission())) return;
-    // 여기서 처음 권한을 허용했으면 홈까지 기다리지 않고 바로 토큰 등록
-    if (on) registerPushToken();
+    if (on) {
+      const permission = await onRequestPermission();
+      if (permission === 'blocked') {
+        show({ message: '기기 설정에서 알림을 허용하면 켤 수 있어요' });
+        return;
+      }
+      if (permission === 'denied') return;
+      // 여기서 처음 권한을 허용했으면 홈까지 기다리지 않고 바로 토큰 등록
+      registerPushToken();
+    }
     update.mutate({ paymentReminderEnabled: on });
   };
 
