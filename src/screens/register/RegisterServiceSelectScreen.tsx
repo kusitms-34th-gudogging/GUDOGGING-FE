@@ -26,11 +26,13 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
   useRegisterStep('SELECT_SERVICES');
   const navigation = useNavigation();
   const [query, setQuery] = useState('');
-  // 불러오기 팝업으로 이어서 등록할 수 있게 저장소에 둠
-  const selectedIds = useRegisterDraft((s) => s.selectedIds);
+  const stored = useRegisterDraft((s) => s.selectedIds);
   const setSelectedIds = useRegisterDraft((s) => s.setSelectedIds);
+  // 구독 추가하기로 와서 고른 값. 선택 완료 전까진 저장소에 안 씀
+  const [picked, setPicked] = useState<string[]>();
+  const selectedIds = picked ?? stored;
   // 이번에 새로 고른 것만 체크해서, 불러온 구독 확인에서 체크를 푼 구독이 다시 체크되지 않게
-  const [initialIds] = useState(selectedIds);
+  const [initialIds] = useState(stored);
   // 분석으로 불러온 서비스는 체크된 채로 잠금. 해제는 불러온 구독 확인에서만 (기획 답변)
   const payments = useRegisterDraft((s) => s.payments);
   const found = useRegisterDraft((s) => s.found);
@@ -39,10 +41,15 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
   // 누른 순간의 스택으로 판단 (렌더 중 getState는 예전 값일 수 있음)
   const adding = () => !!navigation.getState()?.routes.some((r) => r.name === 'selected');
 
-  const toggle = (id: string) =>
-    setSelectedIds(
-      selectedIds.includes(id) ? selectedIds.filter((v) => v !== id) : [...selectedIds, id],
-    );
+  // 구독 추가하기로 왔으면 선택 완료 때만 저장소에 반영. 뒤로가기·스와이프는 취소라 원래 목록 유지 (QA)
+  // 처음 고를 땐 불러오기 팝업으로 이어서 등록할 수 있게 바로 저장소에 둠
+  const toggle = (id: string) => {
+    const next = selectedIds.includes(id)
+      ? selectedIds.filter((v) => v !== id)
+      : [...selectedIds, id];
+    if (more || adding()) setPicked(next);
+    else setSelectedIds(next);
+  };
   const keyword = query.trim();
   // 전체 목록(칩 이름 찾기용)과 검색 결과. 검색·순서·지금 구독 중인 서비스 제외는 서버가 정함 (명세·백엔드 확인)
   const all = useServices();
@@ -156,6 +163,7 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
           label={`${count}개 선택 완료`}
           disabled={count === 0}
           onPress={() => {
+            setSelectedIds(selectedIds);
             if (adding()) return router.back();
             if (!more) return router.push('/register/selected');
             // 결제 정보 입력 없이 불러온 구독 확인으로 돌아가 확인 필요에 보임
