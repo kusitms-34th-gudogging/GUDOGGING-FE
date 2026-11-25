@@ -1,3 +1,4 @@
+import { onlineManager } from '@tanstack/react-query';
 import { act, userEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
@@ -67,5 +68,20 @@ test('탈퇴가 실패하면 데이터를 지우지 않고 탈퇴 실패 화면�
   await confirmWithdraw();
 
   expect(screen).toHavePathname('/mypage/withdraw-failed');
+  expect(useRegisterDraft.getState().selectedIds).toEqual(['netflix']);
+});
+
+// QA KAN-82: 오프라인이면 E-07에 멈춰 있다가 재연결 때 저절로 탈퇴됐음
+test('네트워크가 끊긴 채 탈퇴하면 바로 탈퇴 실패 화면으로 가고, 다시 연결돼도 저절로 탈퇴하지 않는다', async () => {
+  await renderFromMypage();
+  jest.mocked(globalThis.fetch).mockRejectedValue(new TypeError('Network request failed'));
+  await act(() => onlineManager.setOnline(false));
+
+  await confirmWithdraw();
+  expect(screen).toHavePathname('/mypage/withdraw-failed');
+
+  await act(() => onlineManager.setOnline(true));
+  expect(screen).toHavePathname('/mypage/withdraw-failed');
+  expect(withdrawCalls()).toBe(1);
   expect(useRegisterDraft.getState().selectedIds).toEqual(['netflix']);
 });
