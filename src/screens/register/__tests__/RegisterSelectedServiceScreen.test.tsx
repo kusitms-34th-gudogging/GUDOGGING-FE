@@ -78,6 +78,28 @@ describe('RegisterSelectedServiceScreen', () => {
     expect(useRegisterDraft.getState().unchecked).toEqual(['netflix', 'youtube']);
   });
 
+  // CodeRabbit 리뷰: 체크를 푼 구독이 확인 필요로 갔다 다시 입력하면 체크된 채로 돌아와야 함
+  it('확인 필요에서 입력을 마치거나 다시 고른 구독은 체크된 채로, 등록 가능에서 고친 구독은 체크 그대로 보여 준다', async () => {
+    const draft = useRegisterDraft.getState();
+    draft.setSelectedIds(['netflix', 'youtube', 'chatgpt']);
+    // Netflix: 체크를 풀었는데 결제일이 지나 확인 필요로 갔다가 다시 입력
+    draft.setPayment('netflix', { ...PAYMENT, nextDate: new Date(2026, 10, 1) });
+    // YouTube: 등록 가능에서 체크를 풀고 정보만 고침
+    draft.setPayment('youtube', PAYMENT);
+    // ChatGPT: 체크를 풀고 서비스 선택에서 뺐다가 다시 고름
+    draft.setPayment('chatgpt', PAYMENT);
+    draft.setUnchecked(['netflix', 'youtube', 'chatgpt']);
+    draft.setPayment('netflix', PAYMENT);
+    draft.setPayment('youtube', { ...PAYMENT, amount: 14900 });
+    draft.setSelectedIds(['netflix', 'youtube']);
+    draft.setSelectedIds(['netflix', 'youtube', 'chatgpt']);
+    await renderSelected();
+
+    expect(screen.getByRole('checkbox', { name: 'Netflix' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'YouTube Premium' })).not.toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'ChatGPT' })).toBeChecked();
+  });
+
   it('불러온 결제 정보의 다음 결제일이 지났으면 입력이 필요한 것으로 보고 등록에서 뺀다', async () => {
     // 11월 12일에 임시저장해 두고 오늘(11월 13일) 불러옴
     jest.setSystemTime(new Date(2026, 10, 13));

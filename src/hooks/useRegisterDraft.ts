@@ -57,8 +57,20 @@ export const useRegisterDraft = create<RegisterDraft>()(
   persist(
     (set) => ({
       ...EMPTY,
-      setSelectedIds: (selectedIds) => set({ selectedIds }),
-      setPayment: (id, info) => set((s) => ({ payments: { ...s.payments, [id]: info } })),
+      // 선택에서 빠진 서비스는 체크 해제도 지움 (다시 고르면 체크된 채로)
+      setSelectedIds: (selectedIds) =>
+        set((s) => ({
+          selectedIds,
+          unchecked: s.unchecked.filter((v) => v.startsWith('custom-') || selectedIds.includes(v)),
+        })),
+      // 미입력(날짜 지남 포함)에서 입력을 마치면 체크된 채로 등록 가능에 들어가게 체크 해제를 지움. 등록 가능 항목 수정은 체크 그대로
+      setPayment: (id, info) =>
+        set((s) => ({
+          payments: { ...s.payments, [id]: info },
+          unchecked: readyPayment(s.payments[id])
+            ? s.unchecked
+            : s.unchecked.filter((v) => v !== id),
+        })),
       setFound: (foundSource, found) =>
         set({ foundSource, found, foundChecked: found.map((f) => f.id) }),
       setFoundChecked: (foundChecked) => set({ foundChecked }),
