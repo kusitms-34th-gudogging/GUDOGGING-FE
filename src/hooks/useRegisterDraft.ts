@@ -77,12 +77,13 @@ export const hasRegisterDraft = ({ selectedIds, payments, foundChecked }: Regist
   selectedIds.length > 0 || Object.keys(payments).length > 0 || !!foundChecked;
 
 // 선택한 사전 등록 서비스 + 직접 입력한 구독 (A-04 목록). 불러온 구독을 수정한 값은 불러온 구독 확인에만 보임
+// 추가한 순서 (기능명세서 A-04). 직접 입력은 임시저장 items처럼 사전 등록 서비스 뒤에 만든 순서로
 export const useRegisterServices = (serviceIds: string[]) => {
   const payments = useRegisterDraft((s) => s.payments);
   const found = useRegisterDraft((s) => s.found);
   const services = useServices().data ?? [];
   return [
-    ...services.filter((s) => serviceIds.includes(s.id)),
+    ...serviceIds.flatMap((id) => services.filter((s) => s.id === id)),
     ...Object.entries(payments)
       .filter(([id]) => id.startsWith('custom-') && !found.some((f) => f.id === id))
       .map(([id, p]): Pick<Service, 'id' | 'name' | 'logoUrl'> => ({ id, name: p.name ?? '' })),

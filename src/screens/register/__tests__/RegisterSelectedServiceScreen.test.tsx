@@ -167,4 +167,18 @@ describe('RegisterSelectedServiceScreen', () => {
     expect(screen.getByText('13,500원')).toBeOnTheScreen();
     expect(screen.queryByText('입력하기')).not.toBeOnTheScreen();
   });
+
+  // 서비스 목록 순서(Netflix·ChatGPT·YouTube)가 아니라 고른 순서
+  it('입력 여부로 나눈 그룹 안에서는 추가한 순서로 보여 준다', async () => {
+    useRegisterDraft.getState().setSelectedIds(['youtube', 'netflix', 'chatgpt']);
+    useRegisterDraft.getState().setPayment('chatgpt', PAYMENT);
+    await renderSelected();
+
+    const rows = screen.getAllByRole('button', { name: /결제 정보/ });
+    expect(rows.map((r) => r.props.accessibilityLabel)).toEqual([
+      'YouTube Premium 결제 정보 입력하기',
+      'Netflix 결제 정보 입력하기',
+      'ChatGPT 결제 정보 수정하기',
+    ]);
+  });
 });

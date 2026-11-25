@@ -26,7 +26,7 @@ export const RegisterSelectedServiceScreen = () => {
   const payments = Object.fromEntries(
     Object.entries(stored).flatMap(([id, p]) => (readyPayment(p) ? [[id, p]] : [])),
   );
-  // 결제 정보가 없는 구독부터 (Figma 주석)
+  // 결제 정보가 없는 구독부터, 그룹 안은 추가한 순서 (Figma 주석·기능명세서 A-04). 등록 요청도 이 순서라 완료 화면도 추가한 순서
   const services = useRegisterServices(serviceIds).sort(
     (a, b) => Number(!!payments[a.id]) - Number(!!payments[b.id]),
   );
