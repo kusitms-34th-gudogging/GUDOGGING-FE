@@ -148,8 +148,15 @@ export const RegisterServiceSelectScreen = ({ more }: RegisterServiceSelectScree
               <AddServiceRow
                 testID="register-custom"
                 label="직접 입력하기"
+                // 선택 완료 전 체크는 넘겨서 직접 입력을 저장할 때 같이 반영. 저장 안 하고 돌아오면 여기 체크 그대로
                 onPress={() =>
-                  router.push({ pathname: '/register/input', params: more ? { more: '1' } : {} })
+                  router.push({
+                    pathname: '/register/input',
+                    params: {
+                      ...(more && { more: '1' }),
+                      ...(picked && { picked: picked.join(',') }),
+                    },
+                  })
                 }
               />
             )}

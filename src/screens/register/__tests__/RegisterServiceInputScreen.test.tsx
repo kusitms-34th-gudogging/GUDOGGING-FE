@@ -4,10 +4,13 @@ import { router, Stack } from 'expo-router';
 import { act, renderRouter, screen } from 'expo-router/testing-library';
 import { Keyboard, Pressable } from 'react-native';
 
+import InputRoute from '@/app/register/input';
+import SelectRoute from '@/app/register/select';
 import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { useRegisterDraft } from '@/hooks/useRegisterDraft';
 import { apiError, createQueryWrapper, mockApi, TEST_FOUND, TEST_SERVICES } from '@/lib/testing';
+import { RegisterSelectedServiceScreen } from '@/screens/register/RegisterSelectedServiceScreen';
 import { RegisterServiceInputScreen } from '@/screens/register/RegisterServiceInputScreen';
 import { RegisterServiceSelectScreen } from '@/screens/register/RegisterServiceSelectScreen';
 
@@ -454,4 +457,74 @@ it('구독 편집 저장에 실패하면 화면에 남고 저장 실패 토스�
 
   expect(await screen.findByText('저장하지 못했어요')).toBeOnTheScreen();
   expect(screen).toHavePathname('/register/input');
+});
+
+// 기획 답변: 직접 입력 저장은 확정이라 구독 추가하기로 간 A-02에서 체크해 둔 서비스도 같이 반영
+describe('구독 추가하기로 간 서비스 선택에서 체크하고 직접 입력으로 저장하면', () => {
+  // 라우트 파일까지 써서 A-02 → 직접 입력으로 체크를 넘기는 것도 확인
+  const routes = {
+    'register/_layout': () => <Stack />,
+    'register/found': () => null,
+    'register/selected': () => <RegisterSelectedServiceScreen />,
+    'register/select': SelectRoute,
+    'register/input': InputRoute,
+  };
+  // A-02에서 Netflix 체크 → 선택 완료 없이 직접 입력하기
+  const checkAndOpenCustom = async (params: Record<string, string>) => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await act(() => router.push({ pathname: '/register/select', params }));
+    await user.press(await screen.findByRole('checkbox', { name: 'Netflix' }));
+    await user.type(screen.getByTestId('register-search'), '헬스');
+    await user.press(await screen.findByTestId('register-custom'));
+    return user;
+  };
+  const saveCustom = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.type(await screen.findByLabelText('서비스명'), '동네 헬스장');
+    await user.type(screen.getByLabelText('결제 금액'), '7900');
+    await user.press(screen.getByLabelText('다음 결제일'));
+    await user.press(screen.getAllByRole('button', { name: '확인' })[1]);
+    await user.press(screen.getByRole('button', { name: '저장하기' }));
+  };
+
+  it('불러온 구독 확인으로 돌아가 직접 입력한 구독과 체크한 서비스를 둘 다 체크해 둔다', async () => {
+    await renderRouter(routes, { initialUrl: '/register/found', wrapper: createQueryWrapper() });
+    await saveCustom(await checkAndOpenCustom({ more: '1' }));
+
+    expect(screen).toHavePathname('/register/found');
+    const { selectedIds, foundChecked = [], payments } = useRegisterDraft.getState();
+    expect(selectedIds).toEqual(['netflix']);
+    expect(foundChecked[0]).toBe('netflix');
+    expect(payments[foundChecked[1]]?.name).toBe('동네 헬스장');
+  });
+
+  it('선택한 구독으로 돌아가 직접 입력한 구독과 체크한 서비스를 둘 다 보여 준다', async () => {
+    useRegisterDraft.getState().setSelectedIds(['spotify']);
+    await renderRouter(routes, { initialUrl: '/register/selected', wrapper: createQueryWrapper() });
+    await screen.findByRole('button', { name: '구독 추가하기' });
+    await saveCustom(await checkAndOpenCustom({}));
+
+    expect(screen).toHavePathname('/register/selected');
+    const rows = await screen.findAllByRole('button', { name: /결제 정보/ });
+    expect(rows.map((r) => r.props.accessibilityLabel)).toEqual([
+      'Spotify 결제 정보 입력하기',
+      'Netflix 결제 정보 입력하기',
+      '동네 헬스장 결제 정보 수정하기',
+    ]);
+  });
+
+  it('직접 입력을 저장하지 않고 돌아오면 체크는 남고, 서비스 선택에서 뒤로 가면 반영하지 않는다', async () => {
+    useRegisterDraft.getState().setSelectedIds(['spotify']);
+    await renderRouter(routes, { initialUrl: '/register/selected', wrapper: createQueryWrapper() });
+    await screen.findByRole('button', { name: '구독 추가하기' });
+    const user = await checkAndOpenCustom({});
+    await screen.findByLabelText('서비스명');
+
+    await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
+    expect(screen).toHavePathname('/register/select');
+    expect(await screen.findByRole('checkbox', { name: 'Netflix' })).toBeChecked();
+
+    await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
+    expect(screen).toHavePathname('/register/selected');
+    expect(useRegisterDraft.getState().selectedIds).toEqual(['spotify']);
+  });
 });
