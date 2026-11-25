@@ -84,11 +84,8 @@ export const RegisterSelectedServiceScreen = () => {
               showChevron
             />
           ))}
-          {/* 이어서 등록으로 바로 들어오면 앞 화면이 서비스 선택이 아니라서 경로로 이동 */}
-          <AddServiceRow
-            label="구독 추가하기"
-            onPress={() => router.dismissTo('/register/select')}
-          />
+          {/* 위에 서비스 선택을 쌓아 선택 완료·뒤로가기 모두 이 화면으로 돌아옴 (QA KAN-80) */}
+          <AddServiceRow label="구독 추가하기" onPress={() => router.push('/register/select')} />
         </FadeScrollView>
         {/* 등록 실패 토스트는 CTA 위 8 (Figma A-07 에러처리와 통일) */}
         <ToastOutlet className="bottom-0 pb-stack-sm" />

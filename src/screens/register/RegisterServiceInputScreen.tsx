@@ -377,13 +377,13 @@ const ServiceInputForm = ({
               paidAt,
             });
             allowLeave();
-            // 기존 항목 수정은 앞 화면으로. 새 직접 입력은 A-02 자리를 A-04로 바꿔 목록에 합류,
+            // 기존 항목 수정은 앞 화면으로. 새 직접 입력은 A-04로 가서 목록에 합류 (구독 추가하기로 왔으면 아래 A-04로, 아니면 A-02 자리를 A-04로),
             // 불러온 구독 확인에서 왔으면 그 화면으로 돌아가 등록 가능에 체크된 채로 보임
             if (serviceId) router.back();
             else if (more) {
               useRegisterDraft.getState().addFoundChecked([id]);
               router.dismissTo('/register/found');
-            } else router.replace('/register/selected');
+            } else router.dismissTo('/register/selected');
           }}
           className="mb-[14px]"
         />
