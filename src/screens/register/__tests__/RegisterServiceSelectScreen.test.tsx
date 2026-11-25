@@ -68,14 +68,15 @@ describe('RegisterServiceSelectScreen 뒤로 가기', () => {
     expect(useRegisterDraft.getState().selectedIds).toEqual(['netflix']);
   });
 
-  it('불러온 구독 확인에서 더 고르러 온 경우엔 팝업 없이 돌아간다', async () => {
+  // 뒤로 가기는 취소라 선택 완료 없이 고른 건 버림 (QA)
+  it('불러온 구독 확인에서 더 고르러 온 경우엔 팝업 없이 돌아가고 고른 건 반영하지 않는다', async () => {
     const user = await renderSelect({ more: true });
     await user.press(screen.getByRole('checkbox', { name: 'Spotify' }));
 
     await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
 
     expect(screen).toHavePathname('/register');
-    expect(useRegisterDraft.getState().selectedIds).toEqual(['spotify']);
+    expect(useRegisterDraft.getState().selectedIds).toEqual([]);
   });
 });
 
@@ -152,8 +153,10 @@ describe('선택한 구독에서 구독 추가하기로 들어오면', () => {
     return user;
   };
 
-  it('고르지 않고 뒤로 가면 그 화면으로 돌아가고 목록은 그대로다', async () => {
+  // 고른 걸 선택 완료 없이 뒤로 가면 취소 (QA)
+  it('고르고 선택 완료 없이 뒤로 가면 그 화면으로 돌아가고 목록은 그대로다', async () => {
     const user = await renderAdding();
+    await user.press(screen.getByRole('checkbox', { name: 'Netflix' }));
 
     await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
 
@@ -304,7 +307,7 @@ it('불러온 구독의 이름을 바꿨으면 그 서비스는 잠기지 않아
   expect(netflix).toBeEnabled();
   await user.press(netflix);
 
-  expect(useRegisterDraft.getState().selectedIds).toEqual(['netflix']);
+  expect(netflix).toBeChecked();
 });
 
 it('보이면 머문 화면을 서비스 선택(A-02)으로 기록하고, 화면 효과가 정리 함수 말고 다른 값을 돌려주지 않는다', async () => {

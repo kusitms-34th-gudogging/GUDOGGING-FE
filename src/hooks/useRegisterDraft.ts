@@ -20,6 +20,9 @@ interface RegisterDraft {
   found: FoundSubscription[];
   foundSource?: FoundSource;
   foundChecked?: string[];
+  // 직접 등록 A-04 등록 가능에서 체크를 푼 구독. 입력을 마치면 체크된 채로 들어가게 푼 것만 둠 (A-09와 같은 선택 로직)
+  // 서버 임시저장엔 없어 기기에만. 서버에서 불러오면 다시 전부 체크 (불러온 구독 체크와 같은 수준)
+  unchecked: string[];
   lastStep?: RegisterStep;
   // INPUT_SUBSCRIPTION일 때 입력 중이던 항목 id (사전 등록 serviceId 또는 직접 입력 custom-…). 없으면 새 직접 입력
   editingId?: string;
@@ -35,6 +38,7 @@ interface RegisterDraft {
   setFoundChecked: (ids: string[]) => void;
   // 불러온 구독 확인에서 더 고른 구독: 결제 정보를 넣으면 등록 가능에 체크된 채로 보이게
   addFoundChecked: (ids: string[]) => void;
+  setUnchecked: (ids: string[]) => void;
   reset: () => void;
 }
 
@@ -44,6 +48,7 @@ const EMPTY = {
   found: [],
   foundSource: undefined,
   foundChecked: undefined,
+  unchecked: [],
   lastStep: undefined,
   editingId: undefined,
 };
@@ -52,13 +57,26 @@ export const useRegisterDraft = create<RegisterDraft>()(
   persist(
     (set) => ({
       ...EMPTY,
-      setSelectedIds: (selectedIds) => set({ selectedIds }),
-      setPayment: (id, info) => set((s) => ({ payments: { ...s.payments, [id]: info } })),
+      // 선택에서 빠진 서비스는 체크 해제도 지움 (다시 고르면 체크된 채로)
+      setSelectedIds: (selectedIds) =>
+        set((s) => ({
+          selectedIds,
+          unchecked: s.unchecked.filter((v) => v.startsWith('custom-') || selectedIds.includes(v)),
+        })),
+      // 미입력(날짜 지남 포함)에서 입력을 마치면 체크된 채로 등록 가능에 들어가게 체크 해제를 지움. 등록 가능 항목 수정은 체크 그대로
+      setPayment: (id, info) =>
+        set((s) => ({
+          payments: { ...s.payments, [id]: info },
+          unchecked: readyPayment(s.payments[id])
+            ? s.unchecked
+            : s.unchecked.filter((v) => v !== id),
+        })),
       setFound: (foundSource, found) =>
         set({ foundSource, found, foundChecked: found.map((f) => f.id) }),
       setFoundChecked: (foundChecked) => set({ foundChecked }),
       addFoundChecked: (ids) =>
         set((s) => ({ foundChecked: [...new Set([...(s.foundChecked ?? []), ...ids])] })),
+      setUnchecked: (unchecked) => set({ unchecked }),
       setLastStep: (lastStep, editingId) => set({ lastStep, editingId }),
       restore: (draft) => set({ ...EMPTY, ...draft }),
       reset: () => set(EMPTY),
@@ -77,12 +95,13 @@ export const hasRegisterDraft = ({ selectedIds, payments, foundChecked }: Regist
   selectedIds.length > 0 || Object.keys(payments).length > 0 || !!foundChecked;
 
 // 선택한 사전 등록 서비스 + 직접 입력한 구독 (A-04 목록). 불러온 구독을 수정한 값은 불러온 구독 확인에만 보임
+// 추가한 순서 (기능명세서 A-04). 직접 입력은 임시저장 items처럼 사전 등록 서비스 뒤에 만든 순서로
 export const useRegisterServices = (serviceIds: string[]) => {
   const payments = useRegisterDraft((s) => s.payments);
   const found = useRegisterDraft((s) => s.found);
   const services = useServices().data ?? [];
   return [
-    ...services.filter((s) => serviceIds.includes(s.id)),
+    ...serviceIds.flatMap((id) => services.filter((s) => s.id === id)),
     ...Object.entries(payments)
       .filter(([id]) => id.startsWith('custom-') && !found.some((f) => f.id === id))
       .map(([id, p]): Pick<Service, 'id' | 'name' | 'logoUrl'> => ({ id, name: p.name ?? '' })),

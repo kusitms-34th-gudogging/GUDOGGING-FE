@@ -68,6 +68,8 @@ interface RegisterServiceInputScreenProps {
   found?: FoundSubscription;
   // 불러온 구독 확인의 구독 추가하기에서 직접 입력으로 왔으면 그 화면으로 바로 돌아감
   more?: boolean;
+  // 구독 추가하기로 간 A-02에서 체크해 둔 서비스. 저장하면 직접 입력한 구독과 같이 반영 (기획 답변)
+  picked?: string[];
   // 지난 구독 재등록(M-05): 그 구독 정보로 채우고 고친 정보로 재등록 (명세: 필드는 구독 정보 수정과 같음)
   reactivateId?: string;
   // 구독 편집(M-03 더보기 > 편집): 그 구독 정보로 채우고 수정해 저장
@@ -104,6 +106,7 @@ const ServiceInputForm = ({
   service,
   found,
   more = false,
+  picked,
   reactivate,
   edit,
 }: RegisterServiceInputScreenProps & {
@@ -379,9 +382,13 @@ const ServiceInputForm = ({
             allowLeave();
             // 기존 항목 수정은 앞 화면으로. 새 직접 입력은 A-04로 가서 목록에 합류 (구독 추가하기로 왔으면 아래 A-04로, 아니면 A-02 자리를 A-04로),
             // 불러온 구독 확인에서 왔으면 그 화면으로 돌아가 등록 가능에 체크된 채로 보임
-            if (serviceId) router.back();
-            else if (more) {
-              useRegisterDraft.getState().addFoundChecked([id]);
+            if (serviceId) return router.back();
+            // 직접 입력 저장은 확정이라 A-02에서 체크해 둔 서비스도 같이 반영 (선택 완료와 같음)
+            const draft = useRegisterDraft.getState();
+            const before = draft.selectedIds;
+            if (picked) draft.setSelectedIds(picked);
+            if (more) {
+              draft.addFoundChecked([...(picked ?? []).filter((v) => !before.includes(v)), id]);
               router.dismissTo('/register/found');
             } else router.dismissTo('/register/selected');
           }}
