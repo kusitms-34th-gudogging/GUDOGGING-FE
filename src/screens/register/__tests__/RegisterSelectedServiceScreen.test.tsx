@@ -50,14 +50,35 @@ const postBody = () => {
 };
 
 describe('RegisterSelectedServiceScreen', () => {
-  it('결제 정보를 입력하지 않은 서비스가 있으면 등록할 수 없다', async () => {
+  // 기획 변경: A-09처럼 확인 필요는 빼고 등록 가능에서 체크한 것만 등록
+  it('결제 정보를 입력하지 않은 서비스는 확인 필요에 두고, 입력한 것만 등록한다', async () => {
     useRegisterDraft.getState().setPayment('netflix', PAYMENT);
-    await renderSelected();
+    const user = await renderSelected({ 'POST /api/v1/subscriptions': { createdCount: 1 } });
 
-    expect(screen.getByRole('button', { name: '2개 구독 등록하기' })).toBeDisabled();
+    expect(screen.getByText(/확인 필요/)).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: '1개 구독 등록하기' }));
+
+    await waitFor(() => expect(screen).toHavePathname('/register/done'));
+    expect(postBody().subscriptions.map((s: { serviceId: string }) => s.serviceId)).toEqual([
+      'netflix',
+    ]);
   });
 
-  it('불러온 결제 정보의 다음 결제일이 지났으면 입력이 필요한 것으로 보고 등록할 수 없다', async () => {
+  it('등록 가능에서 체크를 풀면 등록에서 빼고, 하나도 체크하지 않으면 등록할 수 없다', async () => {
+    useRegisterDraft.getState().setPayment('netflix', PAYMENT);
+    useRegisterDraft.getState().setPayment('youtube', PAYMENT);
+    const user = await renderSelected();
+
+    await user.press(screen.getByRole('checkbox', { name: 'Netflix' }));
+    expect(screen.getByRole('button', { name: '1개 구독 등록하기' })).toBeEnabled();
+
+    await user.press(screen.getByRole('checkbox', { name: 'YouTube Premium' }));
+    expect(screen.getByRole('button', { name: '0개 구독 등록하기' })).toBeDisabled();
+    // 나갔다 불러와도 유지되게 저장소에 둠
+    expect(useRegisterDraft.getState().unchecked).toEqual(['netflix', 'youtube']);
+  });
+
+  it('불러온 결제 정보의 다음 결제일이 지났으면 입력이 필요한 것으로 보고 등록에서 뺀다', async () => {
     // 11월 12일에 임시저장해 두고 오늘(11월 13일) 불러옴
     jest.setSystemTime(new Date(2026, 10, 13));
     useRegisterDraft.getState().setPayment('netflix', PAYMENT);
@@ -67,7 +88,7 @@ describe('RegisterSelectedServiceScreen', () => {
     await renderSelected();
 
     expect(screen.getAllByText('결제 정보 입력 필요')).toHaveLength(1);
-    expect(screen.getByRole('button', { name: '2개 구독 등록하기' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '1개 구독 등록하기' })).toBeEnabled();
   });
 
   it('모든 서비스의 결제 정보를 입력하면 일괄 등록하고, 완료 화면으로 간다', async () => {

@@ -20,6 +20,9 @@ interface RegisterDraft {
   found: FoundSubscription[];
   foundSource?: FoundSource;
   foundChecked?: string[];
+  // 직접 등록 A-04 등록 가능에서 체크를 푼 구독. 입력을 마치면 체크된 채로 들어가게 푼 것만 둠 (A-09와 같은 선택 로직)
+  // 서버 임시저장엔 없어 기기에만. 서버에서 불러오면 다시 전부 체크 (불러온 구독 체크와 같은 수준)
+  unchecked: string[];
   lastStep?: RegisterStep;
   // INPUT_SUBSCRIPTION일 때 입력 중이던 항목 id (사전 등록 serviceId 또는 직접 입력 custom-…). 없으면 새 직접 입력
   editingId?: string;
@@ -35,6 +38,7 @@ interface RegisterDraft {
   setFoundChecked: (ids: string[]) => void;
   // 불러온 구독 확인에서 더 고른 구독: 결제 정보를 넣으면 등록 가능에 체크된 채로 보이게
   addFoundChecked: (ids: string[]) => void;
+  setUnchecked: (ids: string[]) => void;
   reset: () => void;
 }
 
@@ -44,6 +48,7 @@ const EMPTY = {
   found: [],
   foundSource: undefined,
   foundChecked: undefined,
+  unchecked: [],
   lastStep: undefined,
   editingId: undefined,
 };
@@ -59,6 +64,7 @@ export const useRegisterDraft = create<RegisterDraft>()(
       setFoundChecked: (foundChecked) => set({ foundChecked }),
       addFoundChecked: (ids) =>
         set((s) => ({ foundChecked: [...new Set([...(s.foundChecked ?? []), ...ids])] })),
+      setUnchecked: (unchecked) => set({ unchecked }),
       setLastStep: (lastStep, editingId) => set({ lastStep, editingId }),
       restore: (draft) => set({ ...EMPTY, ...draft }),
       reset: () => set(EMPTY),
