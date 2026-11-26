@@ -16,7 +16,8 @@ interface ListItemIconAction {
 
 interface ListItemProps {
   title: string;
-  subtitle?: string;
+  // 일부만 색을 바꿀 땐 <Text> 조각을 넘김 (예: D-n 강조)
+  subtitle?: ReactNode;
   showSubtitle?: boolean;
   cost?: string;
   showCost?: boolean;

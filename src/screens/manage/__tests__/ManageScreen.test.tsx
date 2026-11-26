@@ -33,7 +33,7 @@ const ACTIVE = list(
       amount: 29000,
       monthlyAmount: 29000,
       nextBillingDate: '2026-10-17',
-      dDay: 1,
+      dDay: 0,
     }),
     item({
       subscriptionId: 'b',
@@ -139,8 +139,8 @@ describe('ManageScreen', () => {
     expect(await screen.findByText('월 39,000원')).toBeOnTheScreen();
     const titles = screen.getAllByText(/결제$/).map((t) => t.props.children);
     expect(titles).toEqual(['빠른 결제', '늦은 결제']);
-    expect(screen.getByText('매월 17일 · D-1')).toBeOnTheScreen();
-    // 매월이 아니면 다음 결제일
+    // 주기와 관계없이 다음 결제일, 결제 당일은 D-day
+    expect(screen.getByText('10월 17일 · D-day')).toBeOnTheScreen();
     expect(screen.getByText('10월 20일 · D-4')).toBeOnTheScreen();
 
     await user.press(screen.getByRole('tab', { name: '구독 종료 1' }));
