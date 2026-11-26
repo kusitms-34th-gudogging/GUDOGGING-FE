@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "gudoggingfe",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.subscribers.gudogging",
       "infoPlist": {
@@ -114,7 +114,8 @@
       "policy": "fingerprint"
     },
     "updates": {
-      "url": "https://u.expo.dev/390a019d-073a-4230-bb51-b76752fa4c21"
+      "url": "https://u.expo.dev/390a019d-073a-4230-bb51-b76752fa4c21",
+      "fallbackToCacheTimeout": 3000
     }
   }
 }
