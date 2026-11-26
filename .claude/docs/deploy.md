@@ -14,6 +14,7 @@
 
 - PR(`dev` 대상)에 네이티브 변경이 있으면 github-actions가 "머지하면 빌드 1회" 댓글을 남김. 머지 = 빌드 승인
 - 급하지 않은 네이티브 변경은 다른 네이티브 변경과 모아서 머지 (빌드 1회로 끝남)
+- 빌드는 Actions가 TestFlight 제출 완료까지 기다린 뒤 성공·실패를 디스코드로 알림 (GitHub Secret `DISCORD_WEBHOOK_URL`, 없으면 건너뜀). 제출 완료 후 Apple 처리가 끝나야 TestFlight에 뜸
 
 ## 네이티브 변경으로 잡히는 것 (빌드 1회 소모)
 

@@ -105,10 +105,68 @@ jobs:
             gh pr comment "$PR" --body "$BODY"
           fi
 
-      # 네이티브가 바뀌었으면 새로 빌드해 TestFlight에 제출 (EAS에서 진행, 여기선 기다리지 않음)
+      # 네이티브가 바뀌었으면 새로 빌드해 TestFlight에 제출. 디스코드 알림을 위해 제출 완료까지 기다림
       - name: Build and submit to TestFlight
+        id: build
         if: github.event_name == 'push' && steps.fp.outputs.has_build == 'false' && steps.fp.outputs.can_build == 'true'
-        run: $BUILD_COMMAND --non-interactive --no-wait
+        shell: bash
+        # --json은 빌드·제출이 실패해도 빌드 정보를 출력함 (제출 준비 중 에러면 출력 없음 → 알림 단계에서 지문으로 조회)
+        run: $BUILD_COMMAND --non-interactive --json | tee build.json
+
+      - name: Notify Discord
+        if: always() && steps.build.outcome != 'skipped'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          OUTCOME: ${{ steps.build.outcome }}
+          HASH: ${{ steps.fp.outputs.hash }}
+          MESSAGE: ${{ github.event.head_commit.message }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "::warning::DISCORD_WEBHOOK_URL 시크릿이 없어 디스코드 알림을 건너뜀"
+            exit 0
+          fi
+          # 머지 커밋의 마지막 줄이 PR 제목
+          TITLE=$(printf '%s\n' "$MESSAGE" | sed '/^[[:space:]]*$/d' | tail -1)
+          BUILD=$(jq -c '.[0] // {}' build.json 2>/dev/null || true)
+          if [ -z "$BUILD" ] || [ "$BUILD" = '{}' ]; then
+            BUILD=$(npx eas-cli@latest build:list -p ios --build-profile production --fingerprint-hash "$HASH" --limit 1 --json --non-interactive 2>/dev/null | jq -c '.[0] // {}' 2>/dev/null || true)
+          fi
+          [ -n "$BUILD" ] || BUILD='{}'
+          jq -n \
+            --arg outcome "$OUTCOME" \
+            --arg title "$TITLE" \
+            --arg run "$RUN_URL" \
+            --arg eas "https://expo.dev/accounts/$EXPO_ACCOUNT/projects/$(jq -r .expo.slug app.json)/builds/" \
+            --argjson b "$BUILD" '
+            (if $b.appVersion then "\($b.appVersion) (\($b.appBuildVersion))" else "새 빌드" end) as $ver
+            | ("🔗 " + (if $b.id then "[EAS 빌드](\($eas)\($b.id)) · " else "" end) + "[GitHub Actions](\($run))") as $links
+            # [색, 제목, 핵심, 안내, 작은 글씨]
+            | ($b.status // "" | ascii_downcase) as $status
+            # 취소된 빌드도 eas-cli가 0으로 끝나므로 상태까지 확인
+            | (if $outcome == "success" and $status == "finished" then
+                [3066993, "📦 iOS 새 빌드가 TestFlight에 제출됐어요", $ver,
+                 "Apple 처리가 끝나면 `TestFlight` 앱에서 업데이트 받아 주세요.", "처리까지 보통 수십 분 · \($links)"]
+              # 실패·취소 빌드는 지문 조회에서 안 세므로 Re-run하면 다시 빌드
+              elif $status == "errored" or $status == "canceled" or $status == "pending_cancel" then
+                [15158332, "❌ iOS 빌드가 실패했어요", "EAS 빌드 로그 확인",
+                 "원인을 고친 뒤 Actions에서 **Re-run** 해 주세요.", $links]
+              # 빌드는 살아 있는데 실패면 제출 실패. Re-run은 지문에 빌드가 있어 다시 제출하지 않으므로 submit 안내
+              elif $b.id then
+                [15158332, "❌ TestFlight 제출이 실패했어요", "\($ver) 다시 제출 필요",
+                 "Re-run하면 다시 제출되지 않아요. 빌드가 끝난 뒤 아래 명령으로 제출해 주세요.\n```\nnpx eas-cli@latest submit -p ios --id \($b.id)\n```", $links]
+              # EAS에 빌드를 만들기 전에 실패 (토큰·인증서·EAS 장애 등)
+              else
+                [15158332, "❌ iOS 빌드를 시작하지 못했어요", "Actions 로그 확인",
+                 "원인(토큰·인증서 등)을 고친 뒤 **Re-run** 해 주세요.", $links]
+              end) as [$color, $head, $key, $body, $small]
+            | {embeds: [{
+                color: $color,
+                description: "## \($head)\n### \($key)\n> \($title)\n\n\($body)\n\n-# \($small)",
+                timestamp: (now | todate)
+              }]}' > discord.json
+          curl -fsS -H "Content-Type: application/json" -d @discord.json "$DISCORD_WEBHOOK_URL"
 
       - name: Warn build limit reached
         if: github.event_name == 'push' && steps.fp.outputs.has_build == 'false' && steps.fp.outputs.can_build == 'false'
