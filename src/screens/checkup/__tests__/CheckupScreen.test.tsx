@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fireEvent, userEvent } from '@testing-library/react-native';
+import { focusManager } from '@tanstack/react-query';
+import { act, fireEvent, userEvent } from '@testing-library/react-native';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import { Keyboard } from 'react-native';
 
@@ -153,6 +154,21 @@ describe('CheckupScreen', () => {
     useCheckupDraft.getState().setScore('netflix', CYCLE, 0, 2);
     await renderCheckup();
     expect(screen.getByText('넷플릭스에서 본 콘텐츠, 구독료만큼 가치 있었나요?')).toBeOnTheScreen();
+  });
+
+  it('점검 중 다시 불러온 문항의 결제 주기가 바뀌면 1/4부터 다시 시작한다', async () => {
+    answerAll();
+    // 같은 응답 객체를 바꿔 다음 조회부터 새 결제일을 받게 함
+    const form = { ...NETFLIX };
+    await renderCheckup({ subscription: form });
+    expect(screen.getByText('넷플릭스\u2060에 대해 남기고 싶은 말이 있나요?')).toBeOnTheScreen();
+
+    // 앱으로 돌아와 문항을 다시 불러옴 (staleTime 0)
+    form.nextBillingDate = '2026-12-17';
+    await act(async () => focusManager.onFocus());
+    expect(
+      await screen.findByText('최근 한 달 동안 넷플릭스를 얼마나 자주 이용했나요?'),
+    ).toBeOnTheScreen();
   });
 
   it('메모 입력 중 빈 곳을 누르면 키보드를 내린다', async () => {

@@ -51,7 +51,10 @@ export const CheckupScreen = ({ id, from = 'detail' }: CheckupScreenProps) => {
       </View>
     );
   }
-  return hydrated ? <CheckupQuestions {...data} from={from} /> : null;
+  // 화면에 있는 중 결제 주기가 바뀌면(폼 재조회) 진행 상태를 새 주기 기준으로 다시 시작
+  return hydrated ? (
+    <CheckupQuestions key={data.subscription.nextDate.toISOString()} {...data} from={from} />
+  ) : null;
 };
 
 interface CheckupQuestionsProps {
