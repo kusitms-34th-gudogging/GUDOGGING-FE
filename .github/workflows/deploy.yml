@@ -136,24 +136,29 @@ jobs:
             --arg run "$RUN_URL" \
             --arg eas "https://expo.dev/accounts/$EXPO_ACCOUNT/projects/$(jq -r .expo.slug app.json)/builds/" \
             --argjson b "$BUILD" '
-            (if $b.appVersion then "**\($b.appVersion) (\($b.appBuildVersion))** 빌드가" else "새 빌드가" end) as $ver
+            (if $b.appVersion then "\($b.appVersion) (\($b.appBuildVersion))" else "새 빌드" end) as $ver
             | ("🔗 " + (if $b.id then "[EAS 빌드](\($eas)\($b.id)) · " else "" end) + "[GitHub Actions](\($run))") as $links
-            | if $outcome == "success" then
-                {embeds: [{
-                  color: 3066993,
-                  title: "📦 iOS 새 빌드가 TestFlight에 제출됐어요",
-                  description: "\($ver) App Store Connect에 올라갔어요.\nApple 처리가 끝나면 `TestFlight` 앱에서 업데이트 받아 주세요.\n\n> \($title)\n\n\($links)",
-                  footer: {text: "처리까지 보통 수십 분"},
-                  timestamp: (now | todate)
-                }]}
+            # [색, 제목, 핵심, 안내, 작은 글씨]
+            | (if $outcome == "success" then
+                [3066993, "📦 iOS 새 빌드가 TestFlight에 제출됐어요", $ver,
+                 "Apple 처리가 끝나면 `TestFlight` 앱에서 업데이트 받아 주세요.", "처리까지 보통 수십 분 · \($links)"]
+              # 빌드는 끝났는데 실패면 제출 실패. Re-run은 지문에 빌드가 있어 다시 제출하지 않으므로 submit 안내
+              elif ($b.status // "" | ascii_downcase) == "finished" then
+                [15158332, "❌ TestFlight 제출이 실패했어요", "\($ver) 다시 제출 필요",
+                 "빌드는 성공했어요. Re-run 말고 아래 명령으로 다시 제출해 주세요.\n```\nnpx eas-cli@latest submit -p ios --id \($b.id)\n```", $links]
+              elif $b.id then
+                [15158332, "❌ iOS 빌드가 실패했어요", "EAS 빌드 로그 확인",
+                 "원인을 고친 뒤 Actions에서 **Re-run** 해 주세요.", $links]
+              # EAS에 빌드를 만들기 전에 실패 (토큰·인증서·EAS 장애 등)
               else
-                {embeds: [{
-                  color: 15158332,
-                  title: "❌ iOS 빌드/제출이 실패했어요",
-                  description: "> \($title)\n\n로그를 확인하고 필요하면 Actions에서 **Re-run** 해 주세요.\n\($links)",
-                  timestamp: (now | todate)
-                }]}
-              end' > discord.json
+                [15158332, "❌ iOS 빌드를 시작하지 못했어요", "Actions 로그 확인",
+                 "원인(토큰·인증서 등)을 고친 뒤 **Re-run** 해 주세요.", $links]
+              end) as [$color, $head, $key, $body, $small]
+            | {embeds: [{
+                color: $color,
+                description: "## \($head)\n### \($key)\n> \($title)\n\n\($body)\n\n-# \($small)",
+                timestamp: (now | todate)
+              }]}' > discord.json
           curl -fsS -H "Content-Type: application/json" -d @discord.json "$DISCORD_WEBHOOK_URL"
 
       - name: Warn build limit reached
