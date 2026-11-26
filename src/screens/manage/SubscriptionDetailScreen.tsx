@@ -237,7 +237,7 @@ export const SubscriptionDetailScreen = ({
         />
         <Button
           label="구독 점검"
-          onPress={() => router.push(`/checkup/${s.id}?restart=1&from=detail`)}
+          onPress={() => router.push(`/checkup/${s.id}?from=detail`)}
           className="flex-1"
         />
       </View>
