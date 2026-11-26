@@ -86,11 +86,12 @@ export const ListItem = ({
         <Text numberOfLines={1} className="text-text-primary text-body3-semibold">
           {title}
         </Text>
-        {showSubtitle && subtitle && (
+        {/* 삼항: subtitle이 0이면 &&는 0을 View에 그대로 렌더해 오류 */}
+        {showSubtitle && subtitle ? (
           <Text numberOfLines={1} className="text-text-secondary text-caption1-regular">
             {subtitle}
           </Text>
-        )}
+        ) : null}
       </View>
       {((showCost && cost) || (showIconRight && IconRight) || showCheckBox) && (
         <View className="shrink flex-row items-center gap-inline-xs">
