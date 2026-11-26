@@ -10,6 +10,9 @@ export const formatDate = (date: Date) =>
     .map((n) => String(n).padStart(2, '0'))
     .join('-');
 
+// 결제 당일은 D-0 대신 D-day
+export const dDayLabel = (dDay: number) => (dDay === 0 ? 'D-day' : `D-${dDay}`);
+
 export const startOfToday = () => new Date(new Date().setHours(0, 0, 0, 0));
 
 export const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();

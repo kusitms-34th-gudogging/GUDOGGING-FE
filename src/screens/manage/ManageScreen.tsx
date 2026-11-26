@@ -20,6 +20,7 @@ import { useRowSnap } from '@/hooks/useRowSnap';
 import { type SubscriptionSort, useSubscriptions } from '@/hooks/useSubscriptions';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/cn';
+import { dDayLabel } from '@/utils/date';
 import { formatWon } from '@/utils/formatPayment';
 
 type Tab = 'ACTIVE' | 'ENDED';
@@ -82,10 +83,14 @@ export const ManageScreen = () => {
   const items = (isPlaceholderData ? [] : (data?.subscriptions ?? [])).map((s) => ({
     ...s,
     subtitle:
-      tab === 'ACTIVE'
-        ? // 매월 결제는 '매월 17일', 그 외 주기는 다음 결제일
-          `${s.unit === '개월' && s.cycle === 1 ? `매월 ${s.nextDate!.getDate()}일` : monthDay(s.nextDate!)} · D-${s.dDay}`
-        : `${monthDay(s.cancelledAt!)} 해지 · 총 지출 ${formatWon(s.totalSpent!)}`,
+      tab === 'ACTIVE' ? (
+        // 주기와 관계없이 다음 결제일 (연·주 결제에 '매월'이 틀려서). 주기는 구독 상세에서 확인
+        <>
+          {monthDay(s.nextDate!)} · <Text className="text-text-brand">{dDayLabel(s.dDay!)}</Text>
+        </>
+      ) : (
+        `${monthDay(s.cancelledAt!)} 해지 · 총 지출 ${formatWon(s.totalSpent!)}`
+      ),
   }));
   const snap = useRowSnap(items.length);
 

@@ -22,7 +22,7 @@ import { useRegisterPushToken } from '@/hooks/useRegisterPushToken';
 import { useUpdateNotificationSettings } from '@/hooks/useUpdateNotificationSettings';
 import { notificationPermissionChange, rememberNotificationPermission } from '@/lib/notifications';
 import { cn } from '@/utils/cn';
-import { parseDate } from '@/utils/date';
+import { dDayLabel, parseDate } from '@/utils/date';
 import { formatWon } from '@/utils/formatPayment';
 
 const dateLabel = (date: string) => {
@@ -153,7 +153,12 @@ export const HomeScreen = () => {
                     <ListItem
                       key={s.subscriptionId}
                       title={s.serviceName}
-                      subtitle={`${dateLabel(s.nextBillingDate)} · D-${s.dDay}`}
+                      subtitle={
+                        <>
+                          {dateLabel(s.nextBillingDate)} ·{' '}
+                          <Text className="text-text-brand">{dDayLabel(s.dDay)}</Text>
+                        </>
+                      }
                       showSubtitle
                       logo={serviceLogo(s.logoUrl ?? undefined)}
                       showLogo
