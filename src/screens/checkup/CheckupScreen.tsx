@@ -33,14 +33,12 @@ const MEMO_MAX = 100;
 interface CheckupScreenProps {
   // 구독 id
   id: string;
-  // 홈에서 들어오면 저장된 답과 상관없이 1/4부터 (화면설계서 HOM-001)
-  restart?: boolean;
   // 들어온 곳 (GA check_start entry_point)
   from?: CheckEntry;
 }
 
 // 점검 문항 조회(구독 이름·금액·다음 결제일)와 임시 저장 복원이 끝난 뒤에 시작 문항을 정함
-export const CheckupScreen = ({ id, restart, from = 'detail' }: CheckupScreenProps) => {
+export const CheckupScreen = ({ id, from = 'detail' }: CheckupScreenProps) => {
   const { data, isError, refetch } = useCheckupForm(id);
   // useSyncExternalStore는 구독 직후 값을 다시 읽어서, 렌더~구독 사이에 복원이 끝나도 놓치지 않음
   const { onFinishHydration, hasHydrated } = useCheckupDraft.persist;
@@ -53,7 +51,10 @@ export const CheckupScreen = ({ id, restart, from = 'detail' }: CheckupScreenPro
       </View>
     );
   }
-  return hydrated ? <CheckupQuestions {...data} restart={restart} from={from} /> : null;
+  // 화면에 있는 중 결제 주기가 바뀌면(폼 재조회) 진행 상태를 새 주기 기준으로 다시 시작
+  return hydrated ? (
+    <CheckupQuestions key={data.subscription.nextDate.toISOString()} {...data} from={from} />
+  ) : null;
 };
 
 interface CheckupQuestionsProps {
@@ -61,7 +62,6 @@ interface CheckupQuestionsProps {
   // 서버가 카테고리에 맞춰 준 문항 3개와 메모 예시
   questions: CheckupQuestion[];
   memo: { placeholder: string; chips: string[] };
-  restart?: boolean;
   from: CheckEntry;
 }
 
@@ -70,7 +70,6 @@ const CheckupQuestions = ({
   subscription,
   questions,
   memo: memoConfig,
-  restart,
   from,
 }: CheckupQuestionsProps) => {
   const { id, name, nextDate } = subscription;
@@ -92,8 +91,8 @@ const CheckupQuestions = ({
   const setScore = useCheckupDraft((s) => s.setScore);
   const clearDraft = useCheckupDraft((s) => s.clear);
   const submit = useSubmitCheckup(id);
-  // 임시 저장된 다음 문항부터 (3문항 다 답했으면 4/4 메모)
-  const [step, setStep] = useState(() => (restart ? 0 : getCheckupScores(id, cycle).length));
+  // 어디서 들어오든 임시 저장된 다음 문항부터 (3문항 다 답했으면 4/4 메모)
+  const [step, setStep] = useState(() => getCheckupScores(id, cycle).length);
   const [selected, setSelected] = useState(() => getCheckupScores(id, cycle).at(step));
   // 이전으로 3/4에 갔다 와도 유지. 앱 종료 시엔 임시 저장 안 함 (설계서: 답한 문항까지만)
   const [memo, setMemo] = useState('');

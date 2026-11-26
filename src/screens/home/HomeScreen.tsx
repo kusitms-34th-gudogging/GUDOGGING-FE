@@ -169,8 +169,7 @@ export const HomeScreen = () => {
                         s.needsCheckup
                           ? {
                               accessibilityLabel: `${s.serviceName} 점검하기`,
-                              onPress: () =>
-                                router.push(`/checkup/${s.subscriptionId}?restart=1&from=home`),
+                              onPress: () => router.push(`/checkup/${s.subscriptionId}?from=home`),
                             }
                           : undefined
                       }
@@ -227,7 +226,7 @@ export const HomeScreen = () => {
                     buttonTestID="home-checkup"
                     onPress={() =>
                       usage.nudgeSubscriptionId &&
-                      router.push(`/checkup/${usage.nudgeSubscriptionId}?restart=1&from=home`)
+                      router.push(`/checkup/${usage.nudgeSubscriptionId}?from=home`)
                     }
                   />
                 </>
