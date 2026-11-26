@@ -63,16 +63,15 @@ const postBody = () =>
 
 const renderCheckup = async ({
   subscription = NETFLIX,
-  restart = false,
   routes = {},
-}: { subscription?: typeof NETFLIX; restart?: boolean; routes?: Record<string, unknown> } = {}) => {
+}: { subscription?: typeof NETFLIX; routes?: Record<string, unknown> } = {}) => {
   mockApi({
     [`GET /api/v1/subscriptions/${subscription.id}/checkups/form`]: subscription,
     ...routes,
   });
   await renderRouter(
     {
-      checkup: () => <CheckupScreen id={subscription.id} restart={restart} />,
+      checkup: () => <CheckupScreen id={subscription.id} />,
       'checkup/[id]/result': () => null,
     },
     { initialUrl: '/checkup', wrapper: createQueryWrapper() },
@@ -154,18 +153,6 @@ describe('CheckupScreen', () => {
     useCheckupDraft.getState().setScore('netflix', CYCLE, 0, 2);
     await renderCheckup();
     expect(screen.getByText('넷플릭스에서 본 콘텐츠, 구독료만큼 가치 있었나요?')).toBeOnTheScreen();
-  });
-
-  it('홈에서 들어오면(restart) 저장된 답이 있어도 1/4부터 시작한다', async () => {
-    answerAll();
-    await renderCheckup({ restart: true });
-
-    expect(
-      screen.queryByText('넷플릭스\u2060에 대해 남기고 싶은 말이 있나요?'),
-    ).not.toBeOnTheScreen();
-    expect(
-      screen.getByText('최근 한 달 동안 넷플릭스를 얼마나 자주 이용했나요?'),
-    ).toBeOnTheScreen();
   });
 
   it('메모 입력 중 빈 곳을 누르면 키보드를 내린다', async () => {
