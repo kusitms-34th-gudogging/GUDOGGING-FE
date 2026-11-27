@@ -1,7 +1,10 @@
+import { router } from 'expo-router';
 import { View } from 'react-native';
 
+import { DetailSkeleton } from '@/components/common/DetailSkeleton';
 import { QueryState } from '@/components/common/QueryState';
 import { ToastOutlet } from '@/components/common/ToastProvider';
+import { TopBar } from '@/components/common/TopBar';
 import { useSubscription } from '@/hooks/useSubscriptions';
 import { EndedSubscriptionDetailScreen } from '@/screens/manage/EndedSubscriptionDetailScreen';
 import { SubscriptionDetailScreen } from '@/screens/manage/SubscriptionDetailScreen';
@@ -19,7 +22,15 @@ export const ManageDetailScreen = ({ id, confirmCancel }: ManageDetailScreenProp
   if (!data) {
     return (
       <View className="pt-safe flex-1 bg-bg-default">
-        <QueryState isError={isError} onRetry={refetch} />
+        {/* 로딩·에러 중에도 뒤로 갈 수 있게 상단바는 상세 화면과 같게 */}
+        <TopBar
+          variant="detail"
+          title="구독 상세"
+          onBack={() => router.back()}
+          showAction1={false}
+          showAction2={false}
+        />
+        {isError ? <QueryState isError onRetry={refetch} /> : <DetailSkeleton showToggle />}
         <ToastOutlet placement="bottom" />
       </View>
     );
