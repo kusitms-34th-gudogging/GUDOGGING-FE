@@ -46,6 +46,14 @@ afterEach(() => {
 });
 
 describe('HomeNotificationScreen', () => {
+  it('불러오는 동안 빈 상태 대신 로딩을 보여 준다', async () => {
+    await renderList(listOf([]));
+
+    // 응답 전
+    expect(screen.getByLabelText('불러오는 중')).toBeOnTheScreen();
+    expect(screen.queryByText('아직 받은 알림이 없어요')).not.toBeOnTheScreen();
+  });
+
   it('알림이 없으면 빈 상태를 보여 준다', async () => {
     await renderList(listOf([]));
 

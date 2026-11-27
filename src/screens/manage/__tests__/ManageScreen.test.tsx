@@ -168,6 +168,8 @@ describe('ManageScreen', () => {
     expect(screen.getByRole('tab', { name: '구독 종료 1' })).toBeOnTheScreen();
     expect(screen.queryByText('월 39,000원')).not.toBeOnTheScreen();
     expect(screen.queryByText('빠른 결제')).not.toBeOnTheScreen();
+    // 빈 자리 대신 로딩(스켈레톤)
+    expect(screen.getByLabelText('불러오는 중')).toBeOnTheScreen();
 
     await act(async () => release());
 
@@ -264,6 +266,22 @@ describe('ManageScreen', () => {
     await user.press(await screen.findByRole('button', { name: '빠른 결제 상세' }));
 
     expect(screen).toHavePathname('/manage/detail/a');
+  });
+
+  it('상세를 불러오는 동안에도 뒤로 가기로 목록에 돌아간다', async () => {
+    const spy = mockLists();
+    const base = spy.getMockImplementation()!;
+    // 상세 응답이 안 옴
+    spy.mockImplementation((input, init) =>
+      String(input).includes('/subscriptions/a') ? new Promise(() => {}) : base(input, init),
+    );
+    const user = await renderManage(true, StackToastLayout);
+
+    await user.press(await screen.findByRole('button', { name: '빠른 결제 상세' }));
+    expect(screen.getByLabelText('불러오는 중')).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
+
+    expect(screen).toHavePathname('/');
   });
 
   it('상세 경로는 구독 상태에 따라 구독 중·구독 종료 화면을 고른다', async () => {
