@@ -7,6 +7,7 @@ import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { NotificationItem } from '@/components/home/NotificationItem';
+import { NotificationSkeleton } from '@/components/home/NotificationSkeleton';
 import type { AppNotification } from '@/constants/notification';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useReadNotification } from '@/hooks/useReadNotification';
@@ -39,7 +40,11 @@ export const HomeNotificationScreen = () => {
         showAction2={false}
       />
       {!notifications ? (
-        <QueryState isError={isError} onRetry={refetch} />
+        isError ? (
+          <QueryState isError onRetry={refetch} />
+        ) : (
+          <NotificationSkeleton />
+        )
       ) : sections.length === 0 ? (
         // H-05 알림 없음: Figma처럼 상단 바 아래가 아니라 화면 전체 기준 가운데. 뒤로가기 터치는 통과
         <View
