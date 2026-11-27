@@ -14,6 +14,11 @@ import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
+import {
+  ManageListSkeleton,
+  ManageSkeleton,
+  ManageSummarySkeleton,
+} from '@/components/manage/ManageSkeleton';
 import { serviceLogo } from '@/constants/services';
 import { useDeleteSubscriptions } from '@/hooks/useDeleteSubscriptions';
 import { useRowSnap } from '@/hooks/useRowSnap';
@@ -49,6 +54,8 @@ export const ManageScreen = () => {
   const [picked, setPicked] = useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const isEmpty = data?.activeCount === 0 && data.endedCount === 0;
+  // 탭을 막 바꿔 이전 탭 데이터(placeholder)면 금액·목록 자리는 스켈레톤
+  const listLoading = isPlaceholderData;
 
   const stopSelecting = () => {
     setSelecting(false);
@@ -83,14 +90,10 @@ export const ManageScreen = () => {
   const items = (isPlaceholderData ? [] : (data?.subscriptions ?? [])).map((s) => ({
     ...s,
     subtitle:
-      tab === 'ACTIVE' ? (
-        // 주기와 관계없이 다음 결제일 (연·주 결제에 '매월'이 틀려서). 주기는 구독 상세에서 확인
-        <>
-          {monthDay(s.nextDate!)} · <Text className="text-text-brand">{dDayLabel(s.dDay!)}</Text>
-        </>
-      ) : (
-        `${monthDay(s.cancelledAt!)} 해지 · 총 지출 ${formatWon(s.totalSpent!)}`
-      ),
+      tab === 'ACTIVE'
+        ? // 주기와 관계없이 다음 결제일 (연·주 결제에 '매월'이 틀려서). 주기는 구독 상세에서 확인
+          `${monthDay(s.nextDate!)} · ${dDayLabel(s.dDay!)}`
+        : `${monthDay(s.cancelledAt!)} 해지 · 총 지출 ${formatWon(s.totalSpent!)}`,
   }));
   const snap = useRowSnap(items.length);
 
@@ -120,7 +123,11 @@ export const ManageScreen = () => {
         ]}
       />
       {!data ? (
-        <QueryState isError={isError} onRetry={refetch} />
+        isError ? (
+          <QueryState isError onRetry={refetch} />
+        ) : (
+          <ManageSkeleton />
+        )
       ) : isEmpty ? (
         // 떠 있는 탭바(52 + 하단 4)를 빼고 남은 영역에서 세로 중앙
         <View className="flex-1 items-center justify-center gap-stack-md px-screen-x pb-[56px]">
@@ -157,8 +164,10 @@ export const ManageScreen = () => {
                 }}
               />
             </View>
-            {/* 탭을 바꿔 새 목록이 오기 전엔 이전 탭 데이터라 금액·목록을 숨기고 탭·개수만 둠 */}
-            {!isPlaceholderData && (
+            {/* 탭을 바꿔 새 목록이 오기 전엔 이전 탭 데이터라 금액·목록 대신 스켈레톤, 탭·개수는 둠 */}
+            {listLoading ? (
+              <ManageSummarySkeleton />
+            ) : (
               // Figma M-02.2: 삭제 선택 중엔 삭제 버튼이 오른쪽 끝에서 6 안쪽 (체크박스 박스 오른쪽 끝 근처)
               <View
                 className={cn(
@@ -210,7 +219,9 @@ export const ManageScreen = () => {
           </View>
           {/* 캘린더와 같이 스크롤 영역을 떠 있는 탭바(52 + 아래 4) + 간격 12 위에서 끝내고, 아래 끝에 반쯤 걸린 행은 숨김
               맨 아래까지 내리면 마지막 행이 + 버튼(탭바 위 18 + 48) 위로 올라오게 여백 */}
-          {!isPlaceholderData && (
+          {listLoading ? (
+            <ManageListSkeleton />
+          ) : (
             <Animated.View
               onLayout={snap.onViewportLayout}
               className="mb-[68px] mt-stack-md flex-1"

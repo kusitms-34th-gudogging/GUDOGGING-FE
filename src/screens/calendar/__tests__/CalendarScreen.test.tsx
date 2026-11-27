@@ -91,6 +91,15 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
+it('불러오는 동안엔 결제 없음 대신 로딩을 보여 준다', async () => {
+  jest.mocked(globalThis.fetch).mockImplementation(() => new Promise(() => {}));
+  await renderRouter({ index: CalendarScreen }, { initialUrl: '/', wrapper: Providers() });
+
+  expect(screen.getByLabelText('불러오는 중')).toBeOnTheScreen();
+  expect(screen.queryByText('결제 없음')).not.toBeOnTheScreen();
+  expect(screen.queryByText(/결제 예정인 구독이 없어요/)).not.toBeOnTheScreen();
+});
+
 it('날짜를 누르면 그 날짜만 선택된다', async () => {
   const user = await renderCalendar();
 

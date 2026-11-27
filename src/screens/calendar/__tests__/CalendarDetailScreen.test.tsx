@@ -106,6 +106,27 @@ it('최근 점검이 없으면 점검 영역이 없다', async () => {
   expect(screen.queryByText('최근 점검')).not.toBeOnTheScreen();
 });
 
+it('불러오는 동안에도 뒤로 가기로 캘린더에 돌아간다', async () => {
+  // 상세 응답이 안 옴
+  jest.spyOn(globalThis, 'fetch').mockImplementation(() => new Promise(() => {}));
+  await renderRouter(
+    {
+      index: () => null,
+      'calendar/detail/[id]': () => (
+        <CalendarDetailScreen id="netflix" date={new Date(2026, 10, 17)} />
+      ),
+    },
+    { initialUrl: '/', wrapper: createQueryWrapper() },
+  );
+  await act(() => router.push('/calendar/detail/netflix'));
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+  expect(screen.getByLabelText('불러오는 중')).toBeOnTheScreen();
+  await user.press(screen.getByRole('button', { name: '뒤로 가기' }));
+
+  expect(screen).toHavePathname('/');
+});
+
 it('불러오지 못하면 다시 시도로 다시 요청한다', async () => {
   mockApi({ 'GET /api/v1/subscriptions/netflix': apiError(500) });
   await renderRouter(

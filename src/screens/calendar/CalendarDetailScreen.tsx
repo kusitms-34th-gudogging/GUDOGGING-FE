@@ -6,6 +6,7 @@ import { MoreIcon } from '@/assets/icons';
 import { Badge } from '@/components/common/Badge';
 import { DetailCostCard } from '@/components/common/DetailCostCard';
 import { Divider, ServiceHeader } from '@/components/common/DetailParts';
+import { DetailSkeleton } from '@/components/common/DetailSkeleton';
 import { ListItem } from '@/components/common/ListItem';
 import { Modal } from '@/components/common/Modal';
 import { MoreMenu } from '@/components/common/MoreMenu';
@@ -48,7 +49,15 @@ export const CalendarDetailScreen = ({ id, date }: CalendarDetailScreenProps) =>
   if (!p) {
     return (
       <View className="pt-safe flex-1 bg-bg-default">
-        <QueryState isError={isError} onRetry={refetch} />
+        {/* 로딩·에러 중에도 뒤로 갈 수 있게 상단바는 상세 화면과 같게 */}
+        <TopBar
+          variant="detail"
+          title="구독 상세"
+          onBack={() => router.back()}
+          showAction1={false}
+          showAction2={false}
+        />
+        {isError ? <QueryState isError onRetry={refetch} /> : <DetailSkeleton />}
         <ToastOutlet placement="bottom" />
       </View>
     );
