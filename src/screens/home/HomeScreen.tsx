@@ -13,6 +13,7 @@ import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
 import { CostCard } from '@/components/home/CostCard';
 import { HomeEmptyState } from '@/components/home/HomeEmptyState';
+import { HomeSkeleton } from '@/components/home/HomeSkeleton';
 import { SectionHeader } from '@/components/home/SectionHeader';
 import { ServiceCard } from '@/components/home/ServiceCard';
 import { StateCard } from '@/components/home/StateCard';
@@ -60,10 +61,27 @@ export const HomeScreen = () => {
     return () => sub.remove();
   }, [registerPushToken, saveSettings]);
 
+  // 상단바는 로딩·본 화면이 같이 씀 (로딩 중에도 알림을 누를 수 있게)
+  const topBar = (
+    <TopBar
+      variant="main"
+      title="홈"
+      showBack={false}
+      showAction2={false}
+      action1={{
+        icon: data?.hasUnreadNotification ? BellDotIcon : BellIcon,
+        accessibilityLabel: '알림',
+        onPress: () => router.push('/notification'),
+      }}
+    />
+  );
+
   if (!data) {
     return (
       <View className="pt-safe flex-1 bg-bg-default">
-        <QueryState isError={isError} onRetry={refetch} />
+        {/* 본 화면과 같은 첫 자리에 둬야 데이터가 와도 상단바가 새로 만들어지지 않음 */}
+        {!isError && topBar}
+        {isError ? <QueryState isError onRetry={refetch} /> : <HomeSkeleton />}
         <ToastOutlet placement="aboveTabBar" />
       </View>
     );
@@ -77,17 +95,7 @@ export const HomeScreen = () => {
       testID="home-screen"
       className={cn('pt-safe flex-1 bg-bg-default', !isEmpty && 'pb-safe')}
     >
-      <TopBar
-        variant="main"
-        title="홈"
-        showBack={false}
-        showAction2={false}
-        action1={{
-          icon: data.hasUnreadNotification ? BellDotIcon : BellIcon,
-          accessibilityLabel: '알림',
-          onPress: () => router.push('/notification'),
-        }}
-      />
+      {topBar}
       {/* 캘린더·구독 관리처럼 스크롤 영역을 떠 있는 탭바(52 + 아래 4) + 간격 12 위에서 끝냄 (아래 끝 내용은 잘려 보여도 됨)
           맨 아래 여백은 없음 (+ 버튼이 마지막 행 금액을 가려도 됨). 빈 상태는 화면 높이만큼 채우고 안에서 탭바만큼 뺌 */}
       <ScrollView
