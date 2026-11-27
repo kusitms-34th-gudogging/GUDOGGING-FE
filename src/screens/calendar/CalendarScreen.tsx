@@ -19,7 +19,9 @@ import { BottomSheet } from '@/components/common/BottomSheet';
 import { Button } from '@/components/common/Button';
 import { Dial } from '@/components/common/Dial';
 import { ListItem } from '@/components/common/ListItem';
+import { ListItemSkeleton } from '@/components/common/ListItemSkeleton';
 import { QueryState } from '@/components/common/QueryState';
+import { Skeleton } from '@/components/common/Skeleton';
 import { Text } from '@/components/common/Text';
 import { ToastOutlet } from '@/components/common/ToastProvider';
 import { TopBar } from '@/components/common/TopBar';
@@ -57,6 +59,8 @@ export const CalendarScreen = () => {
   const current = useMonth(page);
   const next = useMonth(page + 1);
   const payments = current.data?.byDate.get(formatDate(selected)) ?? [];
+  // 날짜 칸은 데이터 없이도 그려서, 응답으로 채우는 합계 배지·그날 결제 목록만 스켈레톤
+  const loading = !current.data && !current.isError;
 
   const snap = useRowSnap(payments.length);
 
@@ -149,11 +153,15 @@ export const CalendarScreen = () => {
                 </Text>
               </Pressable>
               {/* 오늘이 속한 달 합계라 어느 달 응답이든 같음 (CAL-001) */}
-              {current.data && (
-                <Badge
-                  variant="tonal"
-                  label={`이번 달 결제 합계 ${formatWon(current.data.currentMonthTotal)}`}
-                />
+              {loading ? (
+                <Skeleton className="h-[24px] w-[160px] rounded-full" />
+              ) : (
+                current.data && (
+                  <Badge
+                    variant="tonal"
+                    label={`이번 달 결제 합계 ${formatWon(current.data.currentMonthTotal)}`}
+                  />
+                )
               )}
             </View>
             <View className="pr-s4">
@@ -192,14 +200,22 @@ export const CalendarScreen = () => {
               <Text className="text-text-primary text-head4-bold">
                 {selected.getMonth() + 1}월 {selected.getDate()}일 ({WEEKDAYS[selected.getDay()]})
               </Text>
-              <Text className="text-text-secondary text-body3-regular">
-                {payments.length
-                  ? `${payments.length}건 · ${formatWon(sumOf(payments))}`
-                  : '결제 없음'}
-              </Text>
+              {loading ? (
+                <Skeleton className="h-[18px] w-[96px] rounded-md" />
+              ) : (
+                <Text className="text-text-secondary text-body3-regular">
+                  {payments.length
+                    ? `${payments.length}건 · ${formatWon(sumOf(payments))}`
+                    : '결제 없음'}
+                </Text>
+              )}
             </View>
             {current.isError ? (
               <QueryState isError onRetry={current.refetch} />
+            ) : loading ? (
+              <View accessible accessibilityLabel="불러오는 중">
+                <ListItemSkeleton count={2} />
+              </View>
             ) : payments.length ? (
               <View onLayout={snap.onListLayout} className="gap-stack-sm">
                 {payments.map((p, i) => (
