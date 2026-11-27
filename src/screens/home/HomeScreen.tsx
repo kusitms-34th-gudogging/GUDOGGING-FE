@@ -161,12 +161,7 @@ export const HomeScreen = () => {
                     <ListItem
                       key={s.subscriptionId}
                       title={s.serviceName}
-                      subtitle={
-                        <>
-                          {dateLabel(s.nextBillingDate)} ·{' '}
-                          <Text className="text-text-brand">{dDayLabel(s.dDay)}</Text>
-                        </>
-                      }
+                      subtitle={`${dateLabel(s.nextBillingDate)} · ${dDayLabel(s.dDay)}`}
                       showSubtitle
                       logo={serviceLogo(s.logoUrl ?? undefined)}
                       showLogo

@@ -90,14 +90,10 @@ export const ManageScreen = () => {
   const items = (isPlaceholderData ? [] : (data?.subscriptions ?? [])).map((s) => ({
     ...s,
     subtitle:
-      tab === 'ACTIVE' ? (
-        // 주기와 관계없이 다음 결제일 (연·주 결제에 '매월'이 틀려서). 주기는 구독 상세에서 확인
-        <>
-          {monthDay(s.nextDate!)} · <Text className="text-text-brand">{dDayLabel(s.dDay!)}</Text>
-        </>
-      ) : (
-        `${monthDay(s.cancelledAt!)} 해지 · 총 지출 ${formatWon(s.totalSpent!)}`
-      ),
+      tab === 'ACTIVE'
+        ? // 주기와 관계없이 다음 결제일 (연·주 결제에 '매월'이 틀려서). 주기는 구독 상세에서 확인
+          `${monthDay(s.nextDate!)} · ${dDayLabel(s.dDay!)}`
+        : `${monthDay(s.cancelledAt!)} 해지 · 총 지출 ${formatWon(s.totalSpent!)}`,
   }));
   const snap = useRowSnap(items.length);
 
